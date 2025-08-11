@@ -39,15 +39,15 @@ Route::get('/test/notification', App\Http\Controllers\TestNotificationController
 Route::prefix('test/payment')->name('test.payment.')->group(function () {
 
     // Test principal : /test/payment/recharge/1000
-    Route::get('{action}/{amount}', [App\Http\Controllers\Api\PaymentTestController::class, 'test'])
+    Route::get('{action}/{amount}', [App\Http\Controllers\Test\PaymentTestController::class, 'test'])
         ->where(['action' => 'recharge|withdraw', 'amount' => '[0-9]+'])
         ->name('execute');
 
     // Test balance : /test/payment/balance
-    Route::get('balance', [App\Http\Controllers\Api\PaymentTestController::class, 'checkBalance'])
+    Route::get('balance', [App\Http\Controllers\Test\PaymentTestController::class, 'checkBalance'])
         ->name('balance');
 
     // Test status : /test/payment/status/trans_123
-    Route::get('status/{transactionId}', [App\Http\Controllers\Api\PaymentTestController::class, 'checkStatus'])
+    Route::get('status/{transactionId}', [App\Http\Controllers\Test\PaymentTestController::class, 'checkStatus'])
         ->name('status');
 });

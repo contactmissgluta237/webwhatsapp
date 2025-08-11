@@ -36,7 +36,8 @@
                 </div>
                 <div class="card-content">
                     <div class="card-body">
-                        <p class="card-text">Activez les notifications push pour recevoir des alertes en temps réel sur votre appareil.</p>
+                        <p class="card-text">Activez les notifications push pour recevoir des alertes en temps réel sur
+                            votre appareil.</p>
                         @include('components.push-notification-button')
                     </div>
                 </div>

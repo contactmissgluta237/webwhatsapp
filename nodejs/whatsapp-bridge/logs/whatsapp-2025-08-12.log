@@ -1,0 +1,90 @@
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:03:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:08:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:13:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:18:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:23:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:28:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:33:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:38:37"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":2,"timestamp":"2025-08-12 00:43:37"}
+{"ip":"127.0.0.1","level":"info","message":"[WhatsApp] 🚨 Session creation request received","requestBody":{"sessionId":"session_2_17549559905704_86c86728","userId":2},"requestId":"1754955990590-9hz5xgr21","sessionId":"session_2_17549559905704_86c86728","timestamp":"2025-08-12 00:46:30","userAgent":"Laravel-WhatsApp-QR-Service/1.0","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Starting async initialization","requestId":"1754955990590-9hz5xgr21","timestamp":"2025-08-12 00:46:30","userId":2}
+{"asyncInit":true,"level":"info","message":"[Session:session_2_17549559905704_86c86728] Creating session","timestamp":"2025-08-12 00:46:30","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Responding with 202 Accepted","requestId":"1754955990590-9hz5xgr21","timestamp":"2025-08-12 00:46:30"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:30 +0000] \"POST /api/sessions/create HTTP/1.1\" 202 180 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:30"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":3,"timestamp":"2025-08-12 00:46:30"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Starting ASYNC initialization","timestamp":"2025-08-12 00:46:30","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Returning immediately (async mode)","timestamp":"2025-08-12 00:46:30","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:30"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:30"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:30 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:30"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:31"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:31"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:31 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:31"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:33 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:33 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:33"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:35"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:35"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:35 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:35"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:36"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:36"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:36 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:36"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:38 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:38 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:38"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:40"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:40"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:40 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:40"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:41"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:41"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:41 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:41"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:44 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code not available","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:44 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 404 51 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:44"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR generated","qrLength":239,"timestamp":"2025-08-12 00:46:45","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code requested","timestamp":"2025-08-12 00:46:49"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] QR code provided","timestamp":"2025-08-12 00:46:49"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:46:49 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/qr HTTP/1.1\" 200 267 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:46:49"}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":146,"timestamp":"2025-08-12 00:47:24","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] Session ready","timestamp":"2025-08-12 00:47:24","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] Session ready","timestamp":"2025-08-12 00:47:24","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] Phone connected","phoneNumber":"23767...","timestamp":"2025-08-12 00:47:24","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] Phone connected","phoneNumber":"23767...","timestamp":"2025-08-12 00:47:24","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] Session disconnected","timestamp":"2025-08-12 00:47:25","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:47:33","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Session ready","timestamp":"2025-08-12 00:47:40","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Phone connected","phoneNumber":"23767...","timestamp":"2025-08-12 00:47:40","userId":2}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Status check requested","timestamp":"2025-08-12 00:47:41"}
+{"level":"info","message":"[Session:session_2_17549559905704_86c86728] Status retrieved","status":"connected","timestamp":"2025-08-12 00:47:41"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:23:47:41 +0000] \"GET /api/sessions/session_2_17549559905704_86c86728/status HTTP/1.1\" 200 166 \"-\" \"Laravel-WhatsApp-QR-Service/1.0\"","timestamp":"2025-08-12 00:47:41"}
+{"from":"2376716464...","level":"info","message":"[Session:session_2_17549559905704_86c86728] Message received","timestamp":"2025-08-12 00:47:44","userId":2}
+{"from":"2376924437...","level":"info","message":"[Session:session_2_17549559905704_86c86728] Message received","timestamp":"2025-08-12 00:47:44","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:48:32","userId":2}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":3,"timestamp":"2025-08-12 00:48:37"}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:48:52","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:49:12","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:49:32","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:49:52","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:51:05","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:52:05","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:52:25","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:52:45","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:53:05","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:53:25","userId":2}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":3,"timestamp":"2025-08-12 00:53:37"}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:54:37","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:55:37","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:55:57","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:56:17","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:56:37","userId":2}
+{"level":"info","message":"[Session:session_2_17549388092442_1115809a] QR generated","qrLength":239,"timestamp":"2025-08-12 00:56:57","userId":2}

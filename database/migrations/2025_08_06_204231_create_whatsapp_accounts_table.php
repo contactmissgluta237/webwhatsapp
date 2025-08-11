@@ -23,6 +23,19 @@ return new class extends Migration
             $table->text('qr_code')->nullable();
             $table->timestamp('last_seen_at')->nullable();
             $table->json('session_data')->nullable();
+            
+            // Configuration de l'agent IA
+            $table->string('agent_name')->nullable();
+            $table->boolean('agent_enabled')->default(false);
+            $table->foreignId('ai_model_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('response_time')->default('random');
+            $table->text('agent_prompt')->nullable();
+            $table->json('trigger_words')->nullable();
+            
+            // Métadonnées pour l'IA
+            $table->timestamp('last_ai_response_at')->nullable();
+            $table->integer('daily_ai_responses')->default(0);
+            
             $table->timestamps();
         });
     }

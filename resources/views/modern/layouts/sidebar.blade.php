@@ -16,7 +16,7 @@
         </ul>
     </div>
     <div class="shadow-bottom"></div>
-    <div class="main-menu-content">
+    <div class="main-menu-content pt-3">
         <ul class="navigation navigation-main" id="main-menu-navigation" data-menu="menu-navigation">
             @if (auth()->user()->isAdmin())
                 @include('modern.navigation.admin-menu')

@@ -19,3 +19,12 @@
 
 <!-- Tabler icons-->
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/tabler-icons/tabler-icons.css') }}">
+
+<!-- BEGIN: SweetAlert2 CSS-->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/css/extensions/sweetalert2.min.css') }}">
+<!-- END: SweetAlert2 CSS-->
+
+<!-- BEGIN: Toastr CSS-->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/css/extensions/toastr.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/plugins/extensions/toastr.min.css') }}">
+<!-- END: Toastr CSS-->

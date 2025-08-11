@@ -1,8 +1,6 @@
 <?php
 
-// app/Http/Controllers/Api/PaymentTestController.php
-
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Test;
 
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;

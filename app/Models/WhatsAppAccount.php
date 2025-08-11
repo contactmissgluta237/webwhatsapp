@@ -26,6 +26,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $qr_code
  * @property Carbon|null $last_seen_at
  * @property array|null $session_data
+ * @property bool $ai_agent_enabled
+ * @property int|null $ai_model_id
+ * @property string|null $ai_prompt
+ * @property string|null $ai_trigger_words
+ * @property string|null $ai_response_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
@@ -33,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $user
  * @property-read Collection|Conversation[] $conversations
  * @property-read AiContext|null $aiContext
+ * @property-read AiModel|null $aiModel
  */
 final class WhatsAppAccount extends Model
 {
@@ -54,6 +60,12 @@ final class WhatsAppAccount extends Model
         'qr_code',
         'last_seen_at',
         'session_data',
+        'agent_name',
+        'agent_enabled',
+        'ai_model_id',
+        'agent_prompt',
+        'trigger_words',
+        'response_time',
     ];
 
     /**
@@ -65,6 +77,8 @@ final class WhatsAppAccount extends Model
         'status' => SpatieEnumCast::class.':'.WhatsAppStatus::class,
         'last_seen_at' => 'datetime',
         'session_data' => 'array',
+        'agent_enabled' => 'boolean',
+        'trigger_words' => 'array',
     ];
 
     // ================================================================================
@@ -84,6 +98,11 @@ final class WhatsAppAccount extends Model
     public function aiContext(): HasOne
     {
         return $this->hasOne(AiContext::class);
+    }
+
+    public function aiModel(): BelongsTo
+    {
+        return $this->belongsTo(AiModel::class);
     }
 
     // ================================================================================
@@ -149,5 +168,69 @@ final class WhatsAppAccount extends Model
             'outbound' => $outbound,
             'total' => $inbound + $outbound,
         ];
+    }
+
+    // ================================================================================
+    // AI AGENT METHODS
+    // ================================================================================
+
+    public function hasAiAgent(): bool
+    {
+        return $this->agent_enabled && $this->ai_model_id !== null;
+    }
+
+    public function getAiModel(): ?AiModel
+    {
+        return $this->aiModel;
+    }
+
+    public function enableAiAgent(int $aiModelId, ?string $prompt = null, ?string $triggerWords = null, ?string $responseTime = null): void
+    {
+        $this->update([
+            'agent_enabled' => true,
+            'ai_model_id' => $aiModelId,
+            'agent_prompt' => $prompt,
+            'trigger_words' => $triggerWords,
+            'response_time' => $responseTime,
+        ]);
+    }
+
+    public function disableAiAgent(): void
+    {
+        $this->update([
+            'agent_enabled' => false,
+        ]);
+    }
+
+    public function updateAiConfiguration(array $config): void
+    {
+        $allowedFields = ['ai_model_id', 'agent_prompt', 'trigger_words', 'response_time'];
+        $filteredConfig = array_intersect_key($config, array_flip($allowedFields));
+        
+        $this->update($filteredConfig);
+    }
+
+    public function shouldTriggerAiResponse(string $message): bool
+    {
+        if (!$this->hasAiAgent()) {
+            return false;
+        }
+
+        if (empty($this->trigger_words)) {
+            return true;
+        }
+
+        $triggerWords = is_array($this->trigger_words) 
+            ? $this->trigger_words 
+            : array_map('trim', explode(',', strtolower($this->trigger_words)));
+        $messageWords = str_word_count(strtolower($message), 1);
+
+        foreach ($triggerWords as $trigger) {
+            if (in_array(trim(strtolower($trigger)), $messageWords, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

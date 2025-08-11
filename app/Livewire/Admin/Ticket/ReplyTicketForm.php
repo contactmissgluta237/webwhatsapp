@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin\Ticket;
 
 use App\Enums\TicketSenderType;
+use App\Http\Requests\Admin\Ticket\ReplyTicketRequest;
 use App\Models\Ticket;
 use App\Services\TicketService;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -25,13 +27,20 @@ class ReplyTicketForm extends Component
         $this->ticketService = $ticketService;
     }
 
-    protected function rules(): array
+    protected function customRequest(): FormRequest
     {
-        return [
-            'message' => 'required|string',
-            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'isInternal' => 'boolean',
-        ];
+        return new ReplyTicketRequest();
+    }
+
+    public function rules(): array
+    {
+        // @phpstan-ignore-next-line
+        return $this->customRequest()->rules();
+    }
+
+    public function messages(): array
+    {
+        return $this->customRequest()->messages();
     }
 
     public function replyToTicket()

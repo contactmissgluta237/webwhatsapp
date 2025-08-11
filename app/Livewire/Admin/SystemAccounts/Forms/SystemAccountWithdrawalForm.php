@@ -4,10 +4,11 @@ namespace App\Livewire\Admin\SystemAccounts\Forms;
 
 use App\Enums\ExternalTransactionType;
 use App\Enums\PaymentMethod;
+use App\Http\Requests\Admin\SystemAccounts\WithdrawalRequest;
 use App\Models\SystemAccount;
 use App\Models\SystemAccountTransaction;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class SystemAccountWithdrawalForm extends Component
@@ -18,15 +19,20 @@ class SystemAccountWithdrawalForm extends Component
     public $receiverAccount;
     public $description;
 
-    protected function rules()
+    protected function customRequest(): FormRequest
     {
-        return [
-            'paymentMethod' => ['required', Rule::in(PaymentMethod::values())],
-            'amount' => 'required|numeric|min:1',
-            'receiverName' => 'required|string|max:255',
-            'receiverAccount' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
-        ];
+        return new WithdrawalRequest();
+    }
+
+    public function rules(): array
+    {
+        // @phpstan-ignore-next-line
+        return $this->customRequest()->rules();
+    }
+
+    public function messages(): array
+    {
+        return $this->customRequest()->messages();
     }
 
     public function submit()

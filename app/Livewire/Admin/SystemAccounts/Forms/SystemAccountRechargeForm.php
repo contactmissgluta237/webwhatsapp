@@ -4,11 +4,12 @@ namespace App\Livewire\Admin\SystemAccounts\Forms;
 
 use App\Enums\ExternalTransactionType;
 use App\Enums\PaymentMethod;
+use App\Http\Requests\Admin\SystemAccounts\RechargeRequest;
 use App\Models\SystemAccount;
 use App\Models\SystemAccountTransaction;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class SystemAccountRechargeForm extends Component
@@ -19,15 +20,20 @@ class SystemAccountRechargeForm extends Component
     public $senderAccount;
     public $description;
 
-    protected function rules()
+    protected function customRequest(): FormRequest
     {
-        return [
-            'paymentMethod' => ['required', Rule::in(PaymentMethod::values())],
-            'amount' => 'required|numeric|min:1',
-            'senderName' => 'required|string|max:255',
-            'senderAccount' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
-        ];
+        return new RechargeRequest();
+    }
+
+    public function rules(): array
+    {
+        // @phpstan-ignore-next-line
+        return $this->customRequest()->rules();
+    }
+
+    public function messages(): array
+    {
+        return $this->customRequest()->messages();
     }
 
     public function submit()
