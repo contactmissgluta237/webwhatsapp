@@ -1,0 +1,541 @@
+<?php
+
+namespace App\Services\WhatsApp;
+
+use Exception;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+class WhatsAppQRService
+{
+    // Configuration optimisée
+    private const MAX_RETRIES = 8;
+    private const RETRY_DELAY = 3;
+    private const QR_SIZE = 300;
+    private const HTTP_TIMEOUT = 12;
+    private const CONNECT_TIMEOUT = 6;
+    private const SESSION_CACHE_TTL = 300; // 5 minutes
+
+    private string $bridgeUrl;
+    private ?string $apiToken;
+
+    public function __construct()
+    {
+        $this->bridgeUrl = $this->getBridgeUrl();
+        $this->apiToken = config('services.whatsapp_bridge.api_token');
+
+        Log::info('🚀 QRService: Initialized', [
+            'bridge_url' => $this->bridgeUrl,
+            'has_api_token' => !empty($this->apiToken),
+            'is_docker' => $this->isRunningInDocker()
+        ]);
+    }
+
+    /**
+     * Générer un QR code avec session name personnalisé
+     */
+    public function generateQRCodeWithSessionName(string $sessionName, int $userId): array
+    {
+        Log::info('📱 QRService: Starting QR generation with custom session name', [
+            'user_id' => $userId,
+            'session_name' => $sessionName,
+        ]);
+
+        try {
+            $sessionId = $this->createUniqueSessionId($userId);
+
+            Log::info('🆔 QRService: Generated unique session ID', [
+                'session_id' => $sessionId,
+                'user_session_name' => $sessionName,
+            ]);
+
+            Log::info('📡 QRService: Creating session...');
+            $sessionData = $this->createSession($sessionId, $userId);
+
+            Log::info('🎯 QRService: Requesting QR code...');
+            $qrCode = $this->fetchQRCode($sessionId);
+
+            Log::info('💾 QRService: Generating QR file...');
+            $fileInfo = $this->generateQRFile($qrCode, $userId);
+
+            Log::info('🎉 QRService: QR generation completed successfully', [
+                'session_id' => $sessionId,
+                'filename' => $fileInfo['filename'],
+            ]);
+
+            return [
+                'success' => true,
+                'qr_code' => $qrCode,
+                'session_id' => $sessionId,
+                'session_name' => $sessionName,
+                'filename' => $fileInfo['filename'],
+                'url' => $fileInfo['url'],
+            ];
+
+        } catch (Exception $e) {
+            Log::error('❌ QRService: QR generation failed', [
+                'user_id' => $userId,
+                'session_name' => $sessionName,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Cleanup en cas d'erreur
+            if (isset($sessionId)) {
+                $this->cleanupSession($sessionId);
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Génération QR Code principal (legacy)
+     */
+    public function generateQRCode(int $userId): array
+    {
+        $sessionId = $this->createSessionId($userId);
+
+        Log::info('📱 QRService: Starting QR generation', [
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+        ]);
+
+        try {
+            // 1. Vérifier si une session existe déjà
+            if ($this->sessionExists($sessionId)) {
+                Log::info('♻️  QRService: Session already exists, cleaning up');
+                $this->cleanupSession($sessionId);
+            }
+
+            // 2. Créer nouvelle session
+            Log::info('📡 QRService: Creating session...');
+            $sessionData = $this->createSession($sessionId, $userId);
+
+            // 3. Récupérer QR Code
+            Log::info('🔍 QRService: Fetching QR code...');
+            $qrCode = $this->fetchQRCode($sessionId);
+
+            // 4. Générer fichier QR
+            Log::info('💾 QRService: Generating QR file...');
+            $fileInfo = $this->generateQRFile($qrCode, $userId);
+
+            // 5. Cache des infos de session
+            $sessionInfo = [
+                'session_id' => $sessionId,
+                'user_id' => $userId,
+                'created_at' => now()->toISOString(),
+                'file_info' => $fileInfo,
+            ];
+
+            Cache::put("whatsapp_session_{$userId}", $sessionInfo, self::SESSION_CACHE_TTL);
+
+            Log::info('✅ QRService: QR generation completed successfully', [
+                'user_id' => $userId,
+                'session_id' => $sessionId,
+                'qr_length' => strlen($qrCode),
+                'file' => $fileInfo['filename'],
+            ]);
+
+            return [
+                'success' => true,
+                'session_id' => $sessionId,
+                'filename' => $fileInfo['filename'],
+                'url' => $fileInfo['url'],
+                'qr_code' => $qrCode,
+                'expires_at' => now()->addMinutes(5)->toISOString(),
+                'session_data' => $sessionData,
+            ];
+
+        } catch (Exception $e) {
+            Log::error('❌ QRService: QR generation failed', [
+                'user_id' => $userId,
+                'session_id' => $sessionId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            // Cleanup en cas d'erreur
+            $this->cleanupSession($sessionId);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'session_id' => $sessionId,
+            ];
+        }
+    }
+
+    /**
+     * Vérifier le statut d'une session
+     */
+    public function getSessionStatus(string $sessionId): array
+    {
+        Log::info('🔍 QRService: Checking session status', ['session_id' => $sessionId]);
+
+        try {
+            $url = "{$this->bridgeUrl}/api/sessions/{$sessionId}/status";
+
+            $response = $this->makeHttpRequest('GET', $url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                Log::info('✅ QRService: Session status retrieved', [
+                    'session_id' => $sessionId,
+                    'status' => $data['status'] ?? 'unknown',
+                ]);
+
+                return [
+                    'success' => true,
+                    'status' => $data['status'] ?? 'unknown',
+                    'data' => $data,
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => "HTTP {$response->status()}: {$response->body()}",
+            ];
+
+        } catch (Exception $e) {
+            Log::error('❌ QRService: Session status check failed', [
+                'session_id' => $sessionId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Supprimer un fichier QR
+     */
+    public function deleteQRFile(string $filename): bool
+    {
+        $filePath = public_path("qrcodes/{$filename}");
+
+        if (file_exists($filePath)) {
+            $deleted = unlink($filePath);
+            Log::info('🗑️  QRService: QR file deleted', [
+                'filename' => $filename,
+                'success' => $deleted,
+            ]);
+            return $deleted;
+        }
+
+        Log::warning('⚠️  QRService: QR file not found for deletion', ['filename' => $filename]);
+        return false;
+    }
+
+    /**
+     * Force reset du Bridge via API
+     */
+    private function forceResetBridge(): void
+    {
+        try {
+            $url = "{$this->bridgeUrl}/api/sessions/reset-all";
+            
+            Log::info('🔥 QRService: Calling force reset API', ['url' => $url]);
+            
+            $response = $this->makeHttpRequest('POST', $url, []);
+            
+            Log::info('🔥 QRService: Force reset response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            
+        } catch (Exception $e) {
+            Log::warning('⚠️  QRService: Force reset API failed', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Obtenir les sessions en cache pour un utilisateur
+     */
+    public function getCachedSession(int $userId): ?array
+    {
+        return Cache::get("whatsapp_session_{$userId}");
+    }
+
+    /**
+     * Supprimer le cache d'une session
+     */
+    public function clearSessionCache(int $userId): void
+    {
+        Cache::forget("whatsapp_session_{$userId}");
+    }
+
+    // =====================================================
+    // MÉTHODES PRIVÉES
+    // =====================================================
+
+    /**
+     * Détecter l'URL du bridge selon l'environnement
+     */
+    private function getBridgeUrl(): string
+    {
+        $isDocker = $this->isRunningInDocker();
+
+        $url = $isDocker
+            ? config('services.whatsapp_bridge.docker_url', 'http://whatsapp-bridge:3000')
+            : config('services.whatsapp_bridge.url', 'http://localhost:3000');
+
+        Log::info($isDocker ? '🐳 QRService: Using Docker URL' : '🖥️  QRService: Using host URL', [
+            'url' => $url
+        ]);
+
+        return $url;
+    }
+
+    /**
+     * Détecter si on est dans Docker
+     */
+    private function isRunningInDocker(): bool
+    {
+        // Check .dockerenv file (plus fiable)
+        if (file_exists('/.dockerenv')) {
+            return true;
+        }
+
+        // Check variables d'environnement Docker
+        if (getenv('DOCKER_CONTAINER') || getenv('CONTAINER_NAME')) {
+            return true;
+        }
+
+        // Check cgroup pour docker/containerd
+        if (file_exists('/proc/1/cgroup')) {
+            $cgroup = @file_get_contents('/proc/1/cgroup');
+            if ($cgroup && (str_contains($cgroup, 'docker') || str_contains($cgroup, 'containerd'))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Créer un ID de session unique (legacy)
+     */
+    private function createSessionId(int $userId): string
+    {
+        return "temp_{$userId}_" . time() . '_' . substr(md5(uniqid()), 0, 6);
+    }
+
+    /**
+     * Créer un ID de session unique pour SaaS (évite les conflits Puppeteer)
+     */
+    private function createUniqueSessionId(int $userId): string
+    {
+        $timestamp = (int)(microtime(true) * 10000); // Microsecondes pour plus d'unicité
+        $random = substr(md5(uniqid() . microtime()), 0, 8);
+        return "session_{$userId}_{$timestamp}_{$random}";
+    }
+
+    /**
+     * Créer une session WhatsApp
+     */
+    private function createSession(string $sessionId, int $userId): array
+    {
+        $url = "{$this->bridgeUrl}/api/sessions/create";
+        $payload = [
+            'sessionId' => $sessionId,
+            'userId' => $userId,
+        ];
+
+        Log::info('📡 QRService: Creating session via HTTP', [
+            'url' => $url,
+            'payload' => $payload,
+            'generated_session_id' => $sessionId,
+            'user_id' => $userId,
+        ]);
+
+        $response = $this->makeHttpRequest('POST', $url, $payload);
+
+        Log::info('📨 QRService: HTTP Response received', [
+            'status' => $response->status(),
+            'successful' => $response->successful(),
+            'headers' => $response->headers(),
+            'body_raw' => $response->body(),
+            'sent_session_id' => $sessionId,
+        ]);
+
+        if (!$response->successful()) {
+            throw new Exception("Failed to create WhatsApp session: HTTP {$response->status()} - {$response->body()}");
+        }
+
+        $data = $response->json();
+
+        Log::info('📄 QRService: Response data parsed', [
+            'data' => $data,
+            'data_type' => gettype($data),
+            'has_success_key' => isset($data['success']),
+            'success_value' => $data['success'] ?? 'NOT_SET',
+        ]);
+
+        if (empty($data) || !isset($data['success'])) {
+            throw new Exception("Invalid response from WhatsApp bridge: " . $response->body());
+        }
+
+        if ($data['success'] === false) {
+            Log::error('🚫 QRService: Bridge returned success=false', [
+                'full_response' => $data,
+                'message' => $data['message'] ?? 'No message provided',
+                'error' => $data['error'] ?? 'No error provided',
+            ]);
+            throw new Exception($data['message'] ?? 'Unknown error creating session');
+        }
+
+        Log::info('✅ QRService: Session created successfully', [
+            'session_id' => $sessionId,
+            'response_data' => $data,
+        ]);
+
+        return $data;
+    }
+
+    /**
+     * Récupérer le QR Code avec retry intelligent
+     */
+    private function fetchQRCode(string $sessionId): string
+    {
+        $url = "{$this->bridgeUrl}/api/sessions/{$sessionId}/qr";
+
+        Log::info('🔍 QRService: Starting QR fetch with intelligent retry', [
+            'url' => $url,
+            'session_id' => $sessionId,
+            'max_retries' => self::MAX_RETRIES,
+        ]);
+
+        $delays = [1, 2, 3, 4, 5, 6, 8, 10]; // Délais progressifs
+
+        for ($attempt = 1; $attempt <= self::MAX_RETRIES; $attempt++) {
+            $delay = $delays[$attempt - 1] ?? self::RETRY_DELAY;
+
+            Log::info("🔄 QRService: QR fetch attempt {$attempt}/" . self::MAX_RETRIES, [
+                'delay' => $delay,
+            ]);
+
+            if ($attempt > 1) {
+                sleep($delay);
+            }
+
+            try {
+                $response = $this->makeHttpRequest('GET', $url);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+
+                    if (!empty($data['qrCode'])) {
+                        Log::info('✅ QRService: QR code retrieved successfully', [
+                            'attempt' => $attempt,
+                            'qr_length' => strlen($data['qrCode']),
+                        ]);
+
+                        return $data['qrCode'];
+                    } else {
+                        Log::info("⏳ QRService: QR not ready yet (attempt {$attempt})", [
+                            'response' => $data,
+                        ]);
+                    }
+                } elseif ($response->status() === 404) {
+                    Log::info("⏳ QRService: Session not ready yet (attempt {$attempt})");
+                } else {
+                    Log::warning("⚠️  QRService: Unexpected response (attempt {$attempt})", [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                    ]);
+                }
+
+            } catch (Exception $e) {
+                Log::warning("⚠️  QRService: Request failed (attempt {$attempt})", [
+                    'error' => $e->getMessage(),
+                ]);
+
+                if ($attempt === self::MAX_RETRIES) {
+                    throw $e;
+                }
+            }
+        }
+
+        throw new Exception("Failed to retrieve QR code after " . self::MAX_RETRIES . " attempts. The session might not be properly initialized.");
+    }
+
+    /**
+     * Générer le fichier QR Code
+     */
+    private function generateQRFile(string $qrCode, int $userId): array
+    {
+        $filename = "qr-{$userId}-" . time() . '-' . substr(md5(uniqid()), 0, 8) . '.svg';
+        $directory = public_path('qrcodes');
+        $filePath = $directory . '/' . $filename;
+
+        // Directory should exist from Dockerfile, but check anyway
+        if (!is_dir($directory)) {
+            throw new Exception("QR directory does not exist: {$directory}");
+        }
+
+        if (!is_writable($directory)) {
+            throw new Exception("QR directory is not writable: {$directory}");
+        }
+
+        $qrSvg = QrCode::format('svg')->size(self::QR_SIZE)->generate($qrCode);
+
+        if (file_put_contents($filePath, $qrSvg) === false) {
+            throw new Exception("Failed to write QR file: {$filePath}");
+        }
+
+        Log::info('QR file generated successfully', [
+            'filename' => $filename,
+            'size' => filesize($filePath),
+        ]);
+
+        return [
+            'filename' => $filename,
+            'url' => config('app.url') . "/qrcodes/{$filename}",
+            'path' => $filePath,
+            'size' => filesize($filePath),
+        ];
+    }
+
+    /**
+     * Faire une requête HTTP optimisée
+     */
+    private function makeHttpRequest(string $method, string $url, array $data = [], ?int $customTimeout = null): \Illuminate\Http\Client\Response
+    {
+        $timeout = $customTimeout ?? self::HTTP_TIMEOUT;
+
+        $http = Http::timeout($timeout)
+            ->connectTimeout(self::CONNECT_TIMEOUT)
+            ->retry(2, 500) // 2 essais avec 500ms d'attente
+            ->acceptJson()
+            ->withHeaders([
+                'Connection' => 'close',
+                'User-Agent' => 'Laravel-WhatsApp-QR-Service/1.0',
+            ]);
+
+        // Ajouter le token si disponible
+        if ($this->apiToken) {
+            $http = $http->withToken($this->apiToken);
+        }
+
+        // Faire la requête selon la méthode
+        return match(strtoupper($method)) {
+            'GET' => $http->get($url),
+            'POST' => $http->post($url, $data),
+            'PUT' => $http->put($url, $data),
+            'DELETE' => $http->delete($url),
+            default => throw new Exception("Unsupported HTTP method: {$method}")
+        };
+    }
+}

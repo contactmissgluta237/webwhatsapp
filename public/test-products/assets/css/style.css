@@ -1,0 +1,5 @@
+body { padding-top: 20px; }
+.container { max-width: 700px; }
+#products_container { opacity: 0.5; pointer-events: none; }
+#products_container.active { opacity: 1; pointer-events: all; }
+#login_status, #products_status { margin-top: 10px; }

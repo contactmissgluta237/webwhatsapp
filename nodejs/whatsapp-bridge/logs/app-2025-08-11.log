@@ -1,0 +1,65 @@
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":1,"timestamp":"2025-08-11 18:22:46"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":1,"timestamp":"2025-08-11 18:27:46"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":1,"timestamp":"2025-08-11 18:32:46"}
+{"count":1,"level":"info","message":"[API] Sessions list requested","timestamp":"2025-08-11 18:34:04"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:17:34:04 +0000] \"GET /api/sessions HTTP/1.1\" 200 231 \"-\" \"curl/7.81.0\"","timestamp":"2025-08-11 18:34:04"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:17:34:15 +0000] \"POST /api/admin/cleanup-sessions HTTP/1.1\" 404 166 \"-\" \"curl/7.81.0\"","timestamp":"2025-08-11 18:34:15"}
+{"level":"warn","message":"🛑 Received SIGINT, shutting down gracefully...","timestamp":"2025-08-11 18:35:50"}
+{"level":"info","message":"🔄 Shutting down WhatsApp Manager...","timestamp":"2025-08-11 18:35:50"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Active sessions saved to disk","sessionCount":1,"timestamp":"2025-08-11 18:35:50"}
+{"level":"info","message":"🔧 Initializing WhatsApp Bridge services...","timestamp":"2025-08-11 18:35:53"}
+{"laravelApiUrl":"http://localhost:8000","level":"info","message":"WhatsApp Manager initialized","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"✅ WhatsApp Manager created","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🛣️ Setting up API routes...","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"✅ API routes configured","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🚀 WhatsApp Bridge server started on port 3000","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🚀 Initializing WhatsApp Manager...","timestamp":"2025-08-11 18:35:53"}
+{"intervalMinutes":5,"level":"info","message":"Autosave started","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"📱 Restoring existing WhatsApp sessions...","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Starting session restoration from persistence","timestamp":"2025-08-11 18:35:53"}
+{"file":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/src/data/active_sessions.json","level":"info","message":"Loaded saved sessions from disk","sessionCount":1,"timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Found saved sessions to restore","sessionCount":1,"sessionIds":["session_2_17549327501788_f3babc5d"],"timestamp":"2025-08-11 18:35:53"}
+{"count":22,"level":"info","message":"Found authentication directories","sessions":["session_10","session_10","session_10","session_10","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2"],"timestamp":"2025-08-11 18:35:53"}
+{"level":"warn","message":"Skipping invalid session during restoration","reason":"Failed integrity validation","sessionId":"session_2_17549327501788_f3babc5d","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Session restoration completed","restoredCount":0,"restoredSessions":[],"timestamp":"2025-08-11 18:35:53","totalFound":1}
+{"count":22,"level":"info","message":"Found authentication directories","sessions":["session_10","session_10","session_10","session_10","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2","session_2"],"timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_10_17549183791906_9e5fad26","sessionId":"session_10","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_10_17549184043619_fdd8f7bb","sessionId":"session_10","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_10_17549184293729_eccf120a","sessionId":"session_10","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_10_17549187023276_604e07ab","sessionId":"session_10","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17548463623152_7c7a850f","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17548469629163_a55c33af","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549132033576_92d0ec37","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549176246013_b7044570","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549190021030_ba8b80b0","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549190688279_ec3bcba4","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549190859370_74ab20fd","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549191320449_915b1844","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549204371982_2efa29ab","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549205276712_3b692247","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549207039082_94f807ac","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549214668602_126ad1df","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549216859083_f7408421","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549231758754_13d370da","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549232644334_274689b1","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549255039063_742cf660","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549262761036_c5b3b88d","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"Cleaned orphaned auth directory","path":"/home/douglas/Documents/AfrikSolutions/Projects/web-whatsapp/nodejs/whatsapp-bridge/.wwebjs_auth/session-session_2_17549327501788_f3babc5d","sessionId":"session_2","timestamp":"2025-08-11 18:35:53"}
+{"cleanedCount":22,"level":"info","message":"Cleanup completed","orphanedFound":22,"timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"✅ Session restoration completed","restoredCount":0,"sessions":[],"timestamp":"2025-08-11 18:35:53","totalFound":1}
+{"level":"info","message":"🎉 All services initialized successfully","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"============================================================","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🎉 WhatsApp Bridge Server is fully ready!","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"📋 API Documentation: http://localhost:3000","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🔍 Health Check: http://localhost:3000/health","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"📱 Sessions API: http://localhost:3000/api/sessions","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"🌉 Bridge API: http://localhost:3000/api/bridge","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"📊 Environment: development","timestamp":"2025-08-11 18:35:53"}
+{"level":"info","message":"============================================================","timestamp":"2025-08-11 18:35:53"}
+{"ip":"127.0.0.1","level":"warn","message":"Admin action: Session cleanup requested","timestamp":"2025-08-11 18:36:04","userAgent":"curl/7.81.0"}
+{"count":0,"level":"info","message":"Found authentication directories","sessions":[],"timestamp":"2025-08-11 18:36:04"}
+{"level":"info","message":"No orphaned auth directories found","timestamp":"2025-08-11 18:36:04"}
+{"activeSessionsCount":0,"cleanupResult":{"cleanedCount":0,"success":true},"level":"warn","message":"Admin action: Session cleanup completed","timestamp":"2025-08-11 18:36:04"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:17:36:04 +0000] \"POST /api/admin/cleanup-sessions HTTP/1.1\" 200 214 \"-\" \"curl/7.81.0\"","timestamp":"2025-08-11 18:36:04"}
+{"count":0,"level":"info","message":"[API] Sessions list requested","timestamp":"2025-08-11 18:36:56"}
+{"level":"info","message":"[API] 127.0.0.1 - - [11/Aug/2025:17:36:56 +0000] \"GET /api/sessions HTTP/1.1\" 200 40 \"-\" \"curl/7.81.0\"","timestamp":"2025-08-11 18:36:56"}

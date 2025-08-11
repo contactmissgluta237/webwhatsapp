@@ -1,0 +1,1255 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Documentation",
+        "description": "Documentation de l'API",
+        "contact": {
+            "email": "contact@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Authentification utilisateur",
+                "description": "Authentifie un utilisateur et génère un token d'accès API",
+                "operationId": "api.login",
+                "requestBody": {
+                    "description": "Informations d'authentification",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentification réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/customers/{customerId}": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Récupérer un client spécifique",
+                "description": "Récupérer les informations d'un client spécifique par son ID avec ses adresses de livraison.",
+                "operationId": "api.customers.show",
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "in": "path",
+                        "description": "ID du client à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomerResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/customers": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Récupérer tous les clients",
+                "description": "Récupérer la liste de tous les clients avec leurs informations utilisateur et adresses de livraison.",
+                "operationId": "api.customers.index",
+                "responses": {
+                    "200": {
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CustomersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/customers/{customer}/delivery-addresses": {
+            "post": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Créer une nouvelle adresse de livraison pour un client",
+                "description": "Permet de créer une nouvelle adresse de livraison associée à un client spécifique.",
+                "operationId": "api.customers.delivery-addresses.store",
+                "parameters": [
+                    {
+                        "name": "customer",
+                        "in": "path",
+                        "description": "ID du client",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Données de l'adresse de livraison à créer",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreCustomerDeliveryAddressRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Adresse de livraison créée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StoreCustomerDeliveryAddressResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/delivery-types": {
+            "get": {
+                "tags": [
+                    "Livraison"
+                ],
+                "summary": "Récupérer tous les types de livraison",
+                "description": "Récupérer la liste de tous les types de livraison disponibles.",
+                "operationId": "api.delivery-types.index",
+                "responses": {
+                    "200": {
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeliveryTypesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payment-methods": {
+            "get": {
+                "tags": [
+                    "Paiement"
+                ],
+                "summary": "Récupérer toutes les méthodes de paiement",
+                "description": "Récupérer la liste de toutes les méthodes de paiement disponibles.",
+                "operationId": "api.payment-methods.index",
+                "responses": {
+                    "200": {
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaymentMethodsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/distribution-centers/{id}/products": {
+            "get": {
+                "tags": [
+                    "Produits d'un centre de distribution"
+                ],
+                "summary": "Récupérer les produits d'un centre de distribution",
+                "description": "Récupère la liste de tous les produits disponibles dans un centre de distribution spécifique, avec leurs détails et quantités en stock.",
+                "operationId": "api.distribution-centers.products",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du centre de distribution",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des produits récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DistributionCenterProductsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Centre de distribution non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/distribution-centers": {
+            "get": {
+                "tags": [
+                    "Centres de Distribution"
+                ],
+                "summary": "Récupérer tous les centres de distribution",
+                "description": "Récupérer la liste de tous les centres de distribution.",
+                "operationId": "api.distribution-centers.index",
+                "responses": {
+                    "200": {
+                        "description": "Liste récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DistributionCentersResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "LoginRequest": {
+                "required": [
+                    "login",
+                    "password"
+                ],
+                "properties": {
+                    "login": {
+                        "description": "Email ou téléphone de l'utilisateur (+237690000000)",
+                        "type": "string",
+                        "example": "admin@petrolex.com"
+                    },
+                    "password": {
+                        "description": "Mot de passe",
+                        "type": "string",
+                        "format": "password",
+                        "example": "password"
+                    }
+                },
+                "type": "object"
+            },
+            "TokenData": {
+                "properties": {
+                    "access_token": {
+                        "description": "Token d'accès Bearer",
+                        "type": "string",
+                        "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                    },
+                    "token_type": {
+                        "description": "Type de token",
+                        "type": "string",
+                        "example": "bearer"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthData": {
+                "description": "Objet de transfert de données contenant le token et les informations de l'utilisateur authentifié",
+                "properties": {
+                    "token": {
+                        "$ref": "#/components/schemas/TokenData"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/CustomerData"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/AuthData"
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Authentification réussie"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "CustomerResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/CustomerData"
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Client récupéré avec succès"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "DeliveryAddress": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "label": {
+                        "type": "string",
+                        "example": "Maison principale"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Rue Principale"
+                    },
+                    "neighborhood": {
+                        "type": "string",
+                        "example": "Bonapriso"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Douala"
+                    },
+                    "country": {
+                        "type": "string",
+                        "example": "Cameroun"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.0511
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9.7679
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+237612345678"
+                    },
+                    "contact_name": {
+                        "type": "string",
+                        "example": "Jean Dupont"
+                    },
+                    "is_default": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "UserData": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "example": "Jean"
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "example": "Dupont"
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "example": "Jean Dupont"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "jean.dupont@example.com"
+                    },
+                    "phone_number": {
+                        "type": "string",
+                        "example": "+237612345678"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Rue Principale, Douala"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "customer"
+                        }
+                    },
+                    "email_verified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z",
+                        "nullable": true
+                    },
+                    "phone_verified_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z",
+                        "nullable": true
+                    },
+                    "last_login_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerData": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/UserData"
+                    },
+                    {
+                        "properties": {
+                            "deliveryAddresses": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/DeliveryAddress"
+                                }
+                            },
+                            "current_balance": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 15000.5,
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "CustomersResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CustomerData"
+                                }
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Liste des clients récupérée avec succès"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "StoreCustomerDeliveryAddressRequest": {
+                "required": [
+                    "label",
+                    "address"
+                ],
+                "properties": {
+                    "label": {
+                        "description": "Label for the delivery address",
+                        "type": "string",
+                        "example": "Maison secondaire"
+                    },
+                    "address": {
+                        "description": "Full street address",
+                        "type": "string",
+                        "example": "456 Avenue de la Liberté"
+                    },
+                    "neighborhood": {
+                        "description": "Neighborhood or district",
+                        "type": "string",
+                        "example": "Bali",
+                        "nullable": true
+                    },
+                    "city": {
+                        "description": "City",
+                        "type": "string",
+                        "example": "Yaoundé",
+                        "nullable": true
+                    },
+                    "country": {
+                        "description": "Country",
+                        "type": "string",
+                        "example": "Cameroun",
+                        "nullable": true
+                    },
+                    "latitude": {
+                        "description": "Latitude coordinate",
+                        "type": "number",
+                        "format": "float",
+                        "example": 3.848,
+                        "nullable": true
+                    },
+                    "longitude": {
+                        "description": "Longitude coordinate",
+                        "type": "number",
+                        "format": "float",
+                        "example": 11.502,
+                        "nullable": true
+                    },
+                    "phone": {
+                        "description": "Contact phone number",
+                        "type": "string",
+                        "example": "+237699887766",
+                        "nullable": true
+                    },
+                    "contact_firstname": {
+                        "description": "Contact person's first name",
+                        "type": "string",
+                        "example": "Marie",
+                        "nullable": true
+                    },
+                    "contact_lastname": {
+                        "description": "Contact person's last name",
+                        "type": "string",
+                        "example": "Curie",
+                        "nullable": true
+                    },
+                    "email": {
+                        "description": "Contact person's email address",
+                        "type": "string",
+                        "format": "email",
+                        "example": "marie.curie@example.com",
+                        "nullable": true
+                    },
+                    "address_precision": {
+                        "description": "Additional details for address precision",
+                        "type": "string",
+                        "example": "Bâtiment C, 3ème étage",
+                        "nullable": true
+                    },
+                    "is_default": {
+                        "description": "Whether this is the default delivery address for the customer",
+                        "type": "boolean",
+                        "example": false,
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "StoreCustomerDeliveryAddressResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "$ref": "#/components/schemas/DeliveryAddress"
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Adresse de livraison créée avec succès"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "DeliveryType": {
+                "title": "Delivery Type",
+                "description": "Represents a single delivery type",
+                "properties": {
+                    "value": {
+                        "description": "The unique identifier for the delivery type",
+                        "type": "string",
+                        "example": "standard"
+                    },
+                    "label": {
+                        "description": "The human-readable label for the delivery type",
+                        "type": "string",
+                        "example": "Standard"
+                    }
+                },
+                "type": "object"
+            },
+            "DeliveryTypesResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/DeliveryType"
+                                }
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Delivery types retrieved successfully."
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "PaymentMethod": {
+                "title": "Payment Method",
+                "description": "Represents a single payment method",
+                "properties": {
+                    "value": {
+                        "description": "The unique identifier for the payment method",
+                        "type": "string",
+                        "example": "credit_card"
+                    },
+                    "label": {
+                        "description": "The human-readable label for the payment method",
+                        "type": "string",
+                        "example": "Carte de Crédit"
+                    }
+                },
+                "type": "object"
+            },
+            "PaymentMethodsResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PaymentMethod"
+                                }
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Payment methods retrieved successfully."
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "DistributionCenterProductsResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Produits récupérés avec succès"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "DistributionCenterData": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Centre Principal"
+                    },
+                    "country": {
+                        "type": "string",
+                        "example": "Cameroun"
+                    },
+                    "city": {
+                        "type": "string",
+                        "example": "Douala"
+                    },
+                    "neighborhood": {
+                        "type": "string",
+                        "example": "Bonanjo"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Rue Principale, Douala"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Centre de distribution principal avec toutes les commodités"
+                    },
+                    "latitude": {
+                        "type": "string",
+                        "example": "4.05110000"
+                    },
+                    "longitude": {
+                        "type": "string",
+                        "example": "9.76790000"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+237612345678"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "centre.principal@genericsaas.com"
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "storage_capacity": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-07-04T14:47:11.000000Z"
+                    }
+                },
+                "type": "object"
+            },
+            "DistributionCentersResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/DistributionCenterData"
+                                }
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Liste des centres de distribution récupérée avec succès"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "ApiResponse": {
+                "description": "Réponse standard de l'API",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Opération réussie"
+                    },
+                    "data": {
+                        "description": "Données retournées par l'API",
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Une erreur est survenue."
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "ValidationErrorDetail": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "example": "Le champ email est requis."
+                }
+            },
+            "ValidationErrorResponse": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                        "properties": {
+                            "success": {
+                                "type": "boolean",
+                                "example": false
+                            },
+                            "message": {
+                                "type": "string",
+                                "example": "Erreur de validation."
+                            },
+                            "data": {
+                                "description": "Détail des erreurs de validation",
+                                "properties": {
+                                    "field_name": {
+                                        "$ref": "#/components/schemas/ValidationErrorDetail"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "CommonProductProperties": {
+                "properties": {
+                    "id": {
+                        "description": "ID de la catégorie de produit",
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "type": {
+                        "description": "Type de produit",
+                        "type": "string",
+                        "enum": [
+                            "bottle",
+                            "accessory"
+                        ],
+                        "example": "bottle"
+                    },
+                    "name": {
+                        "description": "Nom du produit",
+                        "type": "string",
+                        "example": "Bouteille de 6Kg"
+                    },
+                    "description": {
+                        "description": "Description du produit",
+                        "type": "string",
+                        "example": "Une bouteille de gaz de 6 kilogrammes."
+                    },
+                    "quantity": {
+                        "description": "Quantité en stock",
+                        "type": "integer",
+                        "example": 40
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "type": "object",
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/CommonProductProperties"
+                    },
+                    {
+                        "oneOf": [
+                            {
+                                "$ref": "#/components/schemas/BottleProduct"
+                            },
+                            {
+                                "$ref": "#/components/schemas/AccessoryProduct"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "BottleProduct": {
+                "properties": {
+                    "capacity": {
+                        "description": "Capacité de la bouteille en litres",
+                        "type": "number",
+                        "format": "float",
+                        "example": 6
+                    },
+                    "height": {
+                        "description": "Hauteur de la bouteille en cm",
+                        "type": "number",
+                        "format": "float",
+                        "example": 45.5
+                    },
+                    "weight": {
+                        "description": "Poids de la bouteille vide en kg",
+                        "type": "number",
+                        "format": "float",
+                        "example": 5.2
+                    },
+                    "radius": {
+                        "description": "Rayon de la bouteille en cm",
+                        "type": "number",
+                        "format": "float",
+                        "example": 15.2
+                    },
+                    "content_price": {
+                        "description": "Prix du gaz seul",
+                        "type": "number",
+                        "format": "float",
+                        "example": 6500
+                    },
+                    "bottle_with_content_price": {
+                        "description": "Prix de la consigne (bouteille + gaz)",
+                        "type": "number",
+                        "format": "float",
+                        "example": 18500
+                    }
+                },
+                "type": "object"
+            },
+            "AccessoryProduct": {
+                "properties": {
+                    "price": {
+                        "description": "Prix de l'accessoire",
+                        "type": "number",
+                        "format": "float",
+                        "example": 2500
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Clients",
+            "description": "Clients"
+        },
+        {
+            "name": "Livraison",
+            "description": "Livraison"
+        },
+        {
+            "name": "Paiement",
+            "description": "Paiement"
+        },
+        {
+            "name": "Produits d'un centre de distribution",
+            "description": "Produits d'un centre de distribution"
+        },
+        {
+            "name": "Centres de Distribution",
+            "description": "Centres de Distribution"
+        }
+    ]
+}

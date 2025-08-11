@@ -1,0 +1,279 @@
+/* Variables de couleurs */
+:root {
+    --primary-color: #227093;
+    --secondary-color: #c9a505;  /* Un jaune plus foncé */
+    --font-family: 'Poppins', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-family);
+}
+
+.custom-page {
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Pour s'assurer que tous les éléments héritent de la police */
+*,
+*::before,
+*::after {
+    font-family: var(--font-family);
+}
+
+/* Composants de base */
+.login {
+    height: 100%;
+}
+
+.row.bg-white {
+    height: 100%;
+}
+
+/* Logo */
+.header-logo {
+    display: none;
+}
+
+.header-logo img {
+    height: 7rem; /* Augmenté de 5rem à 7rem */
+    width: auto;
+    object-fit: contain;
+}
+
+/* Supprimer les anciens styles du logo flottant */
+.floating-logo {
+    display: none;
+}
+
+/* Nouveau style pour le logo flottant - position plus responsive */
+/* Supprimé */
+
+/* Formulaire */
+.card-sigin {
+    margin-top: -1rem;
+}
+
+.main-signup-header h3 {
+    margin-bottom: 1rem;
+    font-size: 1.75rem;
+}
+
+.main-signup-header h6 {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Password field */
+.password-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #000 !important; /* Changé en noir */
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem; /* Augmentation de la taille de l'icône */
+    opacity: 0.7; /* Ajout d'une légère transparence */
+}
+
+.password-toggle:hover {
+    opacity: 1; /* Opacité complète au survol */
+}
+
+/* Remember me & Forgot password */
+.remember-forgot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Checkbox personnalisée */
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: none !important;
+}
+
+/* Suppression des outlines et shadows sur les éléments de formulaire */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.btn:focus,
+.btn-close:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--primary-color) !important;
+}
+
+.form-check-input:checked {
+    border-color: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+}
+
+.form-check-input:focus {
+    box-shadow: none !important;
+    border-color: #dee2e6;
+}
+
+/* Bouton */
+.btn-epena {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.btn-epena:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Textes */
+.text-muted-custom {
+    color: #a09e9e !important;
+}
+
+.epena-red {
+    color: var(--primary-color) !important;
+    text-decoration: underline !important;
+    font-weight: 500 !important;
+}
+
+/* Nouvelle structure pour l'image statique */
+.login-container {
+    padding: 3rem;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Effet de feuilles superposées */
+.login-container:before,
+.login-container:after {
+    content: '';
+    background-color: #fff;
+    height: 100%;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    transition: all 0.3s ease;
+}
+
+.login-container:before {
+    transform: rotate(-3deg);
+}
+
+.login-container:after {
+    transform: rotate(3deg);
+}
+
+/* Animation au survol (optionnel) */
+.login-container:hover:before {
+    transform: rotate(-4deg);
+}
+
+.login-container:hover:after {
+    transform: rotate(4deg);
+}
+
+.login-header {
+    display: none;
+}
+
+.header-text {
+    display: none;
+}
+
+.header-text p {
+    margin: 0;
+}
+
+.login-form-section {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Style pour le texte de bienvenue - taille réduite */
+.welcome-text {
+    font-size: 0.85rem; /* Réduit de 0.95rem à 0.85rem */
+    line-height: 1.8;
+    color: #666;
+    margin: 1.5rem 0;
+    font-weight: 300; /* Ajout d'une police plus légère */
+}
+
+/* Enlever les styles non utilisés */
+.login-image,
+.slide-container,
+.slide-image,
+.slide-text {
+    display: none;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-secondary {
+    color: var(--secondary-color) !important;
+}
+
+/* Nouveau style pour le header de bienvenue */
+.welcome-header {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-right: 80px; /* Espace pour le logo */
+}
+
+.logo-badge {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.5rem;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    background: white;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-logo {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}

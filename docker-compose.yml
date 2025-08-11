@@ -1,0 +1,186 @@
+# Supprimez la ligne version: '3.8' (obsolète)
+
+services:
+  app:
+    build: ./docker/php
+    container_name: genericsaas_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./docker/scripts/laravel-init.sh:/laravel-init.sh
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CACHE_DRIVER=${CACHE_DRIVER}
+      - SESSION_DRIVER=${SESSION_DRIVER}
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION}
+    depends_on:
+      - mysql
+      - redis
+    command: >
+      sh -c "
+        chmod +x /laravel-init.sh &&
+        /laravel-init.sh &&
+        php-fpm
+      "
+    networks:
+      - genericsaas_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: genericsaas_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT}:80"
+    volumes:
+      - .:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - genericsaas_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: genericsaas_mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT}:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - genericsaas_mysql_data:/var/lib/mysql
+    networks:
+      - genericsaas_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: genericsaas_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - genericsaas_redis_data:/data
+    networks:
+      - genericsaas_network
+
+  queue:
+    build: ./docker/php
+    container_name: genericsaas_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CACHE_DRIVER=${CACHE_DRIVER}
+      - SESSION_DRIVER=${SESSION_DRIVER}
+      - QUEUE_CONNECTION=${QUEUE_CONNECTION}
+    depends_on:
+      - mysql
+      - redis
+      - app
+    command: >
+      sh -c "
+        while ! nc -z mysql 3306; do sleep 1; done &&
+        while ! nc -z redis 6379; do sleep 1; done &&
+        sleep 5 &&
+        php artisan queue:work --sleep=3 --rest=1 --max-time=3600
+      "
+    networks:
+      - genericsaas_network
+  
+  mailpit:
+    image: axllent/mailpit
+    container_name: genericsaas_mailpit
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_PORT}:8025"
+      - "${MAILPIT_SMTP_PORT}:1025"
+    networks:
+      - genericsaas_network
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: genericsaas_selenium
+    restart: unless-stopped
+    ports:
+      - "${SELENIUM_PORT}:4444"
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - genericsaas_network
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: genericsaas_ollama
+    restart: unless-stopped
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - genericsaas_ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - genericsaas_network
+
+  ollama-setup:
+    image: curlimages/curl:latest
+    container_name: genericsaas_ollama_setup
+    restart: "no"
+    depends_on:
+      - ollama
+    volumes:
+      - ./docker/scripts/ollama-setup.sh:/ollama-setup.sh:ro
+    command: sh /ollama-setup.sh
+    networks:
+      - genericsaas_network
+  
+  whatsapp-bridge:
+    build: ./docker/whatsapp-bridge
+    container_name: genericsaas_whatsapp_bridge
+    restart: unless-stopped
+    ports:
+      - "${WHATSAPP_BRIDGE_PORT:-3000}:3000"
+    volumes:
+      - genericsaas_whatsapp_sessions:/app/sessions
+      - ./logs:/app/logs
+    environment:
+      - LARAVEL_API_URL=http://app:9000
+      - LARAVEL_API_TOKEN=${WHATSAPP_API_TOKEN}
+      - OLLAMA_URL=http://ollama:11434
+      - NODE_ENV=development
+      - DEBUG=express:*,morgan
+      - PORT=3000
+    depends_on:
+      - app
+      - redis
+      - ollama
+    networks:
+      - genericsaas_network
+  
+volumes:
+  genericsaas_mysql_data:
+  genericsaas_redis_data:
+  genericsaas_whatsapp_sessions:
+  genericsaas_whatsapp_logs:
+  genericsaas_ollama_data:
+
+networks:
+  genericsaas_network:
+    driver: bridge

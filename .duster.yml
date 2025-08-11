@@ -1,0 +1,18 @@
+duster:
+  config:
+    excludes:
+      - vendor
+      - node_modules
+  php-cs-fixer:
+    enabled: true
+    paths:
+      - app
+      - config
+      - routes
+      - tests
+  pint:
+    enabled: true
+  phpstan:
+    enabled: true
+    bin: ./vendor/bin/phpstan
+    configPath: phpstan.neon

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer une Commande - Test API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/test-products/assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container-fluid">
+        <h1 class="my-4">Créer une nouvelle commande</h1>
+
+        <div class="card">
+            <div class="card-body">
+                <form id="order-form">
+                    <div class="row">
+                        <!-- Customer and Distribution Center -->
+                        <div class="col-md-6 mb-3">
+                            <label for="customer" class="form-label">Client</label>
+                            <select class="form-select" id="customer" data-placeholder="Rechercher un client">
+                                <option value="">Sélectionnez un client</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="distribution_center" class="form-label">Centre de distribution</label>
+                            <select class="form-select" id="distribution_center">
+                                <option value="">Sélectionnez un centre de distribution</option>
+                            </select>
+                        </div>
+
+                        <!-- Address and Payment Method -->
+                        <div class="col-md-4 mb-3">
+                            <label for="customer_address" class="form-label">Adresse du client</label>
+                            <select class="form-select" id="customer_address" data-placeholder="Rechercher une adresse">
+                                <option value="">Sélectionnez une adresse</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-success w-100" id="addAddressBtn" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                <i class="bi bi-plus"></i> Ajouter
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="payment_method" class="form-label">Mode de paiement</label>
+                            <select class="form-select" id="payment_method">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                        </div>
+
+                        <!-- Delivery Type -->
+                        <div class="col-md-6 mb-3">
+                            <label for="delivery_type" class="form-label">Type de livraison</label>
+                            <select class="form-select" id="delivery_type">
+                                <option value="">Sélectionnez le type de livraison</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Products Section -->
+                    <div class="mt-4">
+                        <h5 class="mb-3">Produits</h5>
+                        <div class="row mb-3 align-items-end">
+                            <div class="col-md-3">
+                                <label for="selectedProduct" class="form-label">Nom du produit</label>
+                                <select class="form-select" id="selectedProduct" disabled>
+                                    <option value="">Sélectionner un produit</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="productStock" class="form-label">En stock</label>
+                                <input type="text" class="form-control" id="productStock" disabled>
+                            </div>
+                            <div class="col-md-3" id="product-option-container" style="display: none;">
+                                <label for="selectedOption" class="form-label">Option</label>
+                                <select class="form-select" id="selectedOption">
+                                    <option value="">Sélectionner une option</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="productQuantity" class="form-label">Quantité</label>
+                                <input type="number" class="form-control" id="productQuantity" value="1" min="1">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" id="addProductBtn" class="btn btn-success w-100">
+                                    <i class="bi bi-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart -->
+                    <div id="cart-container" class="mt-4">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Option</th>
+                                        <th>Prix Unitaire</th>
+                                        <th>Quantité</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-items">
+                                    <!-- Cart items will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="cart-empty-msg" class="alert alert-info">
+                            Aucun produit n'a été ajouté dans le panier.
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="col-12">
+                        <div class="mt-4 d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-light">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/test-products/assets/js/api.js"></script>
+    <script src="/test-products/assets/js/cart.js"></script>
+    <script src="/test-products/assets/js/customer-handler.js"></script>
+    <script src="/test-products/assets/js/product-handler.js"></script>
+    <script src="/test-products/assets/js/address-modal-handler.js"></script>
+    <script src="/test-products/assets/js/order.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Add Address Modal -->
+    <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAddressModalLabel">Ajouter une nouvelle adresse de livraison</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-address-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="address_label" class="form-label">Libellé <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="address_label" name="label" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_address" class="form-label">Adresse <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="address_address" name="address" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_neighborhood" class="form-label">Quartier</label>
+                                <input type="text" class="form-control" id="address_neighborhood" name="neighborhood">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_city" class="form-label">Ville</label>
+                                <input type="text" class="form-control" id="address_city" name="city">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_country" class="form-label">Pays</label>
+                                <input type="text" class="form-control" id="address_country" name="country">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_phone" class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" id="address_phone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_contact_firstname" class="form-label">Prénom du contact</label>
+                                <input type="text" class="form-control" id="address_contact_firstname" name="contact_firstname">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_contact_lastname" class="form-label">Nom du contact</label>
+                                <input type="text" class="form-control" id="address_contact_lastname" name="contact_lastname">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="address_email" class="form-label">Email du contact</label>
+                                <input type="email" class="form-control" id="address_email" name="email">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="address_precision" class="form-label">Précision d'adresse</label>
+                                <textarea class="form-control" id="address_precision" name="address_precision" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="address_is_default" name="is_default">
+                                <label class="form-check-label" for="address_is_default">Définir comme adresse par défaut</label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary" id="saveAddressBtn">
+                                <span id="addressLoader" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                                Créer l'adresse
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

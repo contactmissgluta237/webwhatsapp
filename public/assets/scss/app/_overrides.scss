@@ -1,0 +1,19 @@
+.card {
+border-radius: 10px;
+}
+
+.app-datatable-default .dataTables_wrapper .dataTables_paginate .paginate_button.previous {
+    color:var(--dark) !important;
+}
+
+.app-datatable-default .dataTables_wrapper .dataTables_paginate .paginate_button.previous:hover {
+    color:var(--primary) !important;
+}
+
+.app-form .form-select, .app-form .form-control {
+    color:var(--dark) !important;
+}
+
+.btn-group.dropdown-icon-none button {
+    background-color: rgba(var(--primary-dark), 0.0);
+}

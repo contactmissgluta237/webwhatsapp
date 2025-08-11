@@ -1,0 +1,185 @@
+:root,
+.default,
+body,
+html {
+    --primary: 0, 137, 183 !important;
+}
+
+.btn-primary,
+.bg-primary,
+[class*="btn-primary"],
+[class*="bg-primary"] {
+    background-color: rgb(var(--primary)) !important;
+    border-color: rgb(var(--primary)) !important;
+}
+
+.text-primary,
+[class*="text-primary"] {
+    color: rgb(var(--primary)) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: rgba(var(--primary), 0.85) !important;
+    border-color: rgba(var(--primary), 0.85) !important;
+}
+
+.form-check-input:checked {
+    background-color: rgb(var(--primary)) !important;
+    border-color: rgb(var(--primary)) !important;
+}
+
+.link-primary {
+    color: rgb(var(--primary)) !important;
+}
+
+.border-primary {
+    border-color: rgb(var(--primary)) !important;
+}
+
+nav .app-logo .logo img {
+    width: 65px !important;
+}
+.semi-nav .app-logo .logo img {
+    width: 35px !important;
+}
+
+.app-logo {
+    display: flex;
+    justify-content: center;
+}
+
+/* Global Form Styles */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.btn:focus,
+.btn-close:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: rgb(var(--primary)) !important;
+}
+
+.form-check-input:checked {
+    border-color: rgb(var(--primary)) !important;
+    background-color: rgb(var(--primary)) !important;
+}
+
+/* Style pour l'icône de test-dashboard */
+.side-menu__icon {
+    fill: currentColor;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+/* Les éléments du menu en rouge utilisent la couleur primary */
+.main-nav li.no-sub a[style*="color: rgb(var(--primary))"] {
+    &:hover {
+        color: rgba(var(--primary), 0.8) !important;
+    }
+}
+
+/* Style pour les menus actifs */
+.main-nav li a.active,
+.main-nav li a.active i,
+.main-nav li a.active svg,
+.main-nav li a.active span {
+    color: rgb(var(--primary)) !important;
+    fill: rgb(var(--primary)) !important;
+}
+
+.main-nav li a.active:hover {
+    color: rgba(var(--primary), 0.8) !important;
+}
+
+/* Pour les sous-menus actifs */
+.main-nav li ul li a.active {
+    color: rgb(var(--primary)) !important;
+}
+.card-border {
+    border: solid 2px white !important;
+}
+
+td a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(var(--primary), 0.5);
+
+    &:hover {
+        text-decoration-color: rgba(var(--primary), 1);
+    }
+}
+
+header.header-main .container-fluid .header-left .header-toggle {
+    background-color: white !important;
+}
+
+/* Form control overrides */
+.form-control {
+    border-color: var(--bs-dark) !important;
+
+    &::placeholder {
+        color: var(--bs-dark) !important;
+        opacity: 0.65;
+    }
+
+    &:focus {
+        border-color: var(--bs-dark) !important;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.25) !important;
+    }
+}
+
+/* Select overrides */
+.form-select {
+    border-color: var(--bs-dark) !important;
+
+    &:focus {
+        border-color: var(--bs-dark) !important;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.25) !important;
+    }
+
+    /* Ajout du style pour le placeholder du select */
+    option:first-child {
+        color: var(--bs-dark) !important;
+        opacity: 0.65;
+    }
+
+    /* Style pour l'option sélectionnée par défaut */
+    &:required:invalid {
+        color: var(--bs-dark) !important;
+        opacity: 0.65;
+    }
+}
+
+/* Input group text override */
+.input-group-text {
+    border-color: var(--bs-dark) !important;
+    color: var(--bs-dark) !important;
+}
+.app-form .form-select.is-invalid,
+.app-form .form-control.is-invalid {
+    border-color: rgba(var(--danger), 1) !important;
+}
+
+/* Form floating labels */
+.form-floating {
+    label {
+        color: var(--bs-dark) !important;
+    }
+
+    > .form-control:focus ~ label,
+    > .form-control:not(:placeholder-shown) ~ label {
+        color: var(--bs-dark) !important;
+        opacity: 0.65;
+    }
+}
+
+.required::after {
+    content: " *";
+    color: red;
+}

@@ -1,0 +1,33 @@
+/* Force l'affichage des éléments de pagination */
+.row .col-12.col-md-6.overflow-auto .pagination,
+.row .col-12.col-md-6.overflow-auto nav.semi-nav,
+.table-responsive + .row .pagination,
+.livewire-datatable .pagination,
+.overflow-auto nav {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+/* S'assurer que le conteneur de la pagination est correctement configuré */
+.row .col-12.col-md-6.overflow-auto,
+.row .mt-3 .col-12.col-md-6.overflow-auto {
+    overflow: visible !important;
+    max-height: none !important;
+    display: block !important;
+    position: relative !important;
+}
+
+/* Assurer que les items de pagination sont visibles */
+.pagination .page-item {
+    display: inline-block !important;
+}
+
+/* Correction pour les tables responsive */
+.table-responsive {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+}
