@@ -99,7 +99,7 @@
                                     </button>
                                 @else
                                     <p class="text-muted">{{ __('Les conversations apparaîtront ici une fois que vous recevrez des messages') }}</p>
-                                    <a href="{{ route('whatsapp.dashboard') }}" class="btn btn-primary">
+                                    <a href="{{ route('whatsapp.dashboard') }}" class="btn btn-whatsapp">
                                         <i class="la la-whatsapp"></i> {{ __('Gérer mes comptes WhatsApp') }}
                                     </a>
                                 @endif
@@ -143,7 +143,7 @@
                         <button type="button" class="btn btn-secondary" wire:click="$set('selectedConversation', null)">
                             {{ __('Fermer') }}
                         </button>
-                        <a href="{{ route('whatsapp.conversation', $selectedConversation) }}" class="btn btn-primary">
+                        <a href="{{ route('whatsapp.conversation', $selectedConversation) }}" class="btn btn-whatsapp">
                             <i class="la la-external-link"></i> {{ __('Ouvrir la conversation') }}
                         </a>
                     </div>

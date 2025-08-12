@@ -7,7 +7,7 @@
                 <h1 class="display-1 fw-bold text-primary">405</h1>
                 <h2 class="display-4 fw-bold">Méthode non autorisée</h2>
                 <p class="lead">Désolé, la méthode HTTP utilisée n'est pas autorisée pour cette ressource.</p>
-                <a href="{{ url('/') }}" class="btn btn-primary mt-4">Retour à l'accueil</a>
+                <a href="{{ url('/') }}" class="btn btn-whatsapp mt-4">Retour à l'accueil</a>
             </div>
         </div>
     </div>

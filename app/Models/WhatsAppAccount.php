@@ -26,11 +26,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $qr_code
  * @property Carbon|null $last_seen_at
  * @property array|null $session_data
- * @property bool $ai_agent_enabled
+ * @property string|null $agent_name
+ * @property bool $agent_enabled
  * @property int|null $ai_model_id
- * @property string|null $ai_prompt
- * @property string|null $ai_trigger_words
- * @property string|null $ai_response_time
+ * @property string $response_time
+ * @property string|null $agent_prompt
+ * @property array|null $trigger_words
+ * @property Carbon|null $last_ai_response_at
+ * @property int $daily_ai_responses
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
@@ -63,9 +66,11 @@ final class WhatsAppAccount extends Model
         'agent_name',
         'agent_enabled',
         'ai_model_id',
+        'response_time',
         'agent_prompt',
         'trigger_words',
-        'response_time',
+        'last_ai_response_at',
+        'daily_ai_responses',
     ];
 
     /**
@@ -79,6 +84,8 @@ final class WhatsAppAccount extends Model
         'session_data' => 'array',
         'agent_enabled' => 'boolean',
         'trigger_words' => 'array',
+        'last_ai_response_at' => 'datetime',
+        'daily_ai_responses' => 'integer',
     ];
 
     // ================================================================================
@@ -184,6 +191,24 @@ final class WhatsAppAccount extends Model
         return $this->aiModel;
     }
 
+    public function getEffectiveAiModelId(): ?int
+    {
+        if ($this->ai_model_id) {
+            return $this->ai_model_id;
+        }
+
+        $defaultModel = AiModel::where('is_default', true)->where('is_active', true)->first()
+            ?? AiModel::where('is_active', true)->first();
+
+        return $defaultModel?->id;
+    }
+
+    public function getEffectiveAiModel(): ?AiModel
+    {
+        $modelId = $this->getEffectiveAiModelId();
+        return $modelId ? AiModel::find($modelId) : null;
+    }
+
     public function enableAiAgent(int $aiModelId, ?string $prompt = null, ?string $triggerWords = null, ?string $responseTime = null): void
     {
         $this->update([
@@ -191,7 +216,7 @@ final class WhatsAppAccount extends Model
             'ai_model_id' => $aiModelId,
             'agent_prompt' => $prompt,
             'trigger_words' => $triggerWords,
-            'response_time' => $responseTime,
+            'response_time' => $responseTime ?? 'random',
         ]);
     }
 
@@ -206,13 +231,13 @@ final class WhatsAppAccount extends Model
     {
         $allowedFields = ['ai_model_id', 'agent_prompt', 'trigger_words', 'response_time'];
         $filteredConfig = array_intersect_key($config, array_flip($allowedFields));
-        
+
         $this->update($filteredConfig);
     }
 
     public function shouldTriggerAiResponse(string $message): bool
     {
-        if (!$this->hasAiAgent()) {
+        if (! $this->hasAiAgent()) {
             return false;
         }
 
@@ -220,8 +245,8 @@ final class WhatsAppAccount extends Model
             return true;
         }
 
-        $triggerWords = is_array($this->trigger_words) 
-            ? $this->trigger_words 
+        $triggerWords = is_array($this->trigger_words)
+            ? $this->trigger_words
             : array_map('trim', explode(',', strtolower($this->trigger_words)));
         $messageWords = str_word_count(strtolower($message), 1);
 

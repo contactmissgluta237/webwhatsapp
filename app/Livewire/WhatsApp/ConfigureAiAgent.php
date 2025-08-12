@@ -10,7 +10,6 @@ use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 final class ConfigureAiAgent extends Component
@@ -37,14 +36,14 @@ final class ConfigureAiAgent extends Component
         $this->availableModels = AiModel::getActiveModels();
 
         // Load current configuration
-        $this->ai_agent_enabled = (bool) $account->ai_agent_enabled;
+        $this->ai_agent_enabled = (bool) $account->agent_enabled;
         $this->ai_model_id = $account->ai_model_id;
-        $this->ai_prompt = $account->ai_prompt ?? '';
-        $this->ai_trigger_words = $account->ai_trigger_words ?? '';
-        $this->ai_response_time = $account->ai_response_time ?? 'random';
+        $this->ai_prompt = $account->agent_prompt ?? '';
+        $this->ai_trigger_words = $account->trigger_words ?? '';
+        $this->ai_response_time = $account->response_time ?? 'random';
 
         // Set default model if none selected
-        if (!$this->ai_model_id && $this->availableModels->isNotEmpty()) {
+        if (! $this->ai_model_id && $this->availableModels->isNotEmpty()) {
             /** @var AiModel $defaultModel */
             $defaultModel = $this->availableModels->where('is_default', true)->first()
                 ?? $this->availableModels->first();
@@ -54,7 +53,7 @@ final class ConfigureAiAgent extends Component
 
     protected function customRequest(): FormRequest
     {
-        return new ConfigureAiAgentRequest();
+        return new ConfigureAiAgentRequest;
     }
 
     public function rules(): array
@@ -70,7 +69,7 @@ final class ConfigureAiAgent extends Component
 
     public function updatedAiAgentEnabled(): void
     {
-        if (!$this->ai_agent_enabled) {
+        if (! $this->ai_agent_enabled) {
             $this->showSimulation = false;
         }
     }
@@ -93,20 +92,20 @@ final class ConfigureAiAgent extends Component
 
             $this->dispatch('ai-agent-configured', [
                 'type' => 'success',
-                'message' => 'Configuration de l\'agent AI sauvegardée avec succès !'
+                'message' => 'Configuration de l\'agent AI sauvegardée avec succès !',
             ]);
 
         } catch (\Exception $e) {
             $this->dispatch('ai-agent-configured', [
                 'type' => 'error',
-                'message' => 'Erreur lors de la sauvegarde : ' . $e->getMessage()
+                'message' => 'Erreur lors de la sauvegarde : '.$e->getMessage(),
             ]);
         }
     }
 
     public function toggleSimulation(): void
     {
-        $this->showSimulation = !$this->showSimulation;
+        $this->showSimulation = ! $this->showSimulation;
 
         if ($this->showSimulation) {
             $this->simulationMessage = '';
@@ -126,13 +125,14 @@ final class ConfigureAiAgent extends Component
             /** @var AiModel $selectedModel */
             $selectedModel = $this->availableModels->find($this->ai_model_id);
 
-            if (!$selectedModel) {
+            if (! $selectedModel) {
                 $this->simulationResponse = 'Erreur : Modèle non trouvé.';
+
                 return;
             }
 
             // Check if trigger words match
-            if (!empty($this->ai_trigger_words)) {
+            if (! empty($this->ai_trigger_words)) {
                 $triggerWords = array_map('trim', explode(',', strtolower($this->ai_trigger_words)));
                 $messageWords = str_word_count(strtolower($this->simulationMessage), 1);
                 $hasMatch = false;
@@ -144,8 +144,9 @@ final class ConfigureAiAgent extends Component
                     }
                 }
 
-                if (!$hasMatch) {
+                if (! $hasMatch) {
                     $this->simulationResponse = '⚠️ Message ignoré - Aucun mot déclencheur détecté.';
+
                     return;
                 }
             }
@@ -168,7 +169,7 @@ final class ConfigureAiAgent extends Component
                 $this->simulationResponse .= "Délai de réponse: {$responseTime->label} ({$responseTime->getRandomDelay()}s fixe)\n";
             }
 
-            $this->simulationResponse .= "Coût estimé: " . number_format($selectedModel->getEstimatedCostFor(150), 6) . " USD";
+            $this->simulationResponse .= 'Coût estimé: '.number_format($selectedModel->getEstimatedCostFor(150), 6).' USD';
 
         } finally {
             $this->isSimulating = false;

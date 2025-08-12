@@ -12,16 +12,14 @@
 @endpush
 
 @section('content')
-    <div class="content-header-left col-md-8 col-12 mb-2">
+    <div class="content-header-left col-md-6 col-12 mb-2">
+        <h3 class="content-header-title">Tableau de bord Client</h3>
         <div class="row breadcrumbs-top">
-            <div class="col-12">
-                <h2 class="content-header-title float-left mb-0">Dashboard Client</h2>
-                <div class="breadcrumb-wrapper col-12">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">Tableau de bord</a></li>
-                        <li class="breadcrumb-item active">Accueil</li>
-                    </ol>
-                </div>
+            <div class="breadcrumb-wrapper col-12">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active">Tableau de bord</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -53,45 +51,51 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title">Actions Rapides</h4>
-                    <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
-                </div>
+    <div class="row match-height">
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
                 <div class="card-content">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <a href="{{ route('customer.transactions.recharge') }}"
-                                    class="btn btn-success btn-block btn-round btn-glow mb-2">
-                                    <i class="la la-plus-circle mr-1"></i>
-                                    Nouvelle Recharge
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <a href="{{ route('customer.transactions.withdrawal') }}"
-                                    class="btn btn-warning btn-block btn-round btn-glow mb-2">
-                                    <i class="la la-minus-circle mr-1"></i>
-                                    Demander un Retrait
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <a href="{{ route('customer.transactions.index') }}"
-                                    class="btn btn-info btn-block btn-round btn-glow mb-2">
-                                    <i class="la la-list mr-1"></i>
-                                    Mes Transactions
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-sm-6 col-12">
-                                <a href="{{ route('customer.referrals.index') }}"
-                                    class="btn btn-primary btn-block btn-round btn-glow mb-2">
-                                    <i class="la la-users mr-1"></i>
-                                    Mes Filleuls
-                                </a>
-                            </div>
-                        </div>
+                    <div class="card-body text-center">
+                        <a href="{{ route('customer.transactions.recharge') }}" class="d-block text-decoration-none">
+                            <i class="la la-plus-circle font-large-2 mb-1 text-success"></i>
+                            <h6 class="text-dark">Nouvelle Recharge</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body text-center">
+                        <a href="{{ route('customer.transactions.withdrawal') }}" class="d-block text-decoration-none">
+                            <i class="la la-minus-circle font-large-2 mb-1 text-warning"></i>
+                            <h6 class="text-dark">Demander un Retrait</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body text-center">
+                        <a href="{{ route('customer.transactions.index') }}" class="d-block text-decoration-none">
+                            <i class="la la-list font-large-2 mb-1 text-info"></i>
+                            <h6 class="text-dark">Mes Transactions</h6>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body text-center">
+                        <a href="{{ route('customer.referrals.index') }}" class="d-block text-decoration-none">
+                            <i class="la la-users font-large-2 mb-1 text-primary"></i>
+                            <h6 class="text-dark">Mes Filleuls</h6>
+                        </a>
                     </div>
                 </div>
             </div>

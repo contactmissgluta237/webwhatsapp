@@ -1,0 +1,76 @@
+/* Custom WhatsApp Green */
+.bg-whatsapp {
+    background-color: #075E54 !important;
+}
+
+.btn-whatsapp {
+    color: #fff;
+    background-color: #075E54;
+    border-color: #075E54;
+}
+
+.btn-whatsapp:hover {
+    color: #fff;
+    background-color: #054A42;
+    border-color: #054A42;
+}
+
+.btn-whatsapp:focus,
+.btn-whatsapp.focus {
+    box-shadow: 0 0 0 0.2rem rgba(7, 94, 84, 0.5);
+}
+
+.btn-whatsapp.disabled,
+.btn-whatsapp:disabled {
+    color: #fff;
+    background-color: #075E54;
+    border-color: #075E54;
+}
+
+.btn-whatsapp:not(:disabled):not(.disabled):active,
+.btn-whatsapp:not(:disabled):not(.disabled).active,
+.show > .btn-whatsapp.dropdown-toggle {
+    color: #fff;
+    background-color: #054A42;
+    border-color: #054A42;
+}
+
+/* WhatsApp Alert Style */
+.alert-whatsapp {
+    color: #075E54; /* Dark green text */
+    background-color: #D4EDDA; /* Light green background */
+    border-color: #075E54; /* Dark green border */
+}
+
+/* WhatsApp Outline Button Style */
+.btn-outline-whatsapp {
+    color: #075E54;
+    border-color: #075E54;
+    background-color: transparent;
+    background-image: none;
+}
+
+.btn-outline-whatsapp:hover {
+    color: #fff;
+    background-color: #075E54;
+    border-color: #075E54;
+}
+
+.btn-outline-whatsapp:focus,
+.btn-outline-whatsapp.focus {
+    box-shadow: 0 0 0 0.2rem rgba(7, 94, 84, 0.5);
+}
+
+.btn-outline-whatsapp.disabled,
+.btn-outline-whatsapp:disabled {
+    color: #075E54;
+    background-color: transparent;
+}
+
+.btn-outline-whatsapp:not(:disabled):not(.disabled):active,
+.btn-outline-whatsapp:not(:disabled):not(.disabled).active,
+.show > .btn-outline-whatsapp.dropdown-toggle {
+    color: #fff;
+    background-color: #075E54;
+    border-color: #075E54;
+}

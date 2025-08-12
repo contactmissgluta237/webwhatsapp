@@ -79,7 +79,7 @@
         @endif
 
         <div class="d-flex justify-content-end mt-4">
-            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+            <button type="submit" class="btn btn-whatsapp" wire:loading.attr="disabled">
                 <span wire:loading.remove>Initier le retrait</span>
                 <span wire:loading>Chargement...</span>
             </button>

@@ -87,7 +87,7 @@ Total : 3 semaines pour feature complète
 
 
 
-🎯 RÉSUMÉ DE LA TÂCHE PRINCIPALE - PROJET GENERIC SAAS
+🎯 RÉSUMÉ DE LA TÂCHE PRINCIPALE - PROJET Whatsapp Agent
 📋 MISSION :
 Développer un système SaaS générique avec gestion multi-tenant et intégration WhatsApp
 🏗️ ARCHITECTURE ACTUELLE :

@@ -21,7 +21,7 @@
 @section('content')
 <div class="row">
     <div class="col-12 text-end mb-3">
-        <a href="{{ route('customer.tickets.create') }}" class="btn btn-primary">{{ __('tickets.create_new_ticket') }}</a>
+        <a href="{{ route('customer.tickets.create') }}" class="btn btn-whatsapp">{{ __('tickets.create_new_ticket') }}</a>
     </div>
 </div>
 

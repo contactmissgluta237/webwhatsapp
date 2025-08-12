@@ -5,7 +5,7 @@
     "phoneNumber": null,
     "lastActivity": "2025-08-11T18:57:14.061Z",
     "createdAt": "2025-08-11T18:57:14.061Z",
-    "savedAt": "2025-08-11T23:53:37.901Z"
+    "savedAt": "2025-08-12T12:03:38.699Z"
   },
   "session_2_17549388092442_1115809a": {
     "userId": 2,
@@ -13,14 +13,22 @@
     "phoneNumber": "237676636794",
     "lastActivity": "2025-08-11T19:00:09.248Z",
     "createdAt": "2025-08-11T19:00:09.248Z",
-    "savedAt": "2025-08-11T23:53:37.901Z"
+    "savedAt": "2025-08-12T12:03:38.699Z"
   },
   "session_2_17549559905704_86c86728": {
     "userId": 2,
-    "status": "connected",
+    "status": "qr_code_ready",
     "phoneNumber": "237676636794",
     "lastActivity": "2025-08-11T23:46:30.596Z",
     "createdAt": "2025-08-11T23:46:30.596Z",
-    "savedAt": "2025-08-11T23:53:37.901Z"
+    "savedAt": "2025-08-12T12:03:38.699Z"
+  },
+  "session_2_17549904998545_ea6cf06d": {
+    "userId": 2,
+    "status": "connected",
+    "phoneNumber": "237676636794",
+    "lastActivity": "2025-08-12T09:21:39.922Z",
+    "createdAt": "2025-08-12T09:21:39.922Z",
+    "savedAt": "2025-08-12T12:03:38.699Z"
   }
 }

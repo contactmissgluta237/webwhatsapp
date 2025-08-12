@@ -2,10 +2,12 @@
 
 @section('title', 'Configuration Agent IA - ' . $account->session_name)
 
-@section('page-style')
-    <link rel="stylesheet" href="{{ asset('css/whatsapp-ai-config.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-@endsection
+@push('styles')
+
+<link rel="stylesheet" href="{{ asset('assets/css/whatsapp-ai-config.css') }}">
+<link rel="stylesheet" href="{{ asset('css/whatsapp-simulator.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+@endpush
 
 @section('content')
     <div class="row mx-0 mt-1 mb-1">
@@ -30,7 +32,7 @@
             </div>
         </div>
         <div class="col-4 p-0 text-right">
-            <a href="{{ route('whatsapp.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('whatsapp.index') }}" class="btn btn-outline-whatsapp">
                 <i class="la la-arrow-left"></i> {{ __('Retour aux comptes') }}
             </a>
         </div>

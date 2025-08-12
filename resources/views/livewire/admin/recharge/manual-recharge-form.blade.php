@@ -150,7 +150,7 @@ use App\Enums\PaymentMethod;
                 Réinitialiser
             </button>
             
-            <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+            <button type="submit" class="btn btn-whatsapp" wire:loading.attr="disabled">
                 <span wire:loading.remove>
                     <i class="ti ti-check"></i>
                     Créer la Recharge

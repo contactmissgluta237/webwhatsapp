@@ -94,15 +94,3 @@
     border-radius: 4px;
     border: 1px solid #dee2e6;
 }
-
-/* Responsive */
-@media (max-width: 1200px) {
-    .ai-config-main {
-        flex-direction: column;
-    }
-    
-    .ai-config-form, 
-    .ai-config-simulator {
-        flex: none;
-    }
-}

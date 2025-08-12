@@ -5,7 +5,6 @@ namespace App\Services\WhatsApp;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class WhatsAppQRService
@@ -98,7 +97,7 @@ class WhatsAppQRService
             : config('services.whatsapp_bridge.url', 'http://localhost:3000');
 
         Log::info($isDocker ? '🐳 QRService: Using Docker URL' : '🖥️  QRService: Using host URL', [
-            'url' => $url
+            'url' => $url,
         ]);
 
         return $url;
@@ -135,8 +134,9 @@ class WhatsAppQRService
      */
     private function createUniqueSessionId(int $userId): string
     {
-        $timestamp = (int)(microtime(true) * 10000); // Microsecondes pour plus d'unicité
-        $random = substr(md5(uniqid() . microtime()), 0, 8);
+        $timestamp = (int) (microtime(true) * 10000); // Microsecondes pour plus d'unicité
+        $random = substr(md5(uniqid().microtime()), 0, 8);
+
         return "session_{$userId}_{$timestamp}_{$random}";
     }
 
@@ -168,7 +168,7 @@ class WhatsAppQRService
             'sent_session_id' => $sessionId,
         ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new Exception("Failed to create WhatsApp session: HTTP {$response->status()} - {$response->body()}");
         }
 
@@ -181,8 +181,8 @@ class WhatsAppQRService
             'success_value' => $data['success'] ?? 'NOT_SET',
         ]);
 
-        if (empty($data) || !isset($data['success'])) {
-            throw new Exception("Invalid response from WhatsApp bridge: " . $response->body());
+        if (empty($data) || ! isset($data['success'])) {
+            throw new Exception('Invalid response from WhatsApp bridge: '.$response->body());
         }
 
         if ($data['success'] === false) {
@@ -219,11 +219,15 @@ class WhatsAppQRService
 
         // Phase 1: Attente rapide (5 tentatives avec 2s d'intervalle)
         for ($attempt = 1; $attempt <= 5; $attempt++) {
-            if ($attempt > 1) sleep(2);
-            
+            if ($attempt > 1) {
+                sleep(2);
+            }
+
             $qrCode = $this->tryFetchQRCode($url, $sessionId, $attempt, 'rapid');
-            if ($qrCode) return $qrCode;
-            
+            if ($qrCode) {
+                return $qrCode;
+            }
+
             if ((time() - $startTime) >= $maxWaitTime) {
                 throw new Exception("QR code generation timeout after {$maxWaitTime} seconds");
             }
@@ -233,9 +237,11 @@ class WhatsAppQRService
         $delays = [3, 5, 7, 10, 15, 20];
         for ($i = 0; $i < count($delays) && (time() - $startTime) < $maxWaitTime; $i++) {
             sleep($delays[$i]);
-            
+
             $qrCode = $this->tryFetchQRCode($url, $sessionId, $i + 6, 'progressive');
-            if ($qrCode) return $qrCode;
+            if ($qrCode) {
+                return $qrCode;
+            }
         }
 
         throw new Exception("QR code not available after {$maxWaitTime} seconds. WhatsApp-web.js initialization may have failed.");
@@ -248,33 +254,34 @@ class WhatsAppQRService
     {
         try {
             Log::info("🔄 QRService: QR fetch attempt {$attempt} ({$phase} phase)");
-            
+
             $response = $this->makeHttpRequest('GET', $url);
 
             if ($response->successful()) {
                 $data = $response->json();
 
-                if (!empty($data['qrCode'])) {
+                if (! empty($data['qrCode'])) {
                     Log::info('✅ QRService: QR code retrieved successfully', [
                         'attempt' => $attempt,
                         'phase' => $phase,
                         'qr_length' => strlen($data['qrCode']),
                     ]);
+
                     return $data['qrCode'];
                 } else {
-                    Log::info("⏳ QRService: QR not ready yet", [
+                    Log::info('⏳ QRService: QR not ready yet', [
                         'attempt' => $attempt,
                         'phase' => $phase,
                         'response' => $data,
                     ]);
                 }
             } elseif ($response->status() === 404) {
-                Log::info("⏳ QRService: Session initializing", [
+                Log::info('⏳ QRService: Session initializing', [
                     'attempt' => $attempt,
                     'phase' => $phase,
                 ]);
             } else {
-                Log::warning("⚠️ QRService: Unexpected response", [
+                Log::warning('⚠️ QRService: Unexpected response', [
                     'attempt' => $attempt,
                     'phase' => $phase,
                     'status' => $response->status(),
@@ -296,16 +303,16 @@ class WhatsAppQRService
      */
     private function generateQRFile(string $qrCode, int $userId): array
     {
-        $filename = "qr-{$userId}-" . time() . '-' . substr(md5(uniqid()), 0, 8) . '.svg';
+        $filename = "qr-{$userId}-".time().'-'.substr(md5(uniqid()), 0, 8).'.svg';
         $directory = public_path('qrcodes');
-        $filePath = $directory . '/' . $filename;
+        $filePath = $directory.'/'.$filename;
 
         // Directory should exist from Dockerfile, but check anyway
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             throw new Exception("QR directory does not exist: {$directory}");
         }
 
-        if (!is_writable($directory)) {
+        if (! is_writable($directory)) {
             throw new Exception("QR directory is not writable: {$directory}");
         }
 
@@ -322,7 +329,7 @@ class WhatsAppQRService
 
         return [
             'filename' => $filename,
-            'url' => config('app.url') . "/qrcodes/{$filename}",
+            'url' => config('app.url')."/qrcodes/{$filename}",
             'path' => $filePath,
             'size' => filesize($filePath),
         ];
@@ -335,7 +342,7 @@ class WhatsAppQRService
     {
         try {
             $url = "{$this->bridgeUrl}/api/sessions/{$sessionId}/status";
-            
+
             Log::debug('🔍 QRService: Checking session connection status', [
                 'session_id' => $sessionId,
                 'url' => $url,
@@ -343,12 +350,13 @@ class WhatsAppQRService
 
             $response = $this->makeHttpRequest('GET', $url, [], 10); // Timeout court
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::debug('⚠️ QRService: Status check failed', [
                     'session_id' => $sessionId,
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return false;
             }
 
@@ -369,6 +377,7 @@ class WhatsAppQRService
                 'session_id' => $sessionId,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -392,7 +401,7 @@ class WhatsAppQRService
         // Les retry sont gérés manuellement dans fetchQRCode()
         if (str_contains($url, '/api/sessions/create')) {
             Log::info('🚫 QRService: Disabling auto-retry for session creation', [
-                'url' => $url
+                'url' => $url,
             ]);
             // Pas de ->retry() pour éviter les sessions multiples
         } else {
@@ -405,7 +414,7 @@ class WhatsAppQRService
         }
 
         // Faire la requête selon la méthode
-        return match(strtoupper($method)) {
+        return match (strtoupper($method)) {
             'GET' => $http->get($url),
             'POST' => $http->post($url, $data),
             'PUT' => $http->put($url, $data),

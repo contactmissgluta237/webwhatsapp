@@ -8,7 +8,7 @@
         
         <div class="input-group-append">
             <button type="button"
-                    class="btn btn-primary"
+                    class="btn btn-whatsapp"
                     wire:click="generateQRCode"
                     @if(!$isValid || empty($sessionName) || $isGenerating) disabled @endif>
                 @if($isGenerating)

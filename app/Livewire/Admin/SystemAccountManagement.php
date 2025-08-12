@@ -16,7 +16,7 @@ class SystemAccountManagement extends Component
                 'description' => 'Voir toutes les transactions des comptes système.',
                 'route' => 'admin.system-accounts.index',
                 'buttonText' => 'Voir la liste',
-                'buttonClass' => 'btn btn-primary',
+                'buttonClass' => 'btn btn-whatsapp',
                 'icon' => 'ti ti-list',
             ],
             [

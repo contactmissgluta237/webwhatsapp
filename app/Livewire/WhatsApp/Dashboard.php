@@ -24,7 +24,7 @@ final class Dashboard extends Component
         'session-name-validated' => 'handleSessionNameValidated',
         'generate-qr-code' => 'generateQRCode',
         'connection-successful' => 'refreshAccounts',
-        'close-connect-modal' => 'closeConnectModal'
+        'close-connect-modal' => 'closeConnectModal',
     ];
 
     public function mount(): void
@@ -59,6 +59,7 @@ final class Dashboard extends Component
         if (empty($this->sessionName)) {
             $this->statusMessage = 'Aucun nom de session fourni.';
             $this->stopGenerating(); // Arrêter le loader
+
             return;
         }
 
@@ -103,11 +104,11 @@ final class Dashboard extends Component
                 $this->statusMessage = $result['message'] ?? 'Erreur lors de la génération du QR code';
             }
         } catch (\Exception $e) {
-            $this->statusMessage = 'Erreur: ' . $e->getMessage();
+            $this->statusMessage = 'Erreur: '.$e->getMessage();
             Log::error('QR generation error', [
                 'user_id' => Auth::id(),
                 'session_name' => $this->sessionName,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -126,8 +127,9 @@ final class Dashboard extends Component
 
     public function confirmQRScanned(): void
     {
-        if (!$this->tempSessionId) {
+        if (! $this->tempSessionId) {
             $this->statusMessage = 'Erreur: Aucune session temporaire trouvée.';
+
             return;
         }
 
@@ -154,7 +156,7 @@ final class Dashboard extends Component
             $this->dispatch('connection-successful');
 
         } catch (\Exception $e) {
-            $this->statusMessage = 'Erreur lors de la confirmation: ' . $e->getMessage();
+            $this->statusMessage = 'Erreur lors de la confirmation: '.$e->getMessage();
             Log::error('WhatsApp connection confirmation failed', [
                 'user_id' => Auth::id(),
                 'session_name' => $this->sessionName,
@@ -175,7 +177,7 @@ final class Dashboard extends Component
             session()->flash('success', 'Compte WhatsApp déconnecté avec succès.');
 
         } catch (\Exception $e) {
-            session()->flash('error', 'Erreur lors de la déconnexion: ' . $e->getMessage());
+            session()->flash('error', 'Erreur lors de la déconnexion: '.$e->getMessage());
         }
     }
 

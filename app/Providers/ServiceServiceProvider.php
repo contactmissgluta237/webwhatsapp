@@ -22,8 +22,6 @@ class ServiceServiceProvider extends ServiceProvider implements DeferrableProvid
         // WhatsApp Services
         \App\Services\WhatsApp\AI\WhatsAppAIProcessorServiceInterface::class => \App\Services\WhatsApp\AI\WhatsAppAIProcessorService::class,
 
-        // AI Services
-        \App\Services\AI\OllamaServiceInterface::class => \App\Services\AI\OllamaService::class,
     ];
 
     public function register(): void

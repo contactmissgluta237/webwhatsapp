@@ -28,3 +28,7 @@
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/css/extensions/toastr.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/plugins/extensions/toastr.min.css') }}">
 <!-- END: Toastr CSS-->
+
+<!-- BEGIN: Custom CSS-->
+<link rel="stylesheet" type="text/css" href="{{ asset('assets/css/style.css') }}">
+<!-- END: Custom CSS-->

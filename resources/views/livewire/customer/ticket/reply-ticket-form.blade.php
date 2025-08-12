@@ -20,7 +20,7 @@
     </div>
 
     <div class="d-grid">
-        <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+        <button type="submit" class="btn btn-whatsapp" wire:loading.attr="disabled">
             <span wire:loading.remove>Send Reply</span>
             <span wire:loading>{{ __('tickets.sending') }}</span>
         </button>

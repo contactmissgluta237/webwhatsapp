@@ -1,34 +1,27 @@
 @extends('modern.layouts.master')
 
-@section('title', __('My Referrals'))
-
-@section('breadcrumb')
-<div class="content-header-left col-md-8 col-12 mb-2">
-    <div class="row breadcrumbs-top">
-        <div class="col-12">
-            <h2 class="content-header-title float-left mb-0">{{ __('My Referrals') }}</h2>
-            <div class="breadcrumb-wrapper col-12">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">{{ __('Home') }}</a></li>
-                    <li class="breadcrumb-item active">{{ __('Referrals') }}</li>
-                </ol>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
+@section('title', __('Mes filleuls'))
 
 @section('content')
-<div class="row mb-4">
-    <div class="col-12 text-end">
-        <div class="text-center">
-            <span class="text-muted d-block">{{ __('Total Earnings') }}</span>
-            <h5 class="fw-bold text-success mb-0">
-                {{ number_format(0, 0, ',', ' ') }} FCFA
-            </h5>
+    <div class="row mx-0 mt-1 mb-1">
+        <div class="content-header-left col-md-6 col-12 mb-2">
+            <h3 class="content-header-title">{{ __('Mes filleuls') }}</h3>
+            <div class="row breadcrumbs-top">
+                <div class="breadcrumb-wrapper col-12">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">Accueil</a></li>
+                        <li class="breadcrumb-item active">{{ __('Mes filleuls') }}</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-header-right col-md-6 col-12 text-right">
+            {{-- Total des gains (moved to no referrals yet section) --}}
         </div>
     </div>
-</div>
+
+    <div class="content-body">
 
 @if(auth()->user()->referrals()->count() > 0)
     <div class="row mb-4">
@@ -80,6 +73,12 @@
                     @livewire('customer.referral-data-table')
                 @else
                     <div class="text-center py-5">
+                        <div class="mb-4">
+                            <span class="text-muted d-block">{{ __('Total des gains') }}</span>
+                            <h4 class="fw-bold text-success mb-0">
+                                {{ number_format(0, 0, ',', ' ') }} FCFA
+                            </h4>
+                        </div>
                         <i class="ti ti-users-off fs-1 text-muted mb-3"></i>
                         <h5 class="text-muted mb-3">{{ __('No referrals yet') }}</h5>
                         <p class="text-muted mb-4">
@@ -91,7 +90,7 @@
                                     <input type="text" class="form-control" 
                                            value="{{ route('register') }}?ref={{ auth()->user()->affiliation_code }}" 
                                            readonly id="referralLink">
-                                    <button class="btn btn-primary" type="button" onclick="copyReferralLink()">
+                                    <button class="btn btn-whatsapp" type="button" onclick="copyReferralLink()">
                                         <i class="ti ti-copy"></i> {{ __('Copy') }}
                                     </button>
                                 </div>

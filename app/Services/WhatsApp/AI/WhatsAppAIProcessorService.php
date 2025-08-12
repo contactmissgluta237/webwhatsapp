@@ -7,13 +7,13 @@ namespace App\Services\WhatsApp\AI;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\WhatsAppAccount;
-use App\Services\AI\OllamaServiceInterface;
+use App\Services\AI\AiServiceInterface;
 use Illuminate\Support\Facades\Log;
 
 final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInterface
 {
     public function __construct(
-        private readonly OllamaServiceInterface $ollamaService
+        private readonly AiServiceInterface $aiService,
     ) {}
 
     public function processIncomingMessage(string $sessionId, string $sessionName, array $messageData): array
@@ -120,7 +120,8 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
 
             $prompt = $this->buildPrompt($messageText, $context);
 
-            $response = $this->ollamaService->generateResponse($prompt);
+            // $response = $this->aiService->generateResponse($prompt);
+            $response = 'response';
 
             if ($response && ! empty($response['response'])) {
                 return [

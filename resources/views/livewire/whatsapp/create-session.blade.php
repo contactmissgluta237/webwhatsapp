@@ -9,7 +9,7 @@
             </div>
 
             @if($statusMessage && !$qrCode)
-                <div class="alert alert-info" role="alert">
+                <div class="alert alert-whatsapp" role="alert">
                     <i class="la la-info-circle"></i> {{ $statusMessage }}
                 </div>
             @endif
@@ -91,7 +91,7 @@
                             </div>
 
                             @if($statusMessage)
-                                <div class="alert {{ $isWaitingConnection ? 'alert-info' : 'alert-success' }} mt-3" role="alert">
+                                <div class="alert alert-whatsapp mt-3" role="alert">
                                     <i class="la {{ $isWaitingConnection ? 'la-clock-o' : 'la-check-circle' }}"></i> {{ $statusMessage }}
                                 </div>
                             @endif

@@ -74,7 +74,7 @@
             </div>
         </div>
         <div class="col-4 p-0 text-right">
-            <a href="{{ route('whatsapp.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('whatsapp.index') }}" class="btn btn-outline-whatsapp">
                 <i class="la la-arrow-left"></i> {{ __('Retour à la liste') }}
             </a>
         </div>
@@ -88,7 +88,7 @@
     </div>
 
     {{-- Information sur le processus --}}
-    <div class="alert alert-info mb-4">
+    <div class="alert alert-whatsapp mb-4">
         <h6><i class="la la-info-circle"></i> Comment ça marche ?</h6>
         <ol class="mb-0 pl-3">
             <li><strong>Donnez un nom</strong> à votre agent WhatsApp</li>

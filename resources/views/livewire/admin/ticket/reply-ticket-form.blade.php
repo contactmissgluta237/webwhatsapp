@@ -23,5 +23,5 @@
         <label class="form-check-label" for="isInternal">Internal Note (Only visible to admins)</label>
     </div>
 
-    <button type="submit" class="btn btn-primary">{{ __('tickets.send_reply') }}</button>
+    <button type="submit" class="btn btn-whatsapp">{{ __('tickets.send_reply') }}</button>
 </form>

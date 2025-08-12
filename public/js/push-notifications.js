@@ -48,8 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (userMeta?.getAttribute('content')) {
         try {
-            const pushManager = new PushNotificationManager();
-            await pushManager.init();
+            window.pushManager = new PushNotificationManager(); // Assign to window.pushManager
+            await window.pushManager.init();
         } catch (error) {
             console.error('Échec initialisation push notifications:', error);
         }

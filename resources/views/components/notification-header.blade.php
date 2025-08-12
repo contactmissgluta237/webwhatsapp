@@ -20,7 +20,7 @@
                 @endif
             </h5>
             @if ($unreadCount > 0)
-                <button wire:click="markAllAsRead" class="btn btn-sm btn-primary ms-auto me-2">Marquer tout comme
+                <button wire:click="markAllAsRead" class="btn btn-sm btn-whatsapp ms-auto me-2">Marquer tout comme
                     lu</button>
             @endif
             <button aria-label="Close" class="btn-close" data-bs-dismiss="offcanvas" type="button"></button>

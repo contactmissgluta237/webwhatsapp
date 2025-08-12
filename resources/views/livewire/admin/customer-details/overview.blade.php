@@ -39,7 +39,7 @@
             <h5 class="mb-2">{{ __('Transaction Actions') }}</h5>
         </div>
         <div class="col-md-4 col-sm-12 mb-2">
-            <a href="{{ route('admin.transactions.index', ['table-filters' => ['transaction_type' => 'recharge', 'customer_id' => $customer->id]]) }}" class="btn btn-primary w-100">
+            <a href="{{ route('admin.transactions.index', ['table-filters' => ['transaction_type' => 'recharge', 'customer_id' => $customer->id]]) }}" class="btn btn-whatsapp w-100">
                 <i class="ti ti-arrow-right"></i> {{ __('View Recharges') }}
             </a>
         </div>

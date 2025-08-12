@@ -1,64 +1,87 @@
 <div>
-    <!-- Metrics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-wallet fs-1"></i>
+    <div class="row match-height">
+        {{-- Solde Portefeuille --}}
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="info">{{ number_format($walletBalance, 0, ',', ' ') }} FCFA</h3>
+                                <h6>Solde Portefeuille</h6>
+                            </div>
+                            <div>
+                                <i class="la la-wallet info font-large-2 float-right"></i>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($walletBalance, 0, ',', ' ') }} FCFA</h4>
-                            <p class="mb-0 text-white-50">Solde Portefeuille</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-arrow-up-circle fs-1"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($totalRecharges, 0, ',', ' ') }} FCFA</h4>
-                            <p class="mb-0 text-white-50">Total Recharges</p>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-info" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-arrow-down-circle fs-1"></i>
+        {{-- Total Recharges --}}
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="success">{{ number_format($totalRecharges, 0, ',', ' ') }} FCFA</h3>
+                                <h6>Total Recharges</h6>
+                            </div>
+                            <div>
+                                <i class="la la-arrow-up success font-large-2 float-right"></i>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($totalWithdrawals, 0, ',', ' ') }} FCFA</h4>
-                            <p class="mb-0 text-white-50">Total Retraits</p>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-clock fs-1"></i>
+        {{-- Total Retraits --}}
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="danger">{{ number_format($totalWithdrawals, 0, ',', ' ') }} FCFA</h3>
+                                <h6>Total Retraits</h6>
+                            </div>
+                            <div>
+                                <i class="la la-arrow-down danger font-large-2 float-right"></i>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($pendingTransactions) }}</h4>
-                            <p class="mb-0 text-white-50">Transactions en Attente</p>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Transactions en Attente --}}
+        <div class="col-xl-3 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="warning">{{ number_format($pendingTransactions) }}</h3>
+                                <h6>Transactions en Attente</h6>
+                            </div>
+                            <div>
+                                <i class="la la-clock-o warning font-large-2 float-right"></i>
+                            </div>
+                        </div>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-warning" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
@@ -66,34 +89,45 @@
         </div>
     </div>
 
-    <!-- Second Row -->
-    <div class="row mb-4">
-        <div class="col-xl-6 col-md-6">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-users-group fs-1"></i>
+    <div class="row match-height">
+        {{-- Filleuls Actifs --}}
+        <div class="col-xl-6 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="info">{{ number_format($activeReferrals) }}</h3>
+                                <h6>Filleuls Actifs</h6>
+                            </div>
+                            <div>
+                                <i class="la la-users info font-large-2 float-right"></i>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($activeReferrals) }}</h4>
-                            <p class="mb-0 text-white-50">Filleuls Actifs</p>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-info" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-6 col-md-6">
-            <div class="card bg-secondary text-white">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <i class="ti ti-coins fs-1"></i>
+        {{-- Commissions Gagnées --}}
+        <div class="col-xl-6 col-lg-6 col-12">
+            <div class="card pull-up">
+                <div class="card-content">
+                    <div class="card-body">
+                        <div class="media d-flex">
+                            <div class="media-body text-left">
+                                <h3 class="success">{{ number_format($commissionsEarned, 0, ',', ' ') }} FCFA</h3>
+                                <h6>Commissions Gagnées</h6>
+                            </div>
+                            <div>
+                                <i class="la la-dollar success font-large-2 float-right"></i>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h4 class="mb-0 text-white">{{ number_format($commissionsEarned, 0, ',', ' ') }} FCFA</h4>
-                            <p class="mb-0 text-white-50">Commissions Gagnées</p>
+                        <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
+                            <div class="progress-bar bg-gradient-x-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>

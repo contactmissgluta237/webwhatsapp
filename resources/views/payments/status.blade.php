@@ -55,7 +55,7 @@
                 <h1 class="{{ $textColorClass }} mb-3">{{ $title }}</h1>
                 <p class="lead">{{ $message }}</p>
                 <hr>
-                <a href="{{ $returnUrl }}" class="btn btn-primary mt-3">
+                <a href="{{ $returnUrl }}" class="btn btn-whatsapp mt-3">
                     <i class="ti ti-arrow-back-up me-2"></i>Retourner à la liste des transactions
                 </a>
             </div>

@@ -15,7 +15,7 @@ final class SessionNameInput extends Component
     public bool $isGenerating = false;
 
     protected $listeners = [
-        'stop-generating' => 'stopGenerating'
+        'stop-generating' => 'stopGenerating',
     ];
 
     public function updatedSessionName(): void
@@ -40,16 +40,19 @@ final class SessionNameInput extends Component
         // Validation du format seulement (pas d'unicité)
         if (strlen($this->sessionName) < 3) {
             $this->errorMessage = 'Le nom doit contenir au moins 3 caractères.';
+
             return;
         }
 
         if (strlen($this->sessionName) > 50) {
             $this->errorMessage = 'Le nom ne peut pas dépasser 50 caractères.';
+
             return;
         }
 
-        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $this->sessionName)) {
+        if (! preg_match('/^[a-zA-Z0-9_-]+$/', $this->sessionName)) {
             $this->errorMessage = 'Le nom ne peut contenir que des lettres, chiffres, tirets et underscores.';
+
             return;
         }
 
@@ -64,8 +67,9 @@ final class SessionNameInput extends Component
         // Double vérification avant génération
         $this->validateSessionName();
 
-        if (!$this->isValid || empty($this->sessionName)) {
+        if (! $this->isValid || empty($this->sessionName)) {
             $this->errorMessage = 'Veuillez saisir un nom de session valide.';
+
             return;
         }
 

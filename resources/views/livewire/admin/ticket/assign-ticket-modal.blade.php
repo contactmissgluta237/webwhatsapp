@@ -24,7 +24,7 @@
                             
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" wire:click="closeModal">Cancel</button>
-                                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
+                                <button type="submit" class="btn btn-whatsapp" wire:loading.attr="disabled">
                                     <span wire:loading.remove>Assign Ticket</span>
                                     <span wire:loading>Assigning...</span>
                                 </button>

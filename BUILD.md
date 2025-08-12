@@ -1,8 +1,8 @@
-# Generic SaaS - Instructions de Build Automatique
+# Whatsapp Agent - Instructions de Build Automatique
 
 ## 🎯 Résumé
 
-Votre projet Generic SaaS est maintenant configuré avec une **initialisation automatique complète** qui gère :
+Votre projet Whatsapp Agent est maintenant configuré avec une **initialisation automatique complète** qui gère :
 - ✅ Attente des services (MySQL, Redis)
 - ✅ Installation des dépendances Composer
 - ✅ Génération de clé d'application

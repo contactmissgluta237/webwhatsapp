@@ -7,7 +7,7 @@
                 <h1 class="display-1 fw-bold text-primary">500</h1>
                 <h2 class="display-4 fw-bold">Erreur interne du serveur</h2>
                 <p class="lead">Désolé, une erreur est survenue sur le serveur.</p>
-                <a href="{{ url('/') }}" class="btn btn-primary mt-4">Retour à l'accueil</a>
+                <a href="{{ url('/') }}" class="btn btn-whatsapp mt-4">Retour à l'accueil</a>
             </div>
         </div>
     </div>

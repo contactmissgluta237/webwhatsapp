@@ -6,8 +6,8 @@ namespace App\Http\Controllers\WhatsApp\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAccount;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class DestroyController extends Controller
 {
@@ -23,7 +23,7 @@ final class DestroyController extends Controller
         if ($account->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Accès non autorisé à ce compte WhatsApp.'
+                'message' => 'Accès non autorisé à ce compte WhatsApp.',
             ], 403);
         }
 
@@ -33,13 +33,13 @@ final class DestroyController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Session '{$sessionName}' supprimée avec succès !"
+                'message' => "Session '{$sessionName}' supprimée avec succès !",
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la suppression : ' . $e->getMessage()
+                'message' => 'Erreur lors de la suppression : '.$e->getMessage(),
             ], 500);
         }
     }

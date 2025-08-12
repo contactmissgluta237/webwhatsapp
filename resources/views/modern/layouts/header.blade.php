@@ -1,4 +1,4 @@
-<nav class="header-navbar navbar-expand-md navbar navbar-with-menu navbar-without-dd-arrow fixed-top navbar-semi-light bg-info navbar-shadow">
+<nav class="header-navbar navbar-expand-md navbar navbar-with-menu navbar-without-dd-arrow fixed-top navbar-semi-light bg-whatsapp navbar-shadow">
     <div class="navbar-wrapper">
         <div class="navbar-header">
             <ul class="nav navbar-nav flex-row">
@@ -7,8 +7,8 @@
                 </li>
                 <li class="nav-item">
                     <a class="navbar-brand" href="{{ auth()->check() && auth()->user()->isAdmin() ? route('admin.dashboard') : (auth()->check() ? route('customer.dashboard') : '/') }}">
-                        <img class="brand-logo" alt="modern admin logo" src="{{ asset('modern/images/logo/logo.png') }}">
-                        <h3 class="brand-text">Generic SaaS</h3>
+                        <img class="brand-logo" alt="Whatsapp Agent logo" src="{{ asset('modern/images/logo/whatsapp-logo.svg') }}">
+                        <h3 class="brand-text">Whatsapp Agent</h3>
                     </a>
                 </li>
                 <li class="nav-item d-md-none">

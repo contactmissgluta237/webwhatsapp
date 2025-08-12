@@ -1,7 +1,7 @@
 <!-- resources/views/components/push-notification-button.blade.php -->
 
 <div id="push-notification-container" class="d-flex align-items-center">
-    <button id="enable-notifications-btn" class="btn btn-primary mr-2 d-none" onclick="enableNotifications()"
+    <button id="enable-notifications-btn" class="btn btn-whatsapp mr-2 d-none" onclick="enableNotifications()"
         style="display: none !important;">
         <i class="ft-bell mr-1"></i>
         <span>Activer les notifications</span>

@@ -147,7 +147,7 @@
 
                     {{-- Save Button --}}
                     <div class="form-group text-center">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        <button type="submit" class="btn btn-whatsapp btn-lg">
                             <i class="la la-save"></i> {{ __('Sauvegarder la configuration') }}
                         </button>
                         

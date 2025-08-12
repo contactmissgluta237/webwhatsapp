@@ -26,7 +26,7 @@
                 </div>
 
                 <div id="push-float-actions" class="d-flex gap-2">
-                    <button id="enable-push-btn" class="btn btn-primary btn-sm flex-fill"
+                    <button id="enable-push-btn" class="btn btn-whatsapp btn-sm flex-fill"
                         onclick="activatePushNotifications()" style="display: none;">
                         <i class="ft-bell mr-1"></i>
                         Activer

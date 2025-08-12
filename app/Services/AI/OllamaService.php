@@ -4,83 +4,146 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
-use Illuminate\Http\Client\PendingRequest;
+use App\DTOs\AI\AiRequestDTO;
+use App\DTOs\AI\AiResponseDTO;
+use App\Models\AiModel;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-final class OllamaService implements OllamaServiceInterface
+final class OllamaService implements AiServiceInterface
 {
-    private PendingRequest $httpClient;
-
-    public function __construct()
+    public function chat(AiModel $model, AiRequestDTO $request): AiResponseDTO
     {
-        $this->httpClient = Http::baseUrl(config('services.ollama.url'))
-            ->timeout(120)
-            ->retry(2, 1000);
-    }
+        Log::info('🔄 Appel API Ollama', [
+            'endpoint' => $model->endpoint_url,
+            'model_identifier' => $model->model_identifier,
+        ]);
 
-    public function generateResponse(string $prompt, array $options = []): array
-    {
-        try {
-            $model = $options['model'] ?? config('services.ollama.default_model', 'llama2:7b-chat');
+        $config = array_merge(
+            $this->getDefaultConfig(),
+            $this->getModelConfig($model),
+            $request->config
+        );
 
-            $response = $this->httpClient->post('/api/generate', [
-                'model' => $model,
-                'prompt' => $prompt,
-                'stream' => false,
-                'options' => [
-                    'temperature' => $options['temperature'] ?? 0.7,
-                    'top_k' => $options['top_k'] ?? 40,
-                    'top_p' => $options['top_p'] ?? 0.9,
+        $payload = [
+            'model' => $model->model_identifier,
+            'messages' => [
+                [
+                    'role' => 'system',
+                    'content' => $request->systemPrompt,
                 ],
-            ]);
+                [
+                    'role' => 'user',
+                    'content' => $request->userMessage,
+                ],
+            ],
+            'options' => [
+                'temperature' => $config['temperature'],
+                'num_predict' => $config['max_tokens'],
+                'top_p' => $config['top_p'],
+            ],
+            'stream' => false,
+        ];
 
-            if (! $response->successful()) {
-                throw new \Exception('Ollama API error: '.$response->body());
+        $response = Http::timeout(60)
+            ->connectTimeout(10)
+            ->retry(2, 1000)
+            ->post($model->endpoint_url.'/api/chat', $payload);
+
+        if (! $response->successful()) {
+            $errorMessage = "Erreur API Ollama: {$response->status()}";
+
+            if ($response->body()) {
+                $errorData = $response->json();
+                $errorMessage .= ' - '.($errorData['error'] ?? $response->body());
             }
 
-            $data = $response->json();
-
-            return [
-                'response' => $data['response'] ?? '',
-                'model' => $model,
-                'confidence' => $this->calculateConfidence($data),
-                'tokens_generated' => $data['eval_count'] ?? null,
-                'generation_time' => $data['total_duration'] ?? null,
-            ];
-
-        } catch (\Exception $e) {
-            Log::error('Ollama generation failed', [
-                'prompt' => substr($prompt, 0, 100).'...',
-                'error' => $e->getMessage(),
+            Log::error('❌ Erreur API Ollama', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'endpoint' => $model->endpoint_url.'/api/chat',
             ]);
 
-            return [
-                'response' => 'Désolé, je ne peux pas répondre pour le moment. Veuillez réessayer plus tard.',
-                'model' => 'fallback',
-                'confidence' => 0.0,
-                'error' => $e->getMessage(),
-            ];
+            throw new \Exception($errorMessage);
         }
+
+        $data = $response->json();
+
+        if (! isset($data['message']['content'])) {
+            Log::error('❌ Structure de réponse inattendue', ['data' => $data]);
+            throw new \Exception('Structure de réponse Ollama inattendue');
+        }
+
+        $content = $data['message']['content'];
+
+        return AiResponseDTO::create(
+            content: $content,
+            metadata: [
+                'provider' => 'ollama',
+                'model' => $model->model_identifier,
+                'total_duration' => $data['total_duration'] ?? null,
+                'load_duration' => $data['load_duration'] ?? null,
+                'prompt_eval_count' => $data['prompt_eval_count'] ?? null,
+                'eval_count' => $data['eval_count'] ?? null,
+                'response_time' => $response->transferStats->getTransferTime() ?? null,
+            ]
+        );
     }
 
-    public function isHealthy(): bool
+    public function validateConfiguration(AiModel $model): bool
+    {
+        return ! empty($model->endpoint_url) && ! empty($model->model_identifier);
+    }
+
+    public function testConnection(AiModel $model): bool
     {
         try {
-            $response = $this->httpClient->get('/api/tags');
+            Log::info('🔍 Test connexion Ollama', [
+                'endpoint' => $model->endpoint_url,
+                'timeout' => 10,
+            ]);
 
-            return $response->successful();
+            $response = Http::timeout(10)
+                ->connectTimeout(5)
+                ->get($model->endpoint_url.'/api/version');
+
+            if (! $response->successful()) {
+                Log::warning('❌ Test connexion échoué', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return false;
+            }
+
+            $versionData = $response->json();
+            Log::info('✅ Connexion Ollama réussie', [
+                'version' => $versionData['version'] ?? 'inconnue',
+            ]);
+
+            return true;
+
         } catch (\Exception $e) {
-            Log::warning('Ollama health check failed', ['error' => $e->getMessage()]);
+            Log::error('❌ Test connexion Ollama échoué', [
+                'error' => $e->getMessage(),
+                'endpoint' => $model->endpoint_url,
+            ]);
 
             return false;
         }
     }
 
-    public function getAvailableModels(): array
+    public function getRequiredFields(): array
+    {
+        return ['endpoint_url', 'model_identifier'];
+    }
+
+    public function getAvailableModels(AiModel $model): array
     {
         try {
-            $response = $this->httpClient->get('/api/tags');
+            $response = Http::timeout(10)
+                ->connectTimeout(5)
+                ->get($model->endpoint_url.'/api/tags');
 
             if (! $response->successful()) {
                 return [];
@@ -88,36 +151,76 @@ final class OllamaService implements OllamaServiceInterface
 
             $data = $response->json();
 
-            return collect($data['models'] ?? [])
-                ->map(fn ($model) => [
-                    'name' => $model['name'],
-                    'size' => $model['size'] ?? 0,
-                    'modified_at' => $model['modified_at'] ?? null,
-                ])
-                ->toArray();
+            return $data['models'] ?? [];
 
         } catch (\Exception $e) {
-            Log::error('Failed to get Ollama models', ['error' => $e->getMessage()]);
+            Log::error('❌ Erreur récupération modèles Ollama', [
+                'error' => $e->getMessage(),
+            ]);
 
             return [];
         }
     }
 
-    private function calculateConfidence(array $response): float
+    public function getDefaultConfig(): array
     {
-        if (! isset($response['response']) || empty($response['response'])) {
-            return 0.0;
+        return [
+            'temperature' => 0.7,
+            'max_tokens' => 1000,
+            'top_p' => 0.9,
+            'stream' => false,
+        ];
+    }
+
+    public function validateModelExists(AiModel $model): bool
+    {
+        $availableModels = $this->getAvailableModels($model);
+
+        foreach ($availableModels as $availableModel) {
+            if ($availableModel['name'] === $model->model_identifier) {
+                return true;
+            }
         }
 
-        $responseLength = strlen($response['response']);
-        $tokens = $response['eval_count'] ?? 1;
+        return false;
+    }
 
-        $baseConfidence = min(0.9, $responseLength / 200);
-
-        if ($tokens > 10) {
-            $baseConfidence += 0.1;
+    /**
+     * Récupère la configuration du modèle en gérant les types string/array
+     */
+    private function getModelConfig(AiModel $model): array
+    {
+        if (empty($model->model_config)) {
+            return [];
         }
 
-        return round($baseConfidence, 2);
+        // Si c'est déjà un array, on le retourne
+        if (is_array($model->model_config)) {
+            return $model->model_config;
+        }
+
+        // Si c'est une string, on la décode
+        if (is_string($model->model_config)) {
+            $decoded = json_decode($model->model_config, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::warning('Configuration JSON invalide pour le modèle', [
+                    'model_id' => $model->id,
+                    'json_error' => json_last_error_msg(),
+                    'raw_config' => $model->model_config,
+                ]);
+
+                return [];
+            }
+
+            return $decoded ?? [];
+        }
+
+        Log::warning('Type de configuration non supporté', [
+            'model_id' => $model->id,
+            'config_type' => gettype($model->model_config),
+        ]);
+
+        return [];
     }
 }

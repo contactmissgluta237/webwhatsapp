@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\WhatsApp;
 
 use App\Enums\ResponseTime;
+use App\Http\Requests\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,30 +35,6 @@ final class AiConfigurationForm extends Component
         $this->setDefaultModel();
     }
 
-    public function rules(): array
-    {
-        return [
-            'agent_name' => 'required|string|max:100',
-            'agent_enabled' => 'boolean',
-            'ai_model_id' => 'nullable|exists:ai_models,id',
-            'agent_prompt' => 'nullable|string|max:2000',
-            'trigger_words' => 'nullable|string|max:500',
-            'response_time' => 'required|string|in:instant,fast,random,slow',
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'agent_name.required' => __('Le nom de l\'agent est obligatoire.'),
-            'agent_name.max' => __('Le nom de l\'agent ne peut pas dépasser 100 caractères.'),
-            'ai_model_id.exists' => __('Le modèle sélectionné est invalide.'),
-            'agent_prompt.max' => __('Le prompt ne peut pas dépasser 2000 caractères.'),
-            'trigger_words.max' => __('Les mots déclencheurs ne peuvent pas dépasser 500 caractères.'),
-            'response_time.in' => __('Le délai de réponse sélectionné est invalide.'),
-        ];
-    }
-
     #[Computed]
     public function availableModels(): Collection
     {
@@ -67,12 +44,13 @@ final class AiConfigurationForm extends Component
     #[Computed]
     public function selectedModel(): ?AiModel
     {
-        if (!$this->ai_model_id) {
+        if (! $this->ai_model_id) {
             return null;
         }
 
         /** @var ?AiModel $model */
         $model = $this->availableModels->find($this->ai_model_id);
+
         return $model;
     }
 
@@ -98,23 +76,23 @@ final class AiConfigurationForm extends Component
         $this->dispatch('model-changed', modelId: $this->ai_model_id);
     }
 
-    public function save(): void
+    public function save(AiConfigurationRequest $request): void
     {
-        $this->validate();
+        $validatedData = $request->validated();
 
         try {
             $this->account->update([
-                'session_name' => $this->agent_name, // Mise à jour du nom
-                'agent_enabled' => $this->agent_enabled,
-                'ai_model_id' => $this->ai_model_id,
-                'agent_prompt' => $this->agent_prompt ?: null,
-                'trigger_words' => $this->trigger_words ?: null,
-                'response_time' => $this->response_time,
+                'session_name' => $validatedData['agent_name'], // Mise à jour du nom
+                'agent_enabled' => $validatedData['agent_enabled'],
+                'ai_model_id' => $validatedData['ai_model_id'],
+                'agent_prompt' => $validatedData['agent_prompt'] ?: null,
+                'trigger_words' => $validatedData['trigger_words'] ?: null,
+                'response_time' => $validatedData['response_time'],
             ]);
 
             $this->dispatch('configuration-saved', [
                 'type' => 'success',
-                'message' => __('Configuration de l\'agent IA sauvegardée avec succès !')
+                'message' => __('Configuration de l\'agent IA sauvegardée avec succès !'),
             ]);
 
             // Broadcast configuration to simulator
@@ -133,12 +111,12 @@ final class AiConfigurationForm extends Component
             Log::error('AI Configuration Error', [
                 'account_id' => $this->account->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->dispatch('configuration-saved', [
                 'type' => 'error',
-                'message' => __('Erreur lors de la sauvegarde : :error', ['error' => $e->getMessage()])
+                'message' => __('Erreur lors de la sauvegarde : :error', ['error' => $e->getMessage()]),
             ]);
         }
     }
@@ -155,7 +133,7 @@ final class AiConfigurationForm extends Component
 
     private function setDefaultModel(): void
     {
-        if (!$this->ai_model_id && $this->availableModels->isNotEmpty()) {
+        if (! $this->ai_model_id && $this->availableModels->isNotEmpty()) {
             /** @var AiModel $defaultModel */
             $defaultModel = $this->availableModels->where('is_default', true)->first()
                 ?? $this->availableModels->first();

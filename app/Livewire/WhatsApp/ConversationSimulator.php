@@ -10,7 +10,6 @@ use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\AI\AiResponseSimulator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -22,99 +21,130 @@ final class ConversationSimulator extends Component
     public array $simulationMessages = [];
     public string $newMessage = '';
     public bool $isProcessing = false;
+    public bool $showTyping = false;
 
-    // Current configuration (synced from form)
-    public array $currentConfig = [];
+    // Configuration
+    public int $maxMessages = 10;
 
     public function mount(WhatsAppAccount $account): void
     {
         $this->account = $account;
-        $this->loadCurrentConfig();
     }
 
     #[On('config-updated')]
-    public function onConfigUpdated(array $config): void
+    public function configUpdated(): void
     {
-        $this->currentConfig = $config;
+        $this->account->refresh();
+        $this->addMessage('system', '⚙️ Configuration mise à jour. Nouvelle conversation avec les paramètres actuels.');
     }
 
-    #[On('ai-status-changed')]
-    public function onAiStatusChanged(bool $enabled): void
+    public function clearConversation(): void
     {
-        $this->currentConfig['enabled'] = $enabled;
-    }
-
-    #[On('model-changed')]
-    public function onModelChanged(?int $modelId): void
-    {
-        $this->currentConfig['model_id'] = $modelId;
+        $this->simulationMessages = [];
+        $this->showTyping = false;
+        $this->isProcessing = false;
+        $this->dispatch('conversation-cleared');
     }
 
     public function sendMessage(): void
     {
+        Log::info('🚀 Début sendMessage()', [
+            'newMessage' => $this->newMessage,
+            'account_id' => $this->account->id,
+        ]);
+
         if (empty(trim($this->newMessage))) {
+            Log::warning('❌ Message vide, abandon');
+            return;
+        }
+
+        // Vérifier la limite de messages
+        if (count($this->simulationMessages) >= $this->maxMessages * 2) {
+            Log::warning('⚠️ Limite de messages atteinte');
+            $this->addMessage('system', '⚠️ Limite de conversation atteinte (10 échanges maximum)');
             return;
         }
 
         $userMessage = trim($this->newMessage);
         $this->newMessage = '';
-        $this->isProcessing = true;
 
         try {
-            // Add user message
+            // Ajouter le message utilisateur
             $this->addMessage('user', $userMessage);
             $this->dispatch('message-added');
 
-            // Always simulate AI response (for testing purposes)
-            $this->simulateAiResponse($userMessage);
+            // Calculer délai de réponse selon configuration
+            $responseTime = ResponseTime::from($this->account->response_time ?? 'random');
+            $delayInSeconds = $responseTime->getDelay();
 
-        } catch (\Exception $e) {
-            Log::error('Simulation Error', [
-                'account_id' => $this->account->id,
-                'message' => $userMessage,
-                'error' => $e->getMessage()
+            Log::info('⏰ Configuration délai de réponse', [
+                'response_time_config' => $this->account->response_time,
+                'delay_seconds' => $delayInSeconds,
+                'user_message' => $userMessage,
             ]);
 
-            $this->addMessage('ai', '❌ Erreur de simulation : ' . $e->getMessage());
+            // Programmer la réponse avec le bon délai
+            $this->dispatch('schedule-ai-response', [
+                'userMessage' => $userMessage,
+                'delayMs' => $delayInSeconds * 1000,
+            ]);
+
+            Log::info('✅ Réponse IA programmée avec succès');
+
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur dans sendMessage()', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
+        }
+    }
+
+    public function startTyping(): void
+    {
+        Log::info('💭 Démarrage du typing');
+        $this->showTyping = true;
+        $this->isProcessing = true;
+    }
+
+    public function stopTyping(): void
+    {
+        Log::info('🛑 Arrêt du typing');
+        $this->showTyping = false;
+    }
+
+    public function processAiResponse(?string $userMessage = null): void
+    {
+        Log::info('🤖 Génération de la réponse IA', [
+            'userMessage' => $userMessage,
+            'userMessage_type' => gettype($userMessage),
+            'userMessage_length' => $userMessage ? strlen($userMessage) : 0,
+        ]);
+
+        if (!$userMessage) {
+            Log::error('❌ userMessage est null dans processAiResponse');
+            $this->addMessage('ai', '❌ Erreur : message utilisateur manquant');
+            $this->showTyping = false;
+            $this->isProcessing = false;
+            return;
+        }
+
+        try {
+            $this->simulateAiResponse($userMessage);
+            Log::info('✅ Réponse IA générée avec succès');
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur dans processAiResponse()', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
         } finally {
+            $this->showTyping = false;
             $this->isProcessing = false;
         }
-    }
-
-    public function clearSimulation(): void
-    {
-        $this->simulationMessages = [];
-        $this->newMessage = '';
-    }
-
-    public function generateSampleConversation(): void
-    {
-        $this->clearSimulation();
-
-        $sampleMessages = [
-            'Bonjour, j\'ai besoin d\'aide',
-            'Quels sont vos horaires d\'ouverture ?',
-            'Pouvez-vous me donner plus d\'informations sur vos services ?',
-            'Merci pour les informations'
-        ];
-
-        foreach ($sampleMessages as $message) {
-            $this->addMessage('user', $message);
-            $this->simulateAiResponse($message, false);
-        }
-
-        $this->dispatch('message-added');
-    }
-
-    private function loadCurrentConfig(): void
-    {
-        $this->currentConfig = [
-            'enabled' => (bool) $this->account->ai_agent_enabled,
-            'model_id' => $this->account->ai_model_id,
-            'prompt' => $this->account->ai_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel.',
-            'trigger_words' => $this->account->ai_trigger_words ?? '',
-            'response_time' => $this->account->ai_response_time ?? 'random',
-        ];
     }
 
     private function addMessage(string $type, string $content): void
@@ -123,61 +153,49 @@ final class ConversationSimulator extends Component
             'type' => $type,
             'content' => $content,
             'time' => Carbon::now()->format('H:i'),
-            'timestamp' => time()
+            'timestamp' => time(),
         ];
+
+        Log::info('✅ Message ajouté', [
+            'type' => $type,
+            'total_messages' => count($this->simulationMessages),
+        ]);
     }
 
-    private function simulateAiResponse(string $userMessage, bool $checkTriggers = true): void
+    private function simulateAiResponse(string $userMessage): void
     {
-        // Check trigger words if configured and checkTriggers is true
-        if ($checkTriggers && !$this->shouldTriggerResponse($userMessage)) {
-            $this->addMessage('ai', '⚠️ Message ignoré - Aucun mot déclencheur détecté dans la configuration actuelle');
-            return;
-        }
-
-        $modelId = $this->currentConfig['model_id'] ?? $this->account->ai_model_id;
+        $modelId = $this->account->getEffectiveAiModelId();
 
         if (!$modelId) {
-            $this->addMessage('ai', '❌ Aucun modèle sélectionné pour la simulation');
+            $this->addMessage('ai', '❌ Aucun modèle IA configuré');
             return;
         }
 
         $model = AiModel::find($modelId);
-
         if (!$model) {
-            $this->addMessage('ai', '❌ Modèle non trouvé');
+            $this->addMessage('ai', '❌ Modèle IA non trouvé');
             return;
         }
 
-        // Get current configuration
-        $prompt = $this->currentConfig['prompt'] ?? 'Tu es un assistant WhatsApp utile et professionnel.';
-        $responseTime = ResponseTime::from($this->currentConfig['response_time'] ?? 'random');
+        $prompt = $this->account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel.';
+        $responseTime = ResponseTime::from($this->account->response_time ?? 'random');
 
-        // Simulate response using service
-        $simulator = app(AiResponseSimulator::class);
-        $response = $simulator->simulate($model, $prompt, $userMessage, $responseTime);
+        try {
+            $simulator = app(AiResponseSimulator::class);
+            $response = $simulator->simulate($model, $prompt, $userMessage, $responseTime);
 
-        $this->addMessage('ai', $response);
-    }
+            $this->addMessage('ai', $response);
+            $this->dispatch('message-added');
 
-    private function shouldTriggerResponse(string $message): bool
-    {
-        $triggerWords = $this->currentConfig['trigger_words'] ?? '';
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur lors de la simulation IA', [
+                'model' => $model->name,
+                'error' => $e->getMessage(),
+            ]);
 
-        if (empty(trim($triggerWords))) {
-            return true; // No trigger words = respond to all
+            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
+            throw $e;
         }
-
-        $triggers = array_map('trim', explode(',', strtolower($triggerWords)));
-        $messageWords = str_word_count(strtolower($message), 1);
-
-        foreach ($triggers as $trigger) {
-            if (in_array($trigger, $messageWords, true)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public function render()

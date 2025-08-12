@@ -58,7 +58,7 @@
                             </select>
                             @error('locale') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
-                        <button type="submit" class="btn btn-primary">{{ __('profile.update') }}</button>
+                        <button type="submit" class="btn btn-whatsapp">{{ __('profile.update') }}</button>
                     </form>
                 </div>
             </div>

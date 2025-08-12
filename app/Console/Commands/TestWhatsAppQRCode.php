@@ -16,8 +16,8 @@ class TestWhatsAppQRCode extends Command
 
         $this->info("📱 Génération QR code pour utilisateur: {$userId}");
         $this->info('⏳ Récupération QR...');
-        //generate a unique session name
-        $sessionName = 'test_' . uniqid();
+        // generate a unique session name
+        $sessionName = 'test_'.uniqid();
 
         $result = $qrService->generateQRCode($sessionName, $userId);
 

@@ -21,7 +21,7 @@ class SystemAccountWithdrawalForm extends Component
 
     protected function customRequest(): FormRequest
     {
-        return new WithdrawalRequest();
+        return new WithdrawalRequest;
     }
 
     public function rules(): array

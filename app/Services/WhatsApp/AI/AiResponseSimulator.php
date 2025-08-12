@@ -4,108 +4,62 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp\AI;
 
+use App\DTOs\AI\AiRequestDTO;
+use App\Enums\AiProvider;
 use App\Enums\ResponseTime;
 use App\Models\AiModel;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 final class AiResponseSimulator
 {
     public function simulate(AiModel $model, string $prompt, string $userMessage, ResponseTime $responseTime): string
     {
-        // Simulate realistic AI response based on model and prompt
-        $response = $this->generateSimulatedResponse($model, $prompt, $userMessage);
+        Log::info('🤖 Début simulation IA', [
+            'model_name' => $model->name,
+            'provider' => $model->provider,
+            'user_message' => $userMessage,
+            'prompt_length' => strlen($prompt),
+            'response_time' => $responseTime->value,
+        ]);
 
-        // Add simulation metadata
-        $metadata = $this->generateMetadata($model, $responseTime);
+        try {
+            Log::info('🔍 Création provider enum', [
+                'model_provider' => $model->provider,
+                'model_provider_type' => gettype($model->provider),
+                'is_empty' => empty($model->provider),
+            ]);
 
-        return $response . "\n\n" . $metadata;
-    }
+            $provider = AiProvider::from($model->provider);
+            Log::info('✅ Provider créé', ['provider' => $provider->value]);
 
-    private function generateSimulatedResponse(AiModel $model, string $prompt, string $userMessage): string
-    {
-        // Simple response simulation based on common patterns
-        $responses = [
-            'greeting' => $this->getGreetingResponse($prompt),
-            'question' => $this->getQuestionResponse($prompt, $userMessage),
-            'help' => $this->getHelpResponse($prompt),
-            'farewell' => $this->getFarewellResponse($prompt),
-            'default' => $this->getDefaultResponse($prompt, $userMessage)
-        ];
+            $aiService = $provider->createService();
+            Log::info('✅ Service créé', ['service_class' => get_class($aiService)]);
 
-        $messageType = $this->detectMessageType($userMessage);
+            $request = new AiRequestDTO(
+                systemPrompt: $prompt,
+                userMessage: $userMessage,
+                config: [],
+                context: []
+            );
 
-        return $responses[$messageType] ?? $responses['default'];
-    }
+            $response = $aiService->chat($model, $request);
 
-    private function detectMessageType(string $message): string
-    {
-        $message = strtolower($message);
+            Log::info('✅ Réponse IA générée', [
+                'model_name' => $model->name,
+                'response_length' => strlen($response->content),
+                'success' => true,
+            ]);
 
-        if (preg_match('/\b(salut|bonjour|hello|bonsoir)\b/', $message)) {
-            return 'greeting';
+            return $response->content;
+
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur simulation IA', [
+                'model_name' => $model->name,
+                'error' => $e->getMessage(),
+                'user_message' => $userMessage,
+            ]);
+
+            throw $e;
         }
-
-        if (preg_match('/\b(aide|help|support|problème)\b/', $message)) {
-            return 'help';
-        }
-
-        if (preg_match('/\b(au revoir|merci|bye|à bientôt)\b/', $message)) {
-            return 'farewell';
-        }
-
-        if (preg_match('/\?/', $message)) {
-            return 'question';
-        }
-
-        return 'default';
-    }
-
-    private function getGreetingResponse(string $prompt): string
-    {
-        $responses = [
-            "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
-            "Salut ! Que puis-je faire pour vous ?",
-            "Bonjour ! Je suis là pour vous assister.",
-        ];
-
-        return $responses[array_rand($responses)];
-    }
-
-    private function getQuestionResponse(string $prompt, string $message): string
-    {
-        return "C'est une excellente question ! Basé sur votre message « {$message} », voici ma réponse simulée selon le contexte : {$prompt}";
-    }
-
-    private function getHelpResponse(string $prompt): string
-    {
-        return "Je suis là pour vous aider ! Voici comment je peux vous assister selon ma configuration : " . substr($prompt, 0, 100) . "...";
-    }
-
-    private function getFarewellResponse(string $prompt): string
-    {
-        $responses = [
-            "Merci de m'avoir contacté ! N'hésitez pas à revenir si vous avez d'autres questions.",
-            "Au revoir ! J'espère avoir pu vous aider.",
-            "À bientôt ! Je reste disponible si besoin.",
-        ];
-
-        return $responses[array_rand($responses)];
-    }
-
-    private function getDefaultResponse(string $prompt, string $message): string
-    {
-        return "J'ai bien reçu votre message « {$message} ». Selon ma configuration, voici ma réponse simulée basée sur : " . substr($prompt, 0, 80) . "...";
-    }
-
-    private function generateMetadata(AiModel $model, ResponseTime $responseTime): string
-    {
-        $delay = $responseTime->getRandomDelay();
-        $estimatedCost = $model->getEstimatedCostFor(150);
-
-        return "📊 **Simulation Info:**\n" .
-               "• Modèle: {$model->name}\n" .
-               "• Délai: {$delay}s ({$responseTime->label})\n" .
-               "• Coût estimé: " . number_format($estimatedCost, 6) . " USD\n" .
-               "• Simulé à: " . Carbon::now()->format('H:i:s');
     }
 }

@@ -22,7 +22,7 @@ class SystemAccountRechargeForm extends Component
 
     protected function customRequest(): FormRequest
     {
-        return new RechargeRequest();
+        return new RechargeRequest;
     }
 
     public function rules(): array

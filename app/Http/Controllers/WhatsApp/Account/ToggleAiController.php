@@ -6,8 +6,8 @@ namespace App\Http\Controllers\WhatsApp\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAccount;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 final class ToggleAiController extends Controller
 {
@@ -23,7 +23,7 @@ final class ToggleAiController extends Controller
         if ($account->user_id !== $request->user()->id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Accès non autorisé à ce compte WhatsApp.'
+                'message' => 'Accès non autorisé à ce compte WhatsApp.',
             ], 403);
         }
 
@@ -32,19 +32,19 @@ final class ToggleAiController extends Controller
         try {
             if ($enable) {
                 // Enable AI agent with default model if none selected
-                if (!$account->ai_model_id) {
+                if (! $account->ai_model_id) {
                     $defaultModel = \App\Models\AiModel::getDefault();
-                    if (!$defaultModel) {
+                    if (! $defaultModel) {
                         return response()->json([
                             'success' => false,
-                            'message' => 'Aucun modèle IA disponible. Veuillez d\'abord configurer l\'agent IA.'
+                            'message' => 'Aucun modèle IA disponible. Veuillez d\'abord configurer l\'agent IA.',
                         ], 400);
                     }
                     $account->ai_model_id = $defaultModel->id;
                 }
                 $account->ai_agent_enabled = true;
                 $account->save();
-                
+
                 $message = 'Agent IA activé avec succès !';
             } else {
                 $account->disableAiAgent();
@@ -53,13 +53,13 @@ final class ToggleAiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la modification : ' . $e->getMessage()
+                'message' => 'Erreur lors de la modification : '.$e->getMessage(),
             ], 500);
         }
     }

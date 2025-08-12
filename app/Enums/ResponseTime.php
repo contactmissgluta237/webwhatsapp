@@ -40,31 +40,20 @@ final class ResponseTime extends Enum
         ];
     }
 
-    public function getMinDelay(): int
-    {
-        return match ($this->value) {
-            'random' => 30,
-            default => (int) $this->value,
-        };
-    }
-
-    public function getMaxDelay(): int
-    {
-        return match ($this->value) {
-            'random' => 180,
-            default => (int) $this->value,
-        };
-    }
-
-    public function getRandomDelay(): int
+    public function getDelay(): int
     {
         if ($this->value === 'random') {
-            // Génère un nouveau délai aléatoire à chaque appel
-            $possibleDelays = range(30, 180, 15); // [30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180]
-            return $possibleDelays[array_rand($possibleDelays)];
+            return $this->getRandomDelayInSeconds();
         }
-        
+
         return (int) $this->value;
+    }
+
+    private function getRandomDelayInSeconds(): int
+    {
+        // Pour les tests : entre 3 et 5 secondes (plus rapide pour débugger)
+        $possibleDelays = range(3, 5);
+        return $possibleDelays[array_rand($possibleDelays)];
     }
 
     public function getDescription(): string

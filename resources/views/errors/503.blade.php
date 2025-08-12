@@ -7,7 +7,7 @@
                 <h1 class="display-1 fw-bold text-primary">503</h1>
                 <h2 class="display-4 fw-bold">Service indisponible</h2>
                 <p class="lead">Désolé, le service est temporairement indisponible. Veuillez réessayer plus tard.</p>
-                <a href="{{ url('/') }}" class="btn btn-primary mt-4">Retour à l'accueil</a>
+                <a href="{{ url('/') }}" class="btn btn-whatsapp mt-4">Retour à l'accueil</a>
             </div>
         </div>
     </div>

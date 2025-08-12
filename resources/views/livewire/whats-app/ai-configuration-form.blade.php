@@ -125,7 +125,7 @@
         <div class="form-row save-row">
             <div class="col-12">
                 <button type="submit" 
-                        class="btn btn-primary btn-lg btn-block save-configuration-btn" 
+                        class="btn btn-whatsapp btn-lg btn-block save-configuration-btn" 
                         wire:loading.attr="disabled"
                         wire:target="save">
                     <span wire:loading.remove wire:target="save">

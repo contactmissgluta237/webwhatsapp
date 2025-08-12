@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\SpatieEnumCast;
+use App\Enums\AiProvider;
+use App\Services\AI\AiServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,13 +18,13 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $name
- * @property string $provider
+ * @property AiProvider $provider
  * @property string $model_identifier
  * @property string|null $description
  * @property string|null $endpoint_url
  * @property bool $requires_api_key
  * @property string|null $api_key
- * @property array|null $model_config
+ * @property array $model_config
  * @property bool $is_active
  * @property bool $is_default
  * @property float|null $cost_per_1k_tokens
@@ -38,11 +41,6 @@ final class AiModel extends Model
 
     protected $table = 'ai_models';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'provider',
@@ -58,12 +56,8 @@ final class AiModel extends Model
         'max_context_length',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string|class-string>
-     */
     protected $casts = [
+        'provider' => SpatieEnumCast::class.':'.AiProvider::class,
         'requires_api_key' => 'boolean',
         'is_active' => 'boolean',
         'is_default' => 'boolean',
@@ -71,13 +65,15 @@ final class AiModel extends Model
         'cost_per_1k_tokens' => 'decimal:6',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'api_key',
+    ];
+
+    protected $attributes = [
+        'model_config' => '{}',
+        'requires_api_key' => true,
+        'is_active' => false,
+        'is_default' => false,
     ];
 
     // ================================================================================
@@ -98,80 +94,133 @@ final class AiModel extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeByProvider($query, string $provider)
+    public function scopeByProvider($query, AiProvider $provider)
     {
         return $query->where('provider', $provider);
     }
 
     // ================================================================================
-    // PUBLIC METHODS
+    // CONFIGURATION METHODS
     // ================================================================================
 
-    public function isOpenAI(): bool
+    /**
+     * Retourne la configuration mergée (défaut + modèle + override)
+     */
+    public function getMergedConfig(array $overrideConfig = []): array
     {
-        return $this->provider === 'openai';
+        return array_merge(
+            $this->provider->getDefaultConfig(),
+            $this->model_config,
+            $overrideConfig
+        );
     }
 
-    public function isAnthropic(): bool
+    /**
+     * Retourne une valeur de configuration spécifique
+     */
+    public function getConfigValue(string $key, mixed $default = null, array $overrides = []): mixed
     {
-        return $this->provider === 'anthropic';
+        return $this->getMergedConfig($overrides)[$key] ?? $default;
     }
 
-    public function isOllama(): bool
-    {
-        return $this->provider === 'ollama';
-    }
-
-    public function isDeepSeek(): bool
-    {
-        return $this->provider === 'deepseek';
-    }
+    // ================================================================================
+    // VALIDATION METHODS
+    // ================================================================================
 
     public function hasApiKey(): bool
     {
-        return !empty($this->api_key);
+        return ! $this->requires_api_key || ! empty($this->api_key);
+    }
+
+    public function hasEndpoint(): bool
+    {
+        return ! empty($this->endpoint_url);
     }
 
     public function isConfigured(): bool
     {
-        if ($this->requires_api_key && !$this->hasApiKey()) {
-            return false;
-        }
-
-        return !empty($this->endpoint_url);
+        return $this->hasApiKey() && $this->hasEndpoint();
     }
 
-    public function getEstimatedCostFor(int $tokens): float
+    public function validateRequiredFields(): array
     {
-        if (!$this->cost_per_1k_tokens) {
-            return 0.0;
+        $errors = [];
+        $requiredFields = $this->provider->getRequiredFields();
+
+        foreach ($requiredFields as $field) {
+            if (empty($this->$field)) {
+                $errors[] = "Le champ '$field' est requis pour {$this->provider->getLabel()}";
+            }
         }
 
-        return ($tokens / 1000) * $this->cost_per_1k_tokens;
+        return $errors;
+    }
+
+    // ================================================================================
+    // PROVIDER DELEGATION METHODS
+    // ================================================================================
+
+    public function getService(): AiServiceInterface
+    {
+        return $this->provider->getService();
+    }
+
+    public function testConnection(): bool
+    {
+        return $this->getService()->testConnection($this);
+    }
+
+    public function validateConfiguration(): bool
+    {
+        return $this->getService()->validateConfiguration($this);
     }
 
     public function getProviderBadgeColor(): string
     {
-        return match ($this->provider) {
-            'openai' => 'success',
-            'anthropic' => 'warning',
-            'deepseek' => 'info',
-            'ollama' => 'primary',
-            default => 'secondary',
-        };
+        return $this->provider->getBadgeColor();
     }
+
+    public function getProviderIcon(): string
+    {
+        return $this->provider->getIcon();
+    }
+
+    // ================================================================================
+    // COST CALCULATION
+    // ================================================================================
+
+    public function getEstimatedCostFor(int $tokens): float
+    {
+        if (! $this->cost_per_1k_tokens) {
+            return 0.0;
+        }
+
+        return ($tokens / 1000) * (float) $this->cost_per_1k_tokens;
+    }
+
+    // ================================================================================
+    // STATIC METHODS
+    // ================================================================================
 
     public static function getDefault(): ?self
     {
-        return static::where('is_default', true)
+        return self::where('is_default', true)
             ->where('is_active', true)
             ->first();
     }
 
     public static function getActiveModels(): Collection
     {
-        return static::where('is_active', true)
+        return self::where('is_active', true)
             ->orderBy('is_default', 'desc')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public static function getByProvider(AiProvider $provider): Collection
+    {
+        return self::where('provider', $provider)
+            ->where('is_active', true)
             ->orderBy('name')
             ->get();
     }

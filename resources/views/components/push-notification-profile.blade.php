@@ -83,7 +83,7 @@
         <div class="row">
             <div class="col-md-8">
                 <div id="push-profile-actions">
-                    <button id="profile-enable-push" class="btn btn-primary mr-2" onclick="profileEnablePush()"
+                    <button id="profile-enable-push" class="btn btn-whatsapp mr-2" onclick="profileEnablePush()"
                         style="display: none;">
                         <i class="ft-bell mr-1"></i>
                         Activer les notifications

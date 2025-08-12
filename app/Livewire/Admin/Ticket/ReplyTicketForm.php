@@ -29,7 +29,7 @@ class ReplyTicketForm extends Component
 
     protected function customRequest(): FormRequest
     {
-        return new ReplyTicketRequest();
+        return new ReplyTicketRequest;
     }
 
     public function rules(): array
