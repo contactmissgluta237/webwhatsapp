@@ -70,7 +70,7 @@
                             @php $selectedModel = $availableModels->find($ai_model_id) @endphp
                             @if($selectedModel)
                                 <div class="mt-2">
-                                    <span class="badge badge-{{ $selectedModel->getProviderBadgeColor() }} model-badge">
+                                    <span class="badge {{ $selectedModel->getProviderBadgeClass() }} model-badge">
                                         <i class="la la-server"></i> {{ ucfirst($selectedModel->provider) }}
                                     </span>
                                     @if($selectedModel->requires_api_key && !$selectedModel->hasApiKey())

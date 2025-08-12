@@ -149,7 +149,7 @@ final class AiModel extends Model
 
         foreach ($requiredFields as $field) {
             if (empty($this->$field)) {
-                $errors[] = "Le champ '$field' est requis pour {$this->provider->getLabel()}";
+                $errors[] = "Le champ '$field' est requis pour {$this->provider->label}";
             }
         }
 
@@ -175,9 +175,9 @@ final class AiModel extends Model
         return $this->getService()->validateConfiguration($this);
     }
 
-    public function getProviderBadgeColor(): string
+    public function getProviderBadgeClass(): string
     {
-        return $this->provider->getBadgeColor();
+        return $this->provider->getBadgeClass();
     }
 
     public function getProviderIcon(): string

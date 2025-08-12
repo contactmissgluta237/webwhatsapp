@@ -160,13 +160,13 @@ final class ConfigureAiAgent extends Component
             $this->simulationResponse .= "Message reçu: \"{$this->simulationMessage}\"\n\n";
 
             if ($this->ai_response_time === 'random') {
-                $delayExample1 = $responseTime->getRandomDelay();
-                $delayExample2 = $responseTime->getRandomDelay();
-                $delayExample3 = $responseTime->getRandomDelay();
+                $delayExample1 = $responseTime->getDelay();
+                $delayExample2 = $responseTime->getDelay();
+                $delayExample3 = $responseTime->getDelay();
                 $this->simulationResponse .= "Délai de réponse: {$responseTime->label}\n";
                 $this->simulationResponse .= "Exemples: {$delayExample1}s, {$delayExample2}s, {$delayExample3}s (varie à chaque message)\n";
             } else {
-                $this->simulationResponse .= "Délai de réponse: {$responseTime->label} ({$responseTime->getRandomDelay()}s fixe)\n";
+                $this->simulationResponse .= "Délai de réponse: {$responseTime->label} ({$responseTime->getDelay()}s fixe)\n";
             }
 
             $this->simulationResponse .= 'Coût estimé: '.number_format($selectedModel->getEstimatedCostFor(150), 6).' USD';

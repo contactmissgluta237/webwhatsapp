@@ -75,9 +75,24 @@
 
     <!-- Prompt de l'IA -->
     <div class="form-group">
-        <label for="agent_prompt" class="form-label required">
-            <i class="la la-comment-dots"></i> {{ __('Instructions pour l\'IA') }}
-        </label>
+        <div class="d-flex align-items-center justify-content-between">
+            <label for="agent_prompt" class="form-label required mb-0">
+                <i class="la la-comment-dots"></i> {{ __('Instructions pour l\'IA') }}
+            </label>
+            <button type="button" 
+                    class="btn btn-outline-primary btn-sm" 
+                    wire:click="enhancePrompt" 
+                    wire:loading.attr="disabled"
+                    wire:target="enhancePrompt"
+                    @if(empty(trim($agent_prompt))) disabled @endif>
+                <span wire:loading.remove wire:target="enhancePrompt">
+                    <i class="la la-magic"></i> {{ __('Améliorer le prompt') }}
+                </span>
+                <span wire:loading wire:target="enhancePrompt">
+                    <i class="la la-spinner la-spin"></i> {{ __('Amélioration...') }}
+                </span>
+            </button>
+        </div>
         <textarea wire:model.live="agent_prompt" 
                   id="agent_prompt" 
                   class="form-control @error('agent_prompt') is-invalid @enderror" 

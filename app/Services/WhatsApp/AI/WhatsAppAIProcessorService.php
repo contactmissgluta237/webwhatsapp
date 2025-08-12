@@ -7,8 +7,6 @@ namespace App\Services\WhatsApp\AI;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\WhatsAppAccount;
-use App\Services\AI\AiServiceInterface;
-use App\Services\WhatsApp\AI\WhatsAppAIService;
 use Illuminate\Support\Facades\Log;
 
 final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInterface
@@ -121,6 +119,7 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
 
             // Utiliser le service centralisé
             $whatsappAccount = $conversation->whatsAppAccount;
+
             return $this->whatsappAIService->generateResponse($whatsappAccount, $messageText, $context);
 
         } catch (\Exception $e) {

@@ -8,6 +8,7 @@ use App\Enums\ResponseTime;
 use App\Http\Requests\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Contracts\PromptEnhancementInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
@@ -29,9 +30,15 @@ final class AiConfigurationForm extends Component
     public string $contextual_information = '';
     public string $ignore_words = '';
     public string $response_time = 'random';
-    
+    public bool $stop_on_human_reply = false;
+
     // File upload
     public $contextDocuments;
+
+    // Prompt enhancement properties
+    public string $enhancedPrompt = '';
+    public bool $showEnhancementModal = false;
+    public bool $isEnhancing = false;
 
     public function mount(WhatsAppAccount $account): void
     {
@@ -79,7 +86,7 @@ final class AiConfigurationForm extends Component
     public function updatedAiModelId(): void
     {
         $this->dispatch('model-changed', modelId: $this->ai_model_id);
-        
+
         Log::info('🤖 Modèle IA mis à jour en temps réel', [
             'account_id' => $this->account->id,
             'new_model_id' => $this->ai_model_id,
@@ -118,10 +125,71 @@ final class AiConfigurationForm extends Component
         ]);
     }
 
+    public function enhancePrompt(): void
+    {
+        if (empty(trim($this->agent_prompt))) {
+            $this->dispatch('show-toast', [
+                'type' => 'warning',
+                'message' => __('Veuillez d\'abord saisir un prompt à améliorer'),
+            ]);
+
+            return;
+        }
+
+        $this->isEnhancing = true;
+
+        try {
+            $enhancementService = app(PromptEnhancementInterface::class);
+            $this->enhancedPrompt = $enhancementService->enhancePrompt($this->account, $this->agent_prompt);
+            $this->showEnhancementModal = true;
+
+            Log::info('✨ Prompt amélioré avec succès', [
+                'account_id' => $this->account->id,
+                'original_length' => strlen($this->agent_prompt),
+                'enhanced_length' => strlen($this->enhancedPrompt),
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Erreur amélioration prompt', [
+                'account_id' => $this->account->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => __('Erreur lors de l\'amélioration : :error', ['error' => $e->getMessage()]),
+            ]);
+        } finally {
+            $this->isEnhancing = false;
+        }
+    }
+
+    public function acceptEnhancedPrompt(): void
+    {
+        $this->agent_prompt = $this->enhancedPrompt;
+        $this->showEnhancementModal = false;
+        $this->enhancedPrompt = '';
+
+        $this->dispatch('config-changed-live', [
+            'agent_prompt' => $this->agent_prompt,
+        ]);
+
+        $this->dispatch('show-toast', [
+            'type' => 'success',
+            'message' => __('Prompt amélioré appliqué avec succès'),
+        ]);
+    }
+
+    public function rejectEnhancedPrompt(): void
+    {
+        $this->showEnhancementModal = false;
+        $this->enhancedPrompt = '';
+    }
+
     public function removeDocument(int $mediaId): void
     {
         $media = $this->account->getMedia('context_documents')->firstWhere('id', $mediaId);
-        
+
         if ($media) {
             $media->delete();
             $this->dispatch('document-removed', [
@@ -144,6 +212,7 @@ final class AiConfigurationForm extends Component
                 'contextual_information' => $validatedData['contextual_information'] ?: null,
                 'ignore_words' => $validatedData['ignore_words'] ?: null,
                 'response_time' => $validatedData['response_time'],
+                'stop_on_human_reply' => $validatedData['stop_on_human_reply'] ?? false,
             ]);
 
             $this->dispatch('configuration-saved', [
@@ -189,6 +258,7 @@ final class AiConfigurationForm extends Component
         $this->contextual_information = $this->account->contextual_information ?? '';
         $this->ignore_words = $this->account->ignore_words ? implode(', ', $this->account->ignore_words) : '';
         $this->response_time = $this->account->response_time ?? 'random';
+        $this->stop_on_human_reply = (bool) $this->account->stop_on_human_reply;
     }
 
     private function setDefaultModel(): void

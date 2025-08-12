@@ -69,9 +69,9 @@ final class AiResponseSimulator
     private function buildPromptWithContext(string $basePrompt, array $conversationContext, string $userMessage): string
     {
         $fullPrompt = $basePrompt;
-        
+
         // Ajouter le contexte conversationnel si il existe
-        if (!empty($conversationContext)) {
+        if (! empty($conversationContext)) {
             $fullPrompt .= "\n\n=== HISTORIQUE DE CONVERSATION ===\n";
             foreach ($conversationContext as $msg) {
                 $role = $msg['role'] === 'user' ? 'Client' : 'Assistant';
@@ -80,7 +80,7 @@ final class AiResponseSimulator
             $fullPrompt .= "=== FIN HISTORIQUE ===\n\n";
             $fullPrompt .= "IMPORTANT: Analyse le ton et le style de tes précédentes réponses dans l'historique et RESTE COHÉRENT avec ce style.\n\n";
         }
-        
-        return $fullPrompt . "Nouveau message du client: {$userMessage}\n\nRéponds de manière cohérente avec ton style précédent:";
+
+        return $fullPrompt."Nouveau message du client: {$userMessage}\n\nRéponds de manière cohérente avec ton style précédent:";
     }
 }

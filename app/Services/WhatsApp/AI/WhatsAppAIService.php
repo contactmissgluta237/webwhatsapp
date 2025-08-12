@@ -22,7 +22,7 @@ final class WhatsAppAIService
     ): ?array {
         try {
             $prompt = $this->promptBuilder->buildPrompt($account, $userMessage, $conversationContext);
-            
+
             Log::info('🤖 Génération réponse IA centralisée', [
                 'account_id' => $account->id,
                 'prompt_length' => strlen($prompt),
@@ -31,9 +31,10 @@ final class WhatsAppAIService
 
             // Obtenir le service IA depuis le modèle configuré
             $model = $account->aiModel ?? $account->getEffectiveAiModel();
-            
-            if (!$model) {
+
+            if (! $model) {
                 Log::warning('❌ Aucun modèle IA configuré', ['account_id' => $account->id]);
+
                 return $this->fallbackResponse($userMessage);
             }
 
@@ -50,7 +51,7 @@ final class WhatsAppAIService
 
             $response = $aiService->chat($model, $aiRequest);
 
-            if ($response && !empty($response->content)) {
+            if ($response && ! empty($response->content)) {
                 return [
                     'response' => $response->content,
                     'model' => $model->name,
@@ -74,7 +75,7 @@ final class WhatsAppAIService
     private function fallbackResponse(string $userMessage): array
     {
         return [
-            'response' => "Désolé, je rencontre actuellement des difficultés techniques. Pouvez-vous reformuler votre demande ?",
+            'response' => 'Désolé, je rencontre actuellement des difficultés techniques. Pouvez-vous reformuler votre demande ?',
             'model' => 'fallback',
             'confidence' => 0.0,
         ];

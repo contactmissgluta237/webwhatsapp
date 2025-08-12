@@ -24,3 +24,5 @@ npm-debug.log
 bin/
 tests/Curl/token.txt
 nodejs/whatsapp-bridge/.wwebjs_auth/
+nodejs/whatsapp-bridge/logs/
+nodejs/whatsapp-bridge/src/data/

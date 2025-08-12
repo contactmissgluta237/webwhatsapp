@@ -73,12 +73,12 @@ final class WhatsAppAIServiceTest extends TestCase
         $this->assertArrayHasKey('response', $response);
         $this->assertArrayHasKey('model', $response);
         $this->assertNotEmpty($response['response']);
-        
+
         // Vérifier que la réponse contient un salut (bonjour, salut, etc.)
         $responseText = strtolower($response['response']);
         $this->assertTrue(
-            str_contains($responseText, 'bonjour') || 
-            str_contains($responseText, 'salut') || 
+            str_contains($responseText, 'bonjour') ||
+            str_contains($responseText, 'salut') ||
             str_contains($responseText, 'hello'),
             'La réponse devrait contenir un salut'
         );
@@ -97,8 +97,8 @@ final class WhatsAppAIServiceTest extends TestCase
         // Vérifier que la réponse contient un salut (bonjour, salut, etc.)
         $responseText = strtolower($firstResponse['response']);
         $this->assertTrue(
-            str_contains($responseText, 'bonjour') || 
-            str_contains($responseText, 'salut') || 
+            str_contains($responseText, 'bonjour') ||
+            str_contains($responseText, 'salut') ||
             str_contains($responseText, 'hello'),
             'La réponse devrait contenir un salut'
         );
@@ -117,7 +117,7 @@ final class WhatsAppAIServiceTest extends TestCase
         );
 
         $this->assertNotNull($secondResponse);
-        
+
         // Vérifier qu'il mentionne les téléphones du contexte (test principal)
         $this->assertStringContainsStringIgnoringCase('pixel', $secondResponse['response']);
         $this->assertStringContainsStringIgnoringCase('iphone', $secondResponse['response']);
@@ -134,11 +134,11 @@ final class WhatsAppAIServiceTest extends TestCase
         );
 
         $this->assertNotNull($thirdResponse);
-        
+
         // Vérifier qu'il mentionne le prix du contexte (100, mille, 000, etc.)
         $responseText = strtolower($thirdResponse['response']);
         $this->assertTrue(
-            str_contains($responseText, '100') && 
+            str_contains($responseText, '100') &&
             (str_contains($responseText, 'mille') || str_contains($responseText, '000')),
             'La réponse devrait mentionner le prix 100 avec mille ou 000'
         );
@@ -153,11 +153,11 @@ final class WhatsAppAIServiceTest extends TestCase
         );
 
         $this->assertNotNull($response);
-        
+
         // Doit mentionner les produits du contexte
         $responseText = strtolower($response['response']);
         $this->assertTrue(
-            str_contains($responseText, 'pixel 9') || 
+            str_contains($responseText, 'pixel 9') ||
             str_contains($responseText, '900') ||
             str_contains($responseText, 'neuf'),
             'La réponse devrait mentionner les téléphones neufs du contexte'
@@ -199,11 +199,11 @@ final class WhatsAppAIServiceTest extends TestCase
         );
 
         $this->assertNotNull($response);
-        
+
         // Même avec un message familier, la réponse doit rester professionnelle
         $responseText = strtolower($response['response']);
         $this->assertFalse(
-            str_contains($responseText, 'mec') || 
+            str_contains($responseText, 'mec') ||
             str_contains($responseText, 'salut mec'),
             'La réponse ne devrait pas copier le ton familier'
         );

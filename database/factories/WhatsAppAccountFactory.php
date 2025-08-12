@@ -33,6 +33,7 @@ final class WhatsAppAccountFactory extends Factory
             'response_time' => 'random',
             'agent_prompt' => 'Tu es un assistant WhatsApp utile et professionnel.',
             'trigger_words' => null,
+            'stop_on_human_reply' => false,
             'last_ai_response_at' => null,
             'daily_ai_responses' => 0,
         ];

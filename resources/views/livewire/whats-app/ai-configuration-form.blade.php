@@ -108,4 +108,7 @@
             </div>
         </div>
     </form>
+
+    <!-- Modal d'amélioration de prompt -->
+    @include('livewire.whats-app.modals.prompt-enhancement')
 </div>

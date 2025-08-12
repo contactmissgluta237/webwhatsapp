@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Channels\PushNotificationChannel;
+use App\Contracts\PromptEnhancementInterface;
 use App\Models\Ticket;
 use App\Policies\TicketPolicy;
+use App\Services\AI\PromptEnhancementService;
 use App\Services\Shared\Media\MediaService;
 use App\Services\Shared\Media\MediaServiceInterface;
 use Illuminate\Notifications\ChannelManager;
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(MediaServiceInterface::class, MediaService::class);
+        $this->app->bind(PromptEnhancementInterface::class, PromptEnhancementService::class);
     }
 
     /**

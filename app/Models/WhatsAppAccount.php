@@ -34,6 +34,7 @@ use Spatie\MediaLibrary\HasMedia;
  * @property string $response_time
  * @property string|null $agent_prompt
  * @property array|null $trigger_words
+ * @property bool $stop_on_human_reply
  * @property string|null $contextual_information
  * @property array|null $ignore_words
  * @property Carbon|null $last_ai_response_at
@@ -74,6 +75,7 @@ final class WhatsAppAccount extends Model implements HasMedia
         'response_time',
         'agent_prompt',
         'trigger_words',
+        'stop_on_human_reply',
         'contextual_information',
         'ignore_words',
         'last_ai_response_at',
@@ -90,6 +92,7 @@ final class WhatsAppAccount extends Model implements HasMedia
         'last_seen_at' => 'datetime',
         'session_data' => 'array',
         'agent_enabled' => 'boolean',
+        'stop_on_human_reply' => 'boolean',
         'trigger_words' => 'array',
         'ignore_words' => 'array',
         'last_ai_response_at' => 'datetime',
@@ -232,6 +235,7 @@ final class WhatsAppAccount extends Model implements HasMedia
     public function getEffectiveAiModel(): ?AiModel
     {
         $modelId = $this->getEffectiveAiModelId();
+
         return $modelId ? AiModel::find($modelId) : null;
     }
 

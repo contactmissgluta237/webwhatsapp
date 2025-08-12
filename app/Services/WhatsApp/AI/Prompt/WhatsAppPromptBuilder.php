@@ -16,22 +16,22 @@ final class WhatsAppPromptBuilder
         $basePrompt = $this->buildBasePrompt($account);
         $contextualInfo = $this->buildContextualInfo($account);
         $conversationHistory = $this->buildConversationHistory($conversationContext);
-        
-        return $basePrompt . $contextualInfo . $conversationHistory . 
+
+        return $basePrompt.$contextualInfo.$conversationHistory.
                "Nouveau message du client: {$userMessage}\n\nRéponds de manière cohérente avec ton style précédent:";
     }
 
     private function buildBasePrompt(WhatsAppAccount $account): string
     {
         $basePrompt = $account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel.';
-        
+
         $consistencyRules = "\n\nRÈGLES IMPORTANTES :\n";
         $consistencyRules .= "- MAINTIENS UN TON COHÉRENT ET PROFESSIONNEL tout au long de la conversation\n";
         $consistencyRules .= "- ÉVITE les changements brusques de personnalité ou de style\n";
         $consistencyRules .= "- RESTE DANS LE MÊME REGISTRE DE LANGAGE que tes précédentes réponses\n";
         $consistencyRules .= "- GARDE un style professionnel mais chaleureux\n";
-        
-        return $basePrompt . $consistencyRules;
+
+        return $basePrompt.$consistencyRules;
     }
 
     private function buildContextualInfo(WhatsAppAccount $account): string
@@ -40,9 +40,9 @@ final class WhatsAppPromptBuilder
             return '';
         }
 
-        return "\n\n=== INFORMATIONS CONTEXTUELLES ===\n" .
-               $account->contextual_information .
-               "\n=== FIN DES INFORMATIONS CONTEXTUELLES ===\n\n" .
+        return "\n\n=== INFORMATIONS CONTEXTUELLES ===\n".
+               $account->contextual_information.
+               "\n=== FIN DES INFORMATIONS CONTEXTUELLES ===\n\n".
                "Utilise ces informations contextuelles pour personnaliser tes réponses selon l'activité et les services de l'entreprise.";
     }
 

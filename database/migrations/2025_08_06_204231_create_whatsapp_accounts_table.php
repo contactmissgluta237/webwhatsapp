@@ -31,6 +31,7 @@ return new class extends Migration
             $table->string('response_time')->default('random');
             $table->text('agent_prompt')->nullable();
             $table->json('trigger_words')->nullable();
+            $table->boolean('stop_on_human_reply')->default(false);
             
             $table->text('contextual_information')->nullable();
             

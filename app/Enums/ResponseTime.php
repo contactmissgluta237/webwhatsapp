@@ -53,6 +53,7 @@ final class ResponseTime extends Enum
     {
         // Pour les tests : entre 3 et 5 secondes (plus rapide pour débugger)
         $possibleDelays = range(3, 5);
+
         return $possibleDelays[array_rand($possibleDelays)];
     }
 

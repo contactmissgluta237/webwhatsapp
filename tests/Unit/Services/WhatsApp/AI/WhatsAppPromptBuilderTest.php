@@ -18,7 +18,7 @@ final class WhatsAppPromptBuilderTest extends TestCase
         parent::setUp();
 
         $this->promptBuilder = app(WhatsAppPromptBuilder::class);
-        
+
         $this->account = new WhatsAppAccount([
             'agent_prompt' => 'Tu es un vendeur de téléphones. Reste professionnel.',
             'contextual_information' => 'Nos produits: Google Pixel 6 à 100k FCFA, iPhone XR d\'occasion à 90k FCFA. Garantie 1 an.',
@@ -91,7 +91,7 @@ final class WhatsAppPromptBuilderTest extends TestCase
     public function test_it_handles_empty_contextual_information(): void
     {
         $this->account->contextual_information = null;
-        
+
         $prompt = $this->promptBuilder->buildPrompt(
             $this->account,
             'Hello',

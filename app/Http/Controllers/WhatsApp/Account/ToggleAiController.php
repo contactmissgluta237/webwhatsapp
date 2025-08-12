@@ -42,7 +42,7 @@ final class ToggleAiController extends Controller
                     }
                     $account->ai_model_id = $defaultModel->id;
                 }
-                $account->ai_agent_enabled = true;
+                $account->agent_enabled = true;
                 $account->save();
 
                 $message = 'Agent IA activé avec succès !';

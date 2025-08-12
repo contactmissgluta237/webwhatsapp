@@ -35,6 +35,7 @@ final class AiConfigurationRequest extends FormRequest
             'contextual_information' => 'nullable|string|max:5000',
             'ignore_words' => 'nullable|string|max:500',
             'response_time' => 'required|string|in:instant,fast,random,slow',
+            'stop_on_human_reply' => 'boolean',
         ];
     }
 

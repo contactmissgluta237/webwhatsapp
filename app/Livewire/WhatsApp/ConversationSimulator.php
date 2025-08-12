@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\WhatsApp;
 
 use App\Enums\ResponseTime;
-use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\AI\WhatsAppAIService;
 use Carbon\Carbon;
@@ -73,7 +72,7 @@ final class ConversationSimulator extends Component
             $this->currentPrompt = $data['agent_prompt'] ?: 'Tu es un assistant WhatsApp utile et professionnel.';
             Log::info('📝 Prompt mis à jour en temps réel', [
                 'new_prompt_length' => strlen($this->currentPrompt),
-                'new_prompt_preview' => substr($this->currentPrompt, 0, 100) . '...',
+                'new_prompt_preview' => substr($this->currentPrompt, 0, 100).'...',
             ]);
         }
 
@@ -118,6 +117,7 @@ final class ConversationSimulator extends Component
 
         if (empty(trim($this->newMessage))) {
             Log::warning('❌ Message vide, abandon');
+
             return;
         }
 
@@ -125,6 +125,7 @@ final class ConversationSimulator extends Component
         if (count($this->simulationMessages) >= $this->maxMessages * 2) {
             Log::warning('⚠️ Limite de messages atteinte');
             $this->addMessage('system', '⚠️ Limite de conversation atteinte (10 échanges maximum)');
+
             return;
         }
 
@@ -188,11 +189,12 @@ final class ConversationSimulator extends Component
             'userMessage_length' => $userMessage ? strlen($userMessage) : 0,
         ]);
 
-        if (!$userMessage) {
+        if (! $userMessage) {
             Log::error('❌ userMessage est null dans processAiResponse');
             $this->addMessage('ai', '❌ Erreur : message utilisateur manquant');
             $this->showTyping = false;
             $this->isProcessing = false;
+
             return;
         }
 
@@ -248,10 +250,10 @@ final class ConversationSimulator extends Component
                 $conversationContext
             );
 
-            if ($aiResponse && !empty($aiResponse['response'])) {
+            if ($aiResponse && ! empty($aiResponse['response'])) {
                 Log::info('✅ Réponse IA générée via service centralisé', [
                     'response_length' => strlen($aiResponse['response']),
-                    'response_preview' => substr($aiResponse['response'], 0, 100) . (strlen($aiResponse['response']) > 100 ? '...' : ''),
+                    'response_preview' => substr($aiResponse['response'], 0, 100).(strlen($aiResponse['response']) > 100 ? '...' : ''),
                 ]);
 
                 $this->addMessage('ai', $aiResponse['response']);

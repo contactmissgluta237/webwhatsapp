@@ -57,6 +57,23 @@
         </small>
     </div>
 
+    <!-- Stopper les réponses quand l'humain répond -->
+    <div class="form-group">
+        <div class="custom-control custom-checkbox">
+            <input type="checkbox" 
+                   wire:model.live="stop_on_human_reply" 
+                   id="stop_on_human_reply" 
+                   class="custom-control-input">
+            <label class="custom-control-label" for="stop_on_human_reply">
+                <i class="la la-hand-stop-o text-warning"></i>
+                {{ __('Stopper les réponses une fois que l\'être humain a répondu') }}
+            </label>
+        </div>
+        <small class="form-text text-muted">
+            <i class="la la-info-circle"></i> {{ __('L\'IA cessera de répondre automatiquement dès qu\'un humain intervient dans la conversation') }}
+        </small>
+    </div>
+
     <!-- Aperçu des paramètres -->
     <div class="settings-preview bg-light rounded p-4 mt-4">
         <h6 class="text-primary mb-3">
