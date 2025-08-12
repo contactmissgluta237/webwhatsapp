@@ -8,12 +8,13 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\AiServiceInterface;
+use App\Services\WhatsApp\AI\WhatsAppAIService;
 use Illuminate\Support\Facades\Log;
 
 final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInterface
 {
     public function __construct(
-        private readonly AiServiceInterface $aiService,
+        private readonly WhatsAppAIService $whatsappAIService,
     ) {}
 
     public function processIncomingMessage(string $sessionId, string $sessionName, array $messageData): array
@@ -118,20 +119,9 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
             // Get conversation context (last 10 messages)
             $context = $this->getConversationContext($conversation);
 
-            $prompt = $this->buildPrompt($messageText, $context);
-
-            // $response = $this->aiService->generateResponse($prompt);
-            $response = 'response';
-
-            if ($response && ! empty($response['response'])) {
-                return [
-                    'response' => $response['response'],
-                    'model' => $response['model'] ?? 'unknown',
-                    'confidence' => $response['confidence'] ?? null,
-                ];
-            }
-
-            return null;
+            // Utiliser le service centralisé
+            $whatsappAccount = $conversation->whatsAppAccount;
+            return $this->whatsappAIService->generateResponse($whatsappAccount, $messageText, $context);
 
         } catch (\Exception $e) {
             Log::error('AI response generation failed', [
@@ -172,21 +162,5 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
                 ];
             })
             ->toArray();
-    }
-
-    private function buildPrompt(string $messageText, array $context): string
-    {
-        $contextText = '';
-
-        if (! empty($context)) {
-            $contextText = "Contexte de la conversation:\n";
-            foreach ($context as $msg) {
-                $role = $msg['role'] === 'user' ? 'Client' : 'Assistant';
-                $contextText .= "{$role}: {$msg['content']}\n";
-            }
-            $contextText .= "\n";
-        }
-
-        return $contextText."Nouveau message du client: {$messageText}\n\nRéponds de manière professionnelle et utile:";
     }
 }

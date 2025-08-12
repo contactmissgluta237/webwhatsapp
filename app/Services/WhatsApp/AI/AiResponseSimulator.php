@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 final class AiResponseSimulator
 {
-    public function simulate(AiModel $model, string $prompt, string $userMessage, ResponseTime $responseTime): string
+    public function simulate(AiModel $model, string $prompt, string $userMessage, ResponseTime $responseTime, array $conversationContext = []): string
     {
         Log::info('🤖 Début simulation IA', [
             'model_name' => $model->name,
@@ -35,8 +35,11 @@ final class AiResponseSimulator
             $aiService = $provider->createService();
             Log::info('✅ Service créé', ['service_class' => get_class($aiService)]);
 
+            // Construire le prompt complet avec contexte conversationnel
+            $fullPrompt = $this->buildPromptWithContext($prompt, $conversationContext, $userMessage);
+
             $request = new AiRequestDTO(
-                systemPrompt: $prompt,
+                systemPrompt: $fullPrompt,
                 userMessage: $userMessage,
                 config: [],
                 context: []
@@ -61,5 +64,23 @@ final class AiResponseSimulator
 
             throw $e;
         }
+    }
+
+    private function buildPromptWithContext(string $basePrompt, array $conversationContext, string $userMessage): string
+    {
+        $fullPrompt = $basePrompt;
+        
+        // Ajouter le contexte conversationnel si il existe
+        if (!empty($conversationContext)) {
+            $fullPrompt .= "\n\n=== HISTORIQUE DE CONVERSATION ===\n";
+            foreach ($conversationContext as $msg) {
+                $role = $msg['role'] === 'user' ? 'Client' : 'Assistant';
+                $fullPrompt .= "{$role}: {$msg['content']}\n";
+            }
+            $fullPrompt .= "=== FIN HISTORIQUE ===\n\n";
+            $fullPrompt .= "IMPORTANT: Analyse le ton et le style de tes précédentes réponses dans l'historique et RESTE COHÉRENT avec ce style.\n\n";
+        }
+        
+        return $fullPrompt . "Nouveau message du client: {$userMessage}\n\nRéponds de manière cohérente avec ton style précédent:";
     }
 }

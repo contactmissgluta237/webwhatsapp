@@ -50,6 +50,10 @@
                 @livewire('whats-app.conversation-simulator', ['account' => $account])
             </div>
         </div>
+        <small class="text-muted mt-2 d-block text-center">
+            <i class="la la-info-circle"></i>
+            {{ __('Les modifications sont automatiquement prises en compte dans le simulateur. Sauvegardez pour les appliquer définitivement.') }}
+        </small>
     </div>
 @endsection
 

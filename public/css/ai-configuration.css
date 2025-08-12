@@ -1,0 +1,84 @@
+/* Styles pour la configuration AI WhatsApp */
+
+/* Styles pour les onglets */
+.ai-configuration-container .nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.ai-configuration-container .nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.ai-configuration-container .nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: #25d366;
+}
+
+.ai-configuration-container .nav-tabs .nav-link.active {
+    color: #25d366;
+    border-bottom: 2px solid #25d366;
+    background: transparent;
+}
+
+/* Styles pour le contenu des onglets */
+.tab-content-section {
+    padding: 1.5rem 0;
+}
+
+.tab-content-section .form-group {
+    margin-bottom: 2rem;
+}
+
+.tab-content-section .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+}
+
+.tab-content-section .form-label i {
+    color: #25d366;
+    margin-right: 0.5rem;
+}
+
+/* Styles pour la zone d'upload */
+.upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    border-color: #25d366 !important;
+    background-color: #f8f9fa;
+}
+
+/* Styles pour les documents */
+.document-item {
+    transition: all 0.3s ease;
+}
+
+.document-item:hover {
+    border-color: #25d366 !important;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.1);
+}
+
+/* Styles pour les badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ai-configuration-container .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .tab-content-section {
+        padding: 1rem 0;
+    }
+}

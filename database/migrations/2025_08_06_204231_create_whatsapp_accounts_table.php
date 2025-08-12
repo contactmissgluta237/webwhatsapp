@@ -32,6 +32,10 @@ return new class extends Migration
             $table->text('agent_prompt')->nullable();
             $table->json('trigger_words')->nullable();
             
+            $table->text('contextual_information')->nullable();
+            
+            $table->json('ignore_words')->nullable();
+            
             // Métadonnées pour l'IA
             $table->timestamp('last_ai_response_at')->nullable();
             $table->integer('daily_ai_responses')->default(0);

@@ -95,7 +95,7 @@
                 Réinitialiser
             </button>
             
-            <button type="submit" class="btn btn-success btn-lg" @disabled($loading || !$amount || !$payment_method || !$sender_account)>
+            <button type="submit" class="btn btn-whatsapp btn-lg" @disabled($loading || !$amount || !$payment_method || !$sender_account)>
                 @if($loading)
                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                     Retrait en cours...

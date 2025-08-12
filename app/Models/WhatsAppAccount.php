@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Casts\SpatieEnumCast;
 use App\Enums\WhatsAppStatus;
+use App\Traits\HasMediaCollections;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * == Properties ==
@@ -32,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string $response_time
  * @property string|null $agent_prompt
  * @property array|null $trigger_words
+ * @property string|null $contextual_information
+ * @property array|null $ignore_words
  * @property Carbon|null $last_ai_response_at
  * @property int $daily_ai_responses
  * @property Carbon $created_at
@@ -43,9 +47,10 @@ use Illuminate\Support\Carbon;
  * @property-read AiContext|null $aiContext
  * @property-read AiModel|null $aiModel
  */
-final class WhatsAppAccount extends Model
+final class WhatsAppAccount extends Model implements HasMedia
 {
     use HasFactory;
+    use HasMediaCollections;
 
     protected $table = 'whatsapp_accounts';
 
@@ -69,6 +74,8 @@ final class WhatsAppAccount extends Model
         'response_time',
         'agent_prompt',
         'trigger_words',
+        'contextual_information',
+        'ignore_words',
         'last_ai_response_at',
         'daily_ai_responses',
     ];
@@ -84,6 +91,7 @@ final class WhatsAppAccount extends Model
         'session_data' => 'array',
         'agent_enabled' => 'boolean',
         'trigger_words' => 'array',
+        'ignore_words' => 'array',
         'last_ai_response_at' => 'datetime',
         'daily_ai_responses' => 'integer',
     ];
@@ -110,6 +118,24 @@ final class WhatsAppAccount extends Model
     public function aiModel(): BelongsTo
     {
         return $this->belongsTo(AiModel::class);
+    }
+
+    // MEDIA COLLECTIONS
+    // ================================================================================
+
+    public function requiresMainImage(): bool
+    {
+        return false;
+    }
+
+    public function supportsMultipleImages(): bool
+    {
+        return true;
+    }
+
+    public function getImageIdentifier(): string
+    {
+        return "whatsapp_account_{$this->id}";
     }
 
     // ================================================================================

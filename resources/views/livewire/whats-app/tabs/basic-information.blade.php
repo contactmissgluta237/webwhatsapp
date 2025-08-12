@@ -1,0 +1,98 @@
+<div class="tab-content-section">
+    <!-- Nom de l'agent -->
+    <div class="form-group">
+        <label for="agent_name" class="form-label required">
+            <i class="la la-robot"></i> {{ __('Nom de l\'agent IA') }}
+        </label>
+        <input type="text" 
+               wire:model.live="agent_name" 
+               id="agent_name" 
+               class="form-control @error('agent_name') is-invalid @enderror" 
+               placeholder="{{ __('Ex: Assistant Client, Support Technique...') }}">
+        @error('agent_name')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+
+    <!-- Statut d'activation -->
+    <div class="form-group">
+        <div class="d-flex align-items-center justify-content-between">
+            <label class="form-label mb-0">
+                <i class="la la-power-off"></i> {{ __('Statut de l\'agent') }}
+            </label>
+            <div class="custom-control custom-switch">
+                <input type="checkbox" 
+                       class="custom-control-input" 
+                       id="agent_enabled" 
+                       wire:model.live="agent_enabled">
+                <label class="custom-control-label" for="agent_enabled">
+                    <span class="switch-text {{ $agent_enabled ? 'text-success' : 'text-muted' }}">
+                        {{ $agent_enabled ? __('Activé') : __('Désactivé') }}
+                    </span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modèle d'IA -->
+    <div class="form-group">
+        <label for="ai_model_id" class="form-label required">
+            <i class="la la-brain"></i> {{ __('Modèle d\'IA') }}
+        </label>
+        <select wire:model.live="ai_model_id" 
+                id="ai_model_id" 
+                class="form-control @error('ai_model_id') is-invalid @enderror">
+            <option value="">{{ __('Sélectionner un modèle') }}</option>
+            @foreach($this->availableModels as $model)
+                <option value="{{ $model->id }}">
+                    {{ $model->name }} - {{ $model->provider }}
+                </option>
+            @endforeach
+        </select>
+        @error('ai_model_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+        
+        @if($this->selectedModel)
+            <div class="model-info mt-3 p-3 bg-light rounded">
+                <div class="row">
+                    <div class="col-md-8">
+                        <small class="text-muted">
+                            <i class="la la-info-circle text-info"></i>
+                            {{ $this->selectedModel->description }}
+                        </small>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <small class="text-muted">
+                            <strong>{{ __('Coût') }}:</strong> 
+                            <span class="text-primary">{{ number_format($this->selectedModel->cost_per_token * 1000, 4) }} USD / 1000 tokens</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <!-- Prompt de l'IA -->
+    <div class="form-group">
+        <label for="agent_prompt" class="form-label required">
+            <i class="la la-comment-dots"></i> {{ __('Instructions pour l\'IA') }}
+        </label>
+        <textarea wire:model.live="agent_prompt" 
+                  id="agent_prompt" 
+                  class="form-control @error('agent_prompt') is-invalid @enderror" 
+                  rows="6" 
+                  placeholder="{{ __('Ex: Tu es un assistant professionnel pour AFRIK SOLUTIONS, spécialisé dans le développement web et mobile. Réponds de manière courtoise et professionnelle...') }}"></textarea>
+        @error('agent_prompt')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+        <small class="form-text text-muted">
+            <i class="la la-lightbulb"></i> {{ __('Définissez le comportement, la personnalité et les instructions principales de votre agent IA') }}
+        </small>
+        <div class="char-counter mt-2">
+            <small class="text-muted">
+                {{ strlen($agent_prompt ?? '') }} caractères
+            </small>
+        </div>
+    </div>
+</div>

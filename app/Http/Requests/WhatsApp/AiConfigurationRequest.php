@@ -32,6 +32,8 @@ final class AiConfigurationRequest extends FormRequest
             'ai_model_id' => 'nullable|exists:ai_models,id',
             'agent_prompt' => 'nullable|string|max:2000',
             'trigger_words' => 'nullable|string|max:500',
+            'contextual_information' => 'nullable|string|max:5000',
+            'ignore_words' => 'nullable|string|max:500',
             'response_time' => 'required|string|in:instant,fast,random,slow',
         ];
     }

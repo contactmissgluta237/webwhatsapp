@@ -162,7 +162,7 @@ final class AiModel extends Model
 
     public function getService(): AiServiceInterface
     {
-        return $this->provider->getService();
+        return $this->provider->createService();
     }
 
     public function testConnection(): bool

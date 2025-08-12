@@ -74,3 +74,54 @@
     background-color: #075E54;
     border-color: #075E54;
 }
+
+/* Custom styling for select elements */
+select.form-control,
+select.form-select {
+    /* Ensure consistent height and padding */
+    height: calc(2.25rem + 2px); /* Bootstrap default input height + border */
+    padding: 0.375rem 1.75rem 0.375rem 0.75rem; /* Default input padding + space for arrow */
+    /* Remove default arrow if present and add custom one */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    /* Ensure consistent border and background */
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background-color: #fff;
+    /* Font consistency */
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+}
+
+select.form-control:focus,
+select.form-select:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Light WhatsApp Background */
+.bg-light-whatsapp {
+    background-color: #E6F5F3 !important;
+}
+
+/* Active Tab Styling */
+.nav-tabs .nav-item .nav-link.active {
+    background-color: #075E54 !important; /* WhatsApp green background */
+    color: #fff !important; /* White text */
+    border-color: #075E54 !important; /* WhatsApp green border */
+}
+
+/* Active Tab Styling - Override unwanted borders */
+.nav-tabs.nav-top-border .nav-item .nav-link.active {
+    border-color: transparent !important; /* Remove all borders */
+    border-top-color: #075E54 !important; /* Only top border in WhatsApp green */
+    box-shadow: none !important; /* Remove any potential box-shadow */
+}
