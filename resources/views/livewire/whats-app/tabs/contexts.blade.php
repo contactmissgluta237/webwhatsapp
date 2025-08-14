@@ -5,7 +5,7 @@
             <i class="la la-file-text"></i> {{ __('Informations contextuelles') }}
             <span class="text-muted">(<span id="char-count">{{ strlen($contextual_information ?? '') }}</span>/5000)</span>
         </label>
-        <textarea wire:model.live="contextual_information" 
+        <textarea wire:model.defer="contextual_information" 
                   id="contextual_information" 
                   class="form-control @error('contextual_information') is-invalid @enderror" 
                   rows="8" 

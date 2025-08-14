@@ -79,35 +79,99 @@
             <label for="agent_prompt" class="form-label required mb-0">
                 <i class="la la-comment-dots"></i> {{ __('Instructions pour l\'IA') }}
             </label>
-            <button type="button" 
-                    class="btn btn-outline-primary btn-sm" 
-                    wire:click="enhancePrompt" 
-                    wire:loading.attr="disabled"
-                    wire:target="enhancePrompt"
-                    @if(empty(trim($agent_prompt))) disabled @endif>
-                <span wire:loading.remove wire:target="enhancePrompt">
-                    <i class="la la-magic"></i> {{ __('Améliorer le prompt') }}
-                </span>
-                <span wire:loading wire:target="enhancePrompt">
-                    <i class="la la-spinner la-spin"></i> {{ __('Amélioration...') }}
-                </span>
-            </button>
+            <div class="prompt-enhancement-controls">
+                {{-- Bouton améliorer (état initial) --}}
+                @if(!$hasEnhancedPrompt && !$isPromptValidated)
+                    <button type="button" 
+                            class="btn btn-outline-primary btn-sm" 
+                            wire:click="enhancePrompt" 
+                            wire:loading.attr="disabled"
+                            wire:target="enhancePrompt"
+                            @if(empty(trim($agent_prompt))) disabled @endif>
+                        <span wire:loading.remove wire:target="enhancePrompt">
+                            <i class="la la-magic"></i> {{ __('Améliorer le prompt') }}
+                        </span>
+                        <span wire:loading wire:target="enhancePrompt">
+                            <i class="la la-spinner la-spin"></i> {{ __('Amélioration...') }}
+                        </span>
+                    </button>
+                @endif
+
+                {{-- Boutons validation/rejet (après amélioration) --}}
+                @if($hasEnhancedPrompt && !$isPromptValidated)
+                    <div class="btn-group">
+                        <button type="button" 
+                                class="btn btn-success btn-sm" 
+                                wire:click="acceptEnhancedPrompt">
+                            <i class="la la-check"></i> {{ __('Accepter') }}
+                        </button>
+                        <button type="button" 
+                                class="btn btn-outline-secondary btn-sm" 
+                                wire:click="rejectEnhancedPrompt">
+                            <i class="la la-times"></i> {{ __('Annuler') }}
+                        </button>
+                    </div>
+                @endif
+
+                {{-- État validé - aucun bouton jusqu'à modification --}}
+                @if($isPromptValidated)
+                    <small class="text-success">
+                        <i class="la la-check-circle"></i> {{ __('Prompt validé') }}
+                    </small>
+                @endif
+            </div>
         </div>
         <textarea wire:model.live="agent_prompt" 
                   id="agent_prompt" 
-                  class="form-control @error('agent_prompt') is-invalid @enderror" 
+                  class="form-control @error('agent_prompt') is-invalid @enderror @if($hasEnhancedPrompt) border-success @endif" 
                   rows="6" 
                   placeholder="{{ __('Ex: Tu es un assistant professionnel pour AFRIK SOLUTIONS, spécialisé dans le développement web et mobile. Réponds de manière courtoise et professionnelle...') }}"></textarea>
         @error('agent_prompt')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+        
+        {{-- Indicateur d'amélioration --}}
+        @if($hasEnhancedPrompt)
+            <div class="alert alert-success alert-sm mt-2 mb-0">
+                <i class="la la-sparkles"></i> 
+                {{ __('Prompt amélioré automatiquement. Acceptez pour valider ou annulez pour revenir à l\'original.') }}
+            </div>
+        @endif
+        
         <small class="form-text text-muted">
             <i class="la la-lightbulb"></i> {{ __('Définissez le comportement, la personnalité et les instructions principales de votre agent IA') }}
         </small>
         <div class="char-counter mt-2">
             <small class="text-muted">
                 {{ strlen($agent_prompt ?? '') }} caractères
+                @if($hasEnhancedPrompt)
+                    <span class="badge badge-success ml-1">{{ __('Amélioré') }}</span>
+                @endif
             </small>
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+.prompt-enhancement-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.border-success {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn-group .btn {
+    margin-left: 0;
+}
+</style>
+@endpush

@@ -5,7 +5,7 @@
             <i class="la la-flag"></i> {{ __('Mots déclencheurs') }}
         </label>
         <input type="text" 
-               wire:model.live="trigger_words" 
+               wire:model.defer="trigger_words" 
                id="trigger_words" 
                class="form-control @error('trigger_words') is-invalid @enderror" 
                placeholder="{{ __('aide, support, info, prix, service, contact') }}">
@@ -23,7 +23,7 @@
             <i class="la la-ban"></i> {{ __('Mots d\'exclusion') }}
         </label>
         <input type="text" 
-               wire:model.live="ignore_words" 
+               wire:model.defer="ignore_words" 
                id="ignore_words" 
                class="form-control @error('ignore_words') is-invalid @enderror" 
                placeholder="{{ __('stop, arrêt, humain, agent, transfert') }}">
@@ -40,7 +40,7 @@
         <label for="response_time" class="form-label">
             <i class="la la-clock"></i> {{ __('Délai de réponse') }}
         </label>
-        <select wire:model.live="response_time" 
+        <select wire:model.defer="response_time" 
                 id="response_time" 
                 class="form-control @error('response_time') is-invalid @enderror">
             @foreach($this->responseTimeOptions as $option)
@@ -61,7 +61,7 @@
     <div class="form-group">
         <div class="custom-control custom-checkbox">
             <input type="checkbox" 
-                   wire:model.live="stop_on_human_reply" 
+                   wire:model.defer="stop_on_human_reply" 
                    id="stop_on_human_reply" 
                    class="custom-control-input">
             <label class="custom-control-label" for="stop_on_human_reply">

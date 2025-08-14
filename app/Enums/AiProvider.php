@@ -119,7 +119,7 @@ final class AiProvider extends Enum
             'openai' => 'https://api.openai.com/v1',
             'anthropic' => 'https://api.anthropic.com',
             'deepseek' => 'https://api.deepseek.com',
-            'ollama' => 'http://209.126.83.125:11434', // Défini selon le seeder
+            'ollama' => null, // Défini par l'utilisateur
             default => null
         };
     }

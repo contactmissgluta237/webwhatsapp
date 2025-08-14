@@ -239,10 +239,8 @@ final class ConversationSimulator extends Component
         try {
             Log::info('🚀 Appel service IA centralisé');
 
-            // Construire le contexte conversationnel
             $conversationContext = $this->buildConversationContext();
 
-            // Utiliser le service centralisé pour la génération
             $whatsappAIService = app(WhatsAppAIService::class);
             $aiResponse = $whatsappAIService->generateResponse(
                 $this->account,

@@ -6,35 +6,35 @@ namespace Database\Seeders;
 
 use App\Enums\AiProvider;
 use App\Models\AiModel;
+use App\Services\AI\AiConfigurationService;
 use Illuminate\Database\Seeder;
 
 final class OllamaModelSeeder extends Seeder
 {
     public function run(): void
     {
+        $ollamaConfig = AiConfigurationService::getProviderConfig('ollama');
+        
         AiModel::updateOrCreate(
             [
                 'provider' => AiProvider::OLLAMA(),
-                'model_identifier' => 'gemma2:2b',
+                'model_identifier' => $ollamaConfig['model_identifier'],
             ],
             [
-                'name' => 'Gemma 2B (Ollama)',
-                'description' => 'Modèle Gemma 2B hébergé sur Ollama - Rapide et efficace',
-                'endpoint_url' => 'http://209.126.83.125:11434',
-                'requires_api_key' => false,
-                'api_key' => null,
-                'model_config' => [
-                    'temperature' => 0.7,
-                    'max_tokens' => 1000,
-                    'top_p' => 0.9,
-                ],
+                'name' => $ollamaConfig['name'],
+                'description' => $ollamaConfig['description'],
+                'endpoint_url' => $ollamaConfig['endpoint_url'],
+                'requires_api_key' => $ollamaConfig['requires_api_key'],
+                'api_key' => $ollamaConfig['api_key'],
+                'model_config' => $ollamaConfig['default_config'],
                 'is_active' => true,
                 'is_default' => false,
-                'cost_per_1k_tokens' => 0.0,
-                'max_context_length' => 4096,
+                'cost_per_1k_tokens' => $ollamaConfig['cost_per_1k_tokens'],
+                'max_context_length' => $ollamaConfig['max_context_length'],
             ]
         );
 
+        // Autres modèles Ollama alternatifs
         AiModel::updateOrCreate(
             [
                 'provider' => AiProvider::OLLAMA(),
@@ -43,18 +43,18 @@ final class OllamaModelSeeder extends Seeder
             [
                 'name' => 'Llama 3.1 8B (Ollama)',
                 'description' => 'Modèle Llama 3.1 8B hébergé sur Ollama - Plus puissant',
-                'endpoint_url' => 'http://209.126.83.125:11434',
-                'requires_api_key' => false,
-                'api_key' => null,
+                'endpoint_url' => $ollamaConfig['endpoint_url'],
+                'requires_api_key' => $ollamaConfig['requires_api_key'],
+                'api_key' => $ollamaConfig['api_key'],
                 'model_config' => [
                     'temperature' => 0.7,
                     'max_tokens' => 2000,
                     'top_p' => 0.9,
                 ],
                 'is_active' => true,
-                'is_default' => true,
-                'cost_per_1k_tokens' => 0.0,
-                'max_context_length' => 8192,
+                'is_default' => false,
+                'cost_per_1k_tokens' => $ollamaConfig['cost_per_1k_tokens'],
+                'max_context_length' => $ollamaConfig['max_context_length'],
             ]
         );
 
@@ -66,9 +66,9 @@ final class OllamaModelSeeder extends Seeder
             [
                 'name' => 'Mistral Latest (Ollama)',
                 'description' => 'Modèle Mistral latest hébergé sur Ollama',
-                'endpoint_url' => 'http://209.126.83.125:11434',
-                'requires_api_key' => false,
-                'api_key' => null,
+                'endpoint_url' => $ollamaConfig['endpoint_url'],
+                'requires_api_key' => $ollamaConfig['requires_api_key'],
+                'api_key' => $ollamaConfig['api_key'],
                 'model_config' => [
                     'temperature' => 0.7,
                     'max_tokens' => 1500,
@@ -76,8 +76,8 @@ final class OllamaModelSeeder extends Seeder
                 ],
                 'is_active' => true,
                 'is_default' => false,
-                'cost_per_1k_tokens' => 0.0,
-                'max_context_length' => 4096,
+                'cost_per_1k_tokens' => $ollamaConfig['cost_per_1k_tokens'],
+                'max_context_length' => $ollamaConfig['max_context_length'],
             ]
         );
     }

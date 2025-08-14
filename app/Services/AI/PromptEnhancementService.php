@@ -10,7 +10,7 @@ use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use Illuminate\Support\Facades\Log;
 
-final class PromptEnhancementService implements PromptEnhancementInterface
+class PromptEnhancementService implements PromptEnhancementInterface
 {
     private const ENHANCEMENT_SYSTEM_PROMPT = "Tu es un expert en création de prompts pour agents conversationnels WhatsApp. 
 

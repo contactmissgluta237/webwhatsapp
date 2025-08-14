@@ -8,6 +8,7 @@ use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\PromptEnhancementService;
+use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -32,21 +33,10 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         
         $this->service = app(PromptEnhancementService::class);
         
-        // Créer un modèle Ollama basé sur les données du seeder
-        $this->ollamaModel = AiModel::factory()->create([
-            'name' => 'GenericIA (Ollama Gemma2)',
-            'provider' => 'ollama',
-            'model_identifier' => 'gemma2:2b',
-            'endpoint_url' => 'http://209.126.83.125:11434',
-            'requires_api_key' => false,
-            'is_active' => true,
-            'is_default' => true,
-            'model_config' => [
-                'temperature' => 0.7,
-                'max_tokens' => 1000,
-                'top_p' => 0.9,
-            ],
-        ]);
+        // Créer un modèle Ollama basé sur la configuration centralisée
+        $this->ollamaModel = AiModel::factory()->create(
+            AiTestHelper::createTestModelData('ollama')
+        );
         
         $user = User::factory()->create();
         $this->account = WhatsAppAccount::factory()->create([
@@ -144,11 +134,10 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
     public function it_handles_ollama_connection_error_gracefully(): void
     {
         // Créer un modèle avec un endpoint incorrect
-        $brokenModel = AiModel::factory()->create([
-            'name' => 'Broken Ollama',
+                $brokenModel = AiModel::factory()->create([
             'provider' => 'ollama',
             'model_identifier' => 'gemma2:2b',
-            'endpoint_url' => 'http://localhost:99999', // Port inaccessible
+            'endpoint_url' => AiTestHelper::getMockEndpoint('inaccessible'),
             'requires_api_key' => false,
             'is_active' => true,
         ]);
@@ -156,7 +145,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         $this->account->update(['ai_model_id' => $brokenModel->id]);
         
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessageMatches('/Erreur lors de l\'amélioration du prompt/');
+        $this->expectExceptionMessageMatches('/Impossible d\'améliorer le prompt/');
         
         $this->service->enhancePrompt($this->account, 'Test prompt');
     }
@@ -209,7 +198,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         /*
         try {
             $response = \Illuminate\Support\Facades\Http::timeout(5)
-                ->get($this->ollamaModel->endpoint_url . '/api/tags');
+                ->get(AiConfigurationService::getOllamaTestEndpoint() . '/api/tags');
                 
             $this->assertTrue($response->successful(), 'Ollama doit être accessible');
             

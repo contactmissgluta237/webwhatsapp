@@ -60,6 +60,8 @@ final class CreateSession extends Component
                     'session_name' => $this->sessionName,
                     'session_id' => $this->tempSessionId,
                 ]);
+
+                $this->dispatch('qr-code-generated');
             } else {
                 $this->statusMessage = $result['message'] ?? 'Erreur lors de la génération du QR code';
                 $this->showQrSection = false;

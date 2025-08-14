@@ -10,6 +10,7 @@ use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\AiServiceInterface;
 use App\Services\AI\PromptEnhancementService;
+use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,15 +28,12 @@ final class PromptEnhancementServiceTest extends TestCase
         
         $this->service = new PromptEnhancementService();
         
-        $this->ollamaModel = AiModel::factory()->create([
-            'name' => 'Test Ollama',
-            'provider' => 'ollama',
-            'model_identifier' => 'gemma2:2b',
-            'endpoint_url' => 'http://209.126.83.125:11434',
-            'requires_api_key' => false,
-            'is_active' => true,
-            'is_default' => true,
-        ]);
+        $this->ollamaModel = AiModel::factory()->create(
+            AiTestHelper::createTestModelData('ollama', [
+                'name' => 'Test Ollama',
+                'is_default' => true,
+            ])
+        );
         
         $this->account = WhatsAppAccount::factory()->create([
             'ai_model_id' => $this->ollamaModel->id,

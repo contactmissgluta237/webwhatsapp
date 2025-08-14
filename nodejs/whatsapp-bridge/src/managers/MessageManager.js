@@ -1,6 +1,8 @@
 // docker/whatsapp-bridge/src/managers/MessageManager.js
 const LaravelWebhookService = require("../services/LaravelWebhookService");
 
+const logger = require("../config/logger");
+
 class MessageManager {
     constructor(sessionManager) {
         this.sessionManager = sessionManager;
@@ -8,6 +10,12 @@ class MessageManager {
     }
 
     async handleIncomingMessage(message, sessionData) {
+        logger.info(`[INCOMING MESSAGE] From: ${message.from} | Body: ${message.body} | Timestamp: ${new Date().toISOString()}`, {
+            sessionId: sessionData.sessionId,
+            messageId: message.id._serialized,
+            fromMe: message.fromMe,
+            isGroup: message.isGroup,
+        });
         try {
             const response = await this.webhookService.notifyIncomingMessage(
                 message,

@@ -8,6 +8,7 @@ use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\AI\WhatsAppAIService;
+use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,25 +24,13 @@ final class WhatsAppAIServiceTest extends TestCase
     {
         parent::setUp();
 
-        // Créer le modèle Ollama de test
-        $this->ollamaModel = AiModel::create([
-            'name' => 'Test Ollama Gemma2',
-            'provider' => 'ollama',
-            'model_identifier' => 'gemma2:2b',
-            'description' => 'Modèle de test Ollama',
-            'endpoint_url' => 'http://209.126.83.125:11434',
-            'requires_api_key' => false,
-            'api_key' => null,
-            'model_config' => json_encode([
-                'temperature' => 0.7,
-                'max_tokens' => 1000,
-                'top_p' => 0.9,
-            ]),
-            'is_active' => true,
-            'is_default' => true,
-            'cost_per_1k_tokens' => 0.0,
-            'max_context_length' => 8192,
-        ]);
+        // Créer le modèle Ollama de test basé sur la configuration centralisée
+        $this->ollamaModel = AiModel::create(
+            AiTestHelper::createTestModelData('ollama', [
+                'name' => 'Test Ollama Gemma2',
+                'description' => 'Modèle de test Ollama',
+            ])
+        );
 
         // Créer un compte WhatsApp de test
         $user = User::factory()->create();

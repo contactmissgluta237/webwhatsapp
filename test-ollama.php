@@ -10,7 +10,8 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 echo "🔍 Test de connexion Ollama...\n\n";
 
-$ollamaUrl = 'http://209.126.83.125:11434';
+// Utiliser la configuration centralisée
+$ollamaUrl = config('ai.providers.ollama.endpoint_url', 'http://209.126.83.125:11434');
 
 // Test 1: Version
 echo "1. Test version API...\n";

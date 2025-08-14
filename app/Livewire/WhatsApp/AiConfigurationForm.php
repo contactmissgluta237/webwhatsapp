@@ -37,8 +37,11 @@ final class AiConfigurationForm extends Component
 
     // Prompt enhancement properties
     public string $enhancedPrompt = '';
-    public bool $showEnhancementModal = false;
+    public string $originalPrompt = '';
     public bool $isEnhancing = false;
+    public bool $hasEnhancedPrompt = false;
+    public bool $isPromptValidated = false;
+    private bool $isProgrammaticUpdate = false;
 
     public function mount(WhatsAppAccount $account): void
     {
@@ -99,6 +102,24 @@ final class AiConfigurationForm extends Component
 
     public function updatedAgentPrompt(): void
     {
+        // Skip processing during programmatic updates
+        if ($this->isProgrammaticUpdate) {
+            $this->dispatch('config-changed-live', [
+                'agent_prompt' => $this->agent_prompt,
+            ]);
+            return;
+        }
+
+        // Reset enhancement state when prompt is manually modified
+        if ($this->hasEnhancedPrompt && $this->agent_prompt !== $this->enhancedPrompt) {
+            $this->resetEnhancementState();
+        }
+        
+        // Reset validated state when prompt is manually modified after validation
+        if ($this->isPromptValidated) {
+            $this->isPromptValidated = false;
+        }
+
         $this->dispatch('config-changed-live', [
             'agent_prompt' => $this->agent_prompt,
         ]);
@@ -137,19 +158,36 @@ final class AiConfigurationForm extends Component
         }
 
         $this->isEnhancing = true;
+        $this->originalPrompt = $this->agent_prompt;
 
         try {
             $enhancementService = app(PromptEnhancementInterface::class);
             $this->enhancedPrompt = $enhancementService->enhancePrompt($this->account, $this->agent_prompt);
-            $this->showEnhancementModal = true;
+            
+            // Set flag to prevent updatedAgentPrompt interference
+            $this->isProgrammaticUpdate = true;
+            
+            // Replace the original prompt with the enhanced one immediately
+            $this->agent_prompt = $this->enhancedPrompt;
+            $this->hasEnhancedPrompt = true;
+            
+            // Reset the flag
+            $this->isProgrammaticUpdate = false;
 
             Log::info('✨ Prompt amélioré avec succès', [
                 'account_id' => $this->account->id,
-                'original_length' => strlen($this->agent_prompt),
+                'original_length' => strlen($this->originalPrompt),
                 'enhanced_length' => strlen($this->enhancedPrompt),
             ]);
 
+            $this->dispatch('config-changed-live', [
+                'agent_prompt' => $this->agent_prompt,
+            ]);
+
         } catch (\Exception $e) {
+            // Reset the flag in case of exception
+            $this->isProgrammaticUpdate = false;
+            
             Log::error('❌ Erreur amélioration prompt', [
                 'account_id' => $this->account->id,
                 'error' => $e->getMessage(),
@@ -159,16 +197,16 @@ final class AiConfigurationForm extends Component
                 'type' => 'error',
                 'message' => __('Erreur lors de l\'amélioration : :error', ['error' => $e->getMessage()]),
             ]);
-        } finally {
-            $this->isEnhancing = false;
         }
+        
+        // Important: Set isEnhancing to false AFTER hasEnhancedPrompt is set
+        $this->isEnhancing = false;
     }
 
     public function acceptEnhancedPrompt(): void
     {
-        $this->agent_prompt = $this->enhancedPrompt;
-        $this->showEnhancementModal = false;
-        $this->enhancedPrompt = '';
+        $this->isPromptValidated = true;
+        $this->hasEnhancedPrompt = false;
 
         $this->dispatch('config-changed-live', [
             'agent_prompt' => $this->agent_prompt,
@@ -176,14 +214,36 @@ final class AiConfigurationForm extends Component
 
         $this->dispatch('show-toast', [
             'type' => 'success',
-            'message' => __('Prompt amélioré appliqué avec succès'),
+            'message' => __('Prompt amélioré validé avec succès'),
+        ]);
+
+        Log::info('✅ Prompt amélioré accepté', [
+            'account_id' => $this->account->id,
+            'final_prompt_length' => strlen($this->agent_prompt),
         ]);
     }
 
     public function rejectEnhancedPrompt(): void
     {
-        $this->showEnhancementModal = false;
-        $this->enhancedPrompt = '';
+        $this->isProgrammaticUpdate = true;
+        $this->agent_prompt = $this->originalPrompt;
+        $this->isProgrammaticUpdate = false;
+        
+        $this->resetEnhancementState();
+
+        $this->dispatch('config-changed-live', [
+            'agent_prompt' => $this->agent_prompt,
+        ]);
+
+        $this->dispatch('show-toast', [
+            'type' => 'info',
+            'message' => __('Prompt original restauré'),
+        ]);
+
+        Log::info('🔄 Prompt amélioré rejeté', [
+            'account_id' => $this->account->id,
+            'restored_prompt_length' => strlen($this->agent_prompt),
+        ]);
     }
 
     public function removeDocument(int $mediaId): void
@@ -198,21 +258,31 @@ final class AiConfigurationForm extends Component
         }
     }
 
-    public function save(AiConfigurationRequest $request): void
+    public function save(): void
     {
-        $validatedData = $request->validated();
+        $this->validate([
+            'agent_name' => 'required|string|max:100',
+            'agent_enabled' => 'boolean',
+            'ai_model_id' => $this->agent_enabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
+            'agent_prompt' => $this->agent_enabled ? 'required|string|max:2000' : 'nullable|string|max:2000',
+            'trigger_words' => 'nullable|string|max:500',
+            'contextual_information' => 'nullable|string|max:5000',
+            'ignore_words' => 'nullable|string|max:500',
+            'response_time' => 'required|string|in:instant,fast,random,slow',
+            'stop_on_human_reply' => 'boolean',
+        ]);
 
         try {
             $this->account->update([
-                'session_name' => $validatedData['agent_name'],
-                'agent_enabled' => $validatedData['agent_enabled'],
-                'ai_model_id' => $validatedData['ai_model_id'],
-                'agent_prompt' => $validatedData['agent_prompt'] ?: null,
-                'trigger_words' => $validatedData['trigger_words'] ?: null,
-                'contextual_information' => $validatedData['contextual_information'] ?: null,
-                'ignore_words' => $validatedData['ignore_words'] ?: null,
-                'response_time' => $validatedData['response_time'],
-                'stop_on_human_reply' => $validatedData['stop_on_human_reply'] ?? false,
+                'session_name' => $this->agent_name,
+                'agent_enabled' => $this->agent_enabled,
+                'ai_model_id' => $this->ai_model_id,
+                'agent_prompt' => $this->agent_prompt ?: null,
+                'trigger_words' => $this->trigger_words ? explode(',', $this->trigger_words) : null,
+                'contextual_information' => $this->contextual_information ?: null,
+                'ignore_words' => $this->ignore_words ? explode(',', $this->ignore_words) : null,
+                'response_time' => $this->response_time,
+                'stop_on_human_reply' => $this->stop_on_human_reply,
             ]);
 
             $this->dispatch('configuration-saved', [
@@ -246,6 +316,14 @@ final class AiConfigurationForm extends Component
                 'message' => __('Erreur lors de la sauvegarde : :error', ['error' => $e->getMessage()]),
             ]);
         }
+    }
+
+    private function resetEnhancementState(): void
+    {
+        $this->hasEnhancedPrompt = false;
+        $this->isPromptValidated = false;
+        $this->enhancedPrompt = '';
+        $this->originalPrompt = '';
     }
 
     private function loadCurrentConfiguration(): void

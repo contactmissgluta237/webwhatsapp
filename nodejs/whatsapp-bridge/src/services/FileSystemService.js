@@ -1,4 +1,4 @@
-// docker/whatsapp-bridge/src/services/FileSystemService.js
+// whatsapp-bridge/src/services/FileSystemService.js
 const fs = require("fs");
 const path = require("path");
 

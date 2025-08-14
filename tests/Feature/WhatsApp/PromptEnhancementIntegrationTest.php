@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\OllamaService;
 use App\Services\AI\PromptEnhancementService;
+use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -30,21 +31,13 @@ final class PromptEnhancementIntegrationTest extends TestCase
 
         $this->user = User::factory()->create();
         
-        // Créer un modèle Ollama avec le bon endpoint
-        $this->ollamaModel = AiModel::factory()->create([
-            'name' => 'GenericIA (Ollama Gemma2)',
-            'provider' => 'ollama',
-            'model_identifier' => 'gemma2:2b',
-            'endpoint_url' => 'http://209.126.83.125:11434',
-            'requires_api_key' => false,
-            'is_active' => true,
-            'is_default' => true,
-            'model_config' => [
-                'temperature' => 0.7,
-                'max_tokens' => 1000,
-                'top_p' => 0.9,
-            ],
-        ]);
+        // Créer un modèle Ollama avec le bon endpoint basé sur la configuration centralisée
+        $this->ollamaModel = AiModel::factory()->create(
+            AiTestHelper::createTestModelData('ollama', [
+                'name' => 'GenericIA (Ollama Gemma2)',
+                'is_default' => true,
+            ])
+        );
 
         $this->account = WhatsAppAccount::factory()->create([
             'user_id' => $this->user->id,
@@ -114,47 +107,50 @@ final class PromptEnhancementIntegrationTest extends TestCase
 
     public function test_enhancement_service_uses_correct_model_priority(): void
     {
+        // Désactiver tous les modèles existants du seeder
+        \App\Models\AiModel::query()->update(['is_active' => false, 'is_default' => false]);
+
         // Créer plusieurs modèles pour tester la priorité
         $specificModel = AiModel::factory()->create([
             'name' => 'Specific Model',
-            'provider' => 'ollama',
+            'provider' => 'ollama', 
             'endpoint_url' => 'http://specific-endpoint:11434',
             'is_active' => true,
             'is_default' => false,
         ]);
 
-        $defaultModel = AiModel::factory()->create([
-            'name' => 'Default Model',
-            'provider' => 'ollama',
-            'endpoint_url' => 'http://default-endpoint:11434',
-            'is_active' => true,
-            'is_default' => true,
-        ]);
-
-        // Test 1: Utilise le modèle configuré sur le compte
-        $this->account->update(['ai_model_id' => $specificModel->id]);
-
+        $defaultModel = AiModel::factory()->create(
+            AiTestHelper::createTestModelData('ollama', [
+                'name' => 'Default Model',
+                'endpoint_url' => 'http://default-endpoint:11434',
+                'is_default' => true,
+            ])
+        );        // Mock toutes les réponses possibles
         Http::fake([
             'http://specific-endpoint:11434/api/chat' => Http::response([
                 'message' => ['role' => 'assistant', 'content' => 'Enhanced by specific model'],
                 'done' => true,
             ], 200),
-        ]);
-
-        $result = $this->service->enhancePrompt($this->account, 'Test');
-        $this->assertEquals('Enhanced by specific model', $result);
-
-        // Test 2: Utilise le modèle par défaut si aucun configuré
-        $this->account->update(['ai_model_id' => null]);
-
-        Http::fake([
             'http://default-endpoint:11434/api/chat' => Http::response([
                 'message' => ['role' => 'assistant', 'content' => 'Enhanced by default model'],
                 'done' => true,
             ], 200),
+            // Bloquer tous les autres endpoints
+            '*' => Http::response(['error' => 'Unauthorized endpoint'], 404),
         ]);
 
-        $result = $this->service->enhancePrompt($this->account, 'Test');
+        // Test 1: Utilise le modèle configuré sur le compte
+        $this->account->update(['ai_model_id' => $specificModel->id]);
+        $this->account->refresh();
+
+        $result = $this->service->enhancePrompt($this->account, 'Test specific');
+        $this->assertEquals('Enhanced by specific model', $result);
+
+        // Test 2: Utilise le modèle par défaut si aucun configuré
+        $this->account->update(['ai_model_id' => null]);
+        $this->account->refresh();
+
+        $result = $this->service->enhancePrompt($this->account, 'Test default');
         $this->assertEquals('Enhanced by default model', $result);
     }
 
@@ -192,9 +188,24 @@ final class PromptEnhancementIntegrationTest extends TestCase
 
         $result = $this->service->enhancePrompt($this->account, $originalPrompt);
 
-        // Vérifier que le résultat contient toujours les éléments clés
-        $this->assertStringContainsString('voitures', strtolower($result));
-        $this->assertStringContainsString('français', $result);
+        // Vérifier que le résultat est plus long que l'original
         $this->assertGreaterThan(strlen($originalPrompt), strlen($result));
+        
+        // Vérifier que l'API a été appelée avec le prompt original
+        Http::assertSent(function ($request) use ($originalPrompt) {
+            $body = $request->data();
+            return str_contains($body['messages'][1]['content'], $originalPrompt);
+        });
+        
+        // Vérifier que le résultat correspond au mock
+        $this->assertEquals($enhancedPrompt, $result);
+        
+        // Vérifier que le service utilise les bons paramètres
+        Http::assertSent(function ($request) {
+            $body = $request->data();
+            return $body['options']['temperature'] === 0.3 
+                && $body['model'] === 'gemma2:2b'
+                && $body['stream'] === false;
+        });
     }
 }

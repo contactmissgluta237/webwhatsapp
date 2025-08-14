@@ -25,10 +25,11 @@ final class IncomingMessageController extends Controller
     {
         $validated = $request->validated();
 
-        Log::info('WhatsApp incoming message received', [
+        Log::info('[WEBHOOK RECEIVED] Incoming WhatsApp message from Node.js bridge', [
             'session_id' => $validated['session_id'],
             'from' => $validated['message']['from'],
             'message_id' => $validated['message']['id'],
+            'body_preview' => substr($validated['message']['body'], 0, 50) . '...', // Ajout d'un aperçu du corps du message
         ]);
 
         try {
