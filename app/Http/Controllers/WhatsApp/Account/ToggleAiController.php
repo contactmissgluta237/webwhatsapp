@@ -6,7 +6,7 @@ namespace App\Http\Controllers\WhatsApp\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAccount;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 final class ToggleAiController extends Controller
@@ -17,14 +17,12 @@ final class ToggleAiController extends Controller
      * Route: POST /whatsapp/{account}/toggle-ai
      * Name: whatsapp.toggle-ai
      */
-    public function __invoke(Request $request, WhatsAppAccount $account): JsonResponse
+    public function __invoke(Request $request, WhatsAppAccount $account): RedirectResponse
     {
         // Ensure the account belongs to the authenticated user
         if ($account->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Accès non autorisé à ce compte WhatsApp.',
-            ], 403);
+            return redirect()->route('whatsapp.index')
+                ->with('error', 'Accès non autorisé à ce compte WhatsApp.');
         }
 
         $enable = $request->boolean('enable');
@@ -35,10 +33,8 @@ final class ToggleAiController extends Controller
                 if (! $account->ai_model_id) {
                     $defaultModel = \App\Models\AiModel::getDefault();
                     if (! $defaultModel) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Aucun modèle IA disponible. Veuillez d\'abord configurer l\'agent IA.',
-                        ], 400);
+                        return redirect()->route('whatsapp.index')
+                            ->with('error', 'Aucun modèle IA disponible. Veuillez d\'abord configurer l\'agent IA.');
                     }
                     $account->ai_model_id = $defaultModel->id;
                 }
@@ -51,16 +47,12 @@ final class ToggleAiController extends Controller
                 $message = 'Agent IA désactivé avec succès !';
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
+            return redirect()->route('whatsapp.index')
+                ->with('success', $message);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la modification : '.$e->getMessage(),
-            ], 500);
+            return redirect()->route('whatsapp.index')
+                ->with('error', 'Erreur lors de la modification : '.$e->getMessage());
         }
     }
 }

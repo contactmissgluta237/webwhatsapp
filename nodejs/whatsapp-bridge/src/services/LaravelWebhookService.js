@@ -1,6 +1,7 @@
 // docker/whatsapp-bridge/src/services/LaravelWebhookService.js
 const axios = require("axios");
 const config = require("../config/config");
+const logger = require("../config/logger");
 
 class LaravelWebhookService {
     constructor() {
@@ -23,8 +24,8 @@ class LaravelWebhookService {
     async notifyIncomingMessage(message, sessionData) {
         const payload = {
             event: "incoming_message",
-            session_id: sessionData.userId,
-            session_name: sessionData.sessionId || sessionData.userId,
+            session_id: sessionData.sessionId, // Utiliser le vrai sessionId au lieu de userId
+            session_name: sessionData.sessionId,
             message: {
                 id: message.id._serialized,
                 from: message.from,
@@ -35,7 +36,16 @@ class LaravelWebhookService {
             },
         };
 
+        logger.whatsapp("🌐 SENDING TO LARAVEL", {
+            sessionId: sessionData.sessionId,
+            messageId: message.id._serialized,
+            webhookUrl: `${this.webhookBase}/incoming-message`,
+            payloadSize: JSON.stringify(payload).length,
+            hasAuth: !!this.apiToken
+        });
+
         try {
+            const startTime = Date.now();
             const response = await axios.post(
                 `${this.webhookBase}/incoming-message`,
                 payload,
@@ -45,14 +55,37 @@ class LaravelWebhookService {
                 },
             );
 
-            console.log(`[Webhook] Message sent to Laravel`, {
-                sessionId: sessionData.userId,
+            const duration = Date.now() - startTime;
+
+            logger.whatsapp("✅ LARAVEL RESPONSE RECEIVED", {
+                sessionId: sessionData.sessionId || sessionData.userId,
                 messageId: message.id._serialized,
+                status: response.status,
+                duration: `${duration}ms`,
+                hasResponseMessage: !!response.data?.response_message,
+                responseLength: response.data?.response_message?.length || 0
             });
+
+            if (response.data?.response_message) {
+                logger.whatsapp("🤖 AI RESPONSE FROM LARAVEL", {
+                    sessionId: sessionData.sessionId || sessionData.userId,
+                    originalMessageId: message.id._serialized,
+                    aiResponse: response.data.response_message.substring(0, 100) + (response.data.response_message.length > 100 ? "..." : ""),
+                    fullResponseLength: response.data.response_message.length
+                });
+            }
 
             return response.data;
         } catch (error) {
-            console.error("[Webhook] Failed to send message:", error.message);
+            logger.error("❌ LARAVEL WEBHOOK FAILED", {
+                sessionId: sessionData.sessionId || sessionData.userId,
+                messageId: message.id._serialized,
+                error: error.message,
+                webhookUrl: `${this.webhookBase}/incoming-message`,
+                statusCode: error.response?.status,
+                responseData: error.response?.data,
+                stack: error.stack
+            });
             throw error;
         }
     }

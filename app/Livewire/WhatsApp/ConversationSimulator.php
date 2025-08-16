@@ -133,6 +133,9 @@ final class ConversationSimulator extends Component
         $this->newMessage = '';
 
         try {
+            // IMPORTANT: Construire le contexte AVANT d'ajouter le nouveau message
+            $conversationContext = $this->buildConversationContext();
+            
             // Ajouter le message utilisateur
             $this->addMessage('user', $userMessage);
             $this->dispatch('message-added');
@@ -147,11 +150,13 @@ final class ConversationSimulator extends Component
                 'delay_seconds' => $delayInSeconds,
                 'delay_ms' => $delayInSeconds * 1000,
                 'user_message' => $userMessage,
+                'context_count' => count($conversationContext),
             ]);
 
             // Programmer la réponse avec le bon délai
             $this->dispatch('schedule-ai-response', [
                 'userMessage' => $userMessage,
+                'conversationContext' => $conversationContext, // Passer le contexte
                 'delayMs' => $delayInSeconds * 1000,
             ]);
 
@@ -181,12 +186,14 @@ final class ConversationSimulator extends Component
         $this->showTyping = false;
     }
 
-    public function processAiResponse(?string $userMessage = null): void
+    public function processAiResponse(?string $userMessage = null, ?array $conversationContext = null): void
     {
         Log::info('🤖 Génération de la réponse IA', [
             'userMessage' => $userMessage,
             'userMessage_type' => gettype($userMessage),
             'userMessage_length' => $userMessage ? strlen($userMessage) : 0,
+            'context_provided' => $conversationContext !== null,
+            'context_count' => $conversationContext ? count($conversationContext) : 0,
         ]);
 
         if (! $userMessage) {
@@ -199,7 +206,7 @@ final class ConversationSimulator extends Component
         }
 
         try {
-            $this->simulateAiResponse($userMessage);
+            $this->simulateAiResponse($userMessage, $conversationContext ?? []);
             Log::info('✅ Réponse IA générée avec succès');
         } catch (\Exception $e) {
             Log::error('❌ Erreur dans processAiResponse()', [
@@ -229,17 +236,22 @@ final class ConversationSimulator extends Component
         ]);
     }
 
-    private function simulateAiResponse(string $userMessage): void
+    private function simulateAiResponse(string $userMessage, array $conversationContext = []): void
     {
         Log::info('🤖 Début simulateAiResponse() - Service centralisé', [
             'userMessage' => $userMessage,
             'account_id' => $this->account->id,
+            'provided_context_count' => count($conversationContext),
         ]);
 
         try {
             Log::info('🚀 Appel service IA centralisé');
 
-            $conversationContext = $this->buildConversationContext();
+            // Utiliser le contexte fourni ou le construire en fallback
+            if (empty($conversationContext)) {
+                Log::warning('⚠️ Aucun contexte fourni, reconstruction en fallback');
+                $conversationContext = $this->buildConversationContext();
+            }
 
             $whatsappAIService = app(WhatsAppAIService::class);
             $aiResponse = $whatsappAIService->generateResponse(

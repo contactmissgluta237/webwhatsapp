@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\SpatieEnumCast;
 use App\Enums\MessageDirection;
 use App\Enums\MessageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -57,8 +58,8 @@ final class Message extends Model
      * @var array<string, string|class-string>
      */
     protected $casts = [
-        'direction' => MessageDirection::class,
-        'message_type' => MessageType::class,
+        'direction' => SpatieEnumCast::class.':'.MessageDirection::class,
+        'message_type' => SpatieEnumCast::class.':'.MessageType::class,
         'is_ai_generated' => 'boolean',
         'ai_confidence' => 'decimal:2',
         'processed_at' => 'datetime',

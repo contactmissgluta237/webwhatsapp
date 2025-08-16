@@ -79,6 +79,11 @@ return [
                 'max_tokens' => 1500,
                 'top_p' => 0.95,
             ],
+            'timeout' => [
+                'default' => env('DEEPSEEK_TIMEOUT_DEFAULT', 30),
+                'long_requests' => env('DEEPSEEK_TIMEOUT_LONG', 60),
+                'prompt_enhancement' => env('DEEPSEEK_TIMEOUT_ENHANCEMENT', 90),
+            ],
         ],
     ],
 

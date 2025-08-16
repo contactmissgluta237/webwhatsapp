@@ -1,0 +1,8 @@
+- standardiser tous les controlleurs
+- toutes les requêtes doivent être déplacées dans des repositories, à part les requêtes de base comme le CRUD
+- Déplacez les traitements dans les services
+- S'assurez que tous les tests existent
+- Standardisez la façon dont les vues sont structurées! 
+- Rendre modulable le projet
+- Aucun commentaire en français dans le code! uniquement en anglais
+- Remplacer Messages , Conversations par WhatsappMessages! et WhatsappConversations

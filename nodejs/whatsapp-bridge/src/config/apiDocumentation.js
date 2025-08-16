@@ -89,6 +89,33 @@ class ApiDocumentation {
                         params: ["sessionId"],
                         warning: "Use only if normal delete fails",
                     },
+                    {
+                        path: "/api/sessions/save",
+                        methods: ["POST"],
+                        description: "Save all active sessions to disk",
+                        response: "Success confirmation with session count",
+                        example_response: {
+                            success: true,
+                            message: "Sessions saved successfully",
+                            sessionCount: 5
+                        },
+                        note: "Triggers backup of all active sessions"
+                    },
+                    {
+                        path: "/api/sessions/:sessionId/save",
+                        methods: ["POST"],
+                        description: "Save specific session to disk (OPTIMIZED)",
+                        params: ["sessionId"],
+                        response: "Success confirmation with session details",
+                        example_response: {
+                            success: true,
+                            message: "Session session_123 saved successfully",
+                            sessionId: "session_123",
+                            savedAt: "2025-08-15T20:26:05.148Z"
+                        },
+                        note: "Efficient backup of single session - recommended for production",
+                        performance: "~76ms vs several seconds for bulk save"
+                    },
                 ],
                 Bridge: [
                     {

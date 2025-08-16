@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-08-15T12:37:57.688Z",
+  "totalAttempts": 13,
+  "successfulRecoveries": 13,
+  "results": [
+    {
+      "sessionId": "session_2_17552599417542_942a2d5a",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551942013587_6f8c361f",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551940755211_ff91616e",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551935382837_076d67db",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551932284359_654ff8f8",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551931030956_5a07cb17",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551928830949_4f405d54",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551925958451_4ee456ac",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551912370461_b367596e",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551912011993_3f00607f",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551900845492_ff0d7987",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551798060556_c2ba328f",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    },
+    {
+      "sessionId": "session_2_17551731224640_a5939ce2",
+      "success": true,
+      "phoneNumber": "unknown",
+      "recoveryReason": "recent_auth_dir"
+    }
+  ]
+}

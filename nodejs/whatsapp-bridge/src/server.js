@@ -95,6 +95,20 @@ app.get("/health", (req, res) => {
     }
 });
 
+// ===== API DOCUMENTATION =====
+app.get("/", (req, res) => {
+    try {
+        const documentation = ApiDocumentation.getEndpoints(PORT);
+        logger.api("API documentation requested", {
+            ip: req.ip,
+            userAgent: req.get("User-Agent")
+        });
+        res.status(200).json(documentation);
+    } catch (error) {
+        handleError(res, error, "Documentation generation failed");
+    }
+});
+
 // ===== MAIN ROUTES =====
 logger.info("🛣️ Setting up API routes...");
 app.use("/api/sessions", require("./routes/sessions")(whatsappManager));

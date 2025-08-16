@@ -57,6 +57,10 @@ return [
         'api_token' => env('WHATSAPP_API_TOKEN'),
     ],
 
+    'nodejs' => [
+        'base_url' => env('NODEJS_BASE_URL', 'http://localhost:3000'),
+    ],
+
     'ollama' => [
         'url' => env('OLLAMA_URL', 'http://localhost:11434'),
         'default_model' => env('OLLAMA_DEFAULT_MODEL', 'llama2:7b-chat'),

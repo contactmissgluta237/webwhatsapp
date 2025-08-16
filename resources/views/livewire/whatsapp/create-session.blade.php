@@ -17,7 +17,7 @@
             @if($qrCode)
                 <div class="row">
                     {{-- QR Code Section --}}
-                    <div class="col-lg-6">
+                    <div class="col-lg-6" id="qr-code-section">
                         <div class="qr-container text-center">
                             <h5 class="text-white mb-3">
                                 <i class="la la-qrcode"></i> {{ __('Votre QR Code') }}

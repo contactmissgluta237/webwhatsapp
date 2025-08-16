@@ -60,6 +60,31 @@ class SessionPersistenceService {
             const data = await fs.readFile(this.sessionFilePath, "utf8");
             const savedSessions = JSON.parse(data);
 
+            // Si le fichier principal est vide, essayer le backup
+            if (Object.keys(savedSessions).length === 0) {
+                logger.warn("Main sessions file is empty, trying backup...");
+                
+                const backupPath = this.sessionFilePath.replace('.json', '_backup.json');
+                try {
+                    const backupData = await fs.readFile(backupPath, "utf8");
+                    const backupSessions = JSON.parse(backupData);
+                    
+                    if (Object.keys(backupSessions).length > 0) {
+                        logger.info("Loaded sessions from backup file", {
+                            sessionCount: Object.keys(backupSessions).length,
+                            backupFile: backupPath,
+                        });
+                        
+                        // Restaurer le fichier principal avec le backup
+                        await fs.writeFile(this.sessionFilePath, JSON.stringify(backupSessions, null, 2), "utf8");
+                        
+                        return { success: true, sessions: backupSessions };
+                    }
+                } catch (backupError) {
+                    logger.warn("Backup file not found or invalid", { error: backupError.message });
+                }
+            }
+
             logger.info("Loaded saved sessions from disk", {
                 sessionCount: Object.keys(savedSessions).length,
                 file: this.sessionFilePath,
@@ -87,9 +112,10 @@ class SessionPersistenceService {
             
             const authSessions = [];
             for (const dirName of sessionDirs) {
-                const sessionIdMatch = dirName.match(/^session-(.+)_\d+_[a-f0-9]+$/);
-                if (sessionIdMatch) {
-                    const sessionId = sessionIdMatch[1];
+                // Format attendu: session-session_2_17552805081829_3d3b6b43
+                // Extraire tout après "session-" comme sessionId
+                if (dirName.startsWith("session-")) {
+                    const sessionId = dirName.substring(8); // Enlever "session-"
                     const dirPath = path.join(this.authPath, dirName);
                     const stats = await fs.stat(dirPath);
                     
@@ -198,10 +224,21 @@ class SessionPersistenceService {
                 authSession => authSession.sessionId === sessionId
             );
 
+            const lastActivityDate = new Date(sessionData.lastActivity);
+            const timeDiff = new Date() - lastActivityDate;
             const isRecentlyActive = sessionData.lastActivity && 
-                new Date() - new Date(sessionData.lastActivity) < 24 * 60 * 60 * 1000; // 24 hours
+                timeDiff < 24 * 60 * 60 * 1000; // 24 hours
 
             const hasValidStatus = ["connected", "qr_code_ready", "initializing"].includes(sessionData.status);
+
+            logger.info("Session validation result", {
+                sessionId,
+                hasAuthDir,
+                isRecentlyActive,
+                hasValidStatus,
+                timeDiff: Math.round(timeDiff / 1000 / 60) + " minutes",
+                status: sessionData.status
+            });
 
             return hasAuthDir && isRecentlyActive && hasValidStatus;
         } catch (error) {

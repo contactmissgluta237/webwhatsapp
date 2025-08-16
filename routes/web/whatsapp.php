@@ -14,6 +14,8 @@ Route::middleware(['auth'])
 
         Route::get('/', IndexController::class)->name('index');
         Route::get('/create', CreateController::class)->name('create');
+        
+        //actions
         Route::get('/configure-ai/{account}', ConfigureAiController::class)->name('configure-ai');
         Route::post('/{account}/toggle-ai', ToggleAiController::class)->name('toggle-ai');
         Route::delete('/{account}', DestroyController::class)->name('destroy');

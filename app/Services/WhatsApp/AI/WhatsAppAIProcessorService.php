@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp\AI;
 
+use App\Enums\MessageDirection;
+use App\Enums\MessageType;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\WhatsAppAccount;
@@ -39,6 +41,20 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
 
         // Store incoming message
         $message = $this->storeIncomingMessage($conversation, $messageData);
+
+        // Check if AI agent is enabled for this WhatsApp account
+        if (! $whatsappAccount->agent_enabled) {
+            Log::info('💤 Agent IA désactivé pour ce compte WhatsApp', [
+                'account_id' => $whatsappAccount->id,
+                'session_name' => $whatsappAccount->session_name,
+            ]);
+            
+            return [
+                'has_ai_response' => false,
+                'message_stored' => true,
+                'message_id' => $message->id,
+            ];
+        }
 
         // Check if AI is enabled for this conversation
         if (! $conversation->is_ai_enabled) {
@@ -96,9 +112,9 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'whatsapp_message_id' => $messageData['id'],
-            'direction' => 'incoming',
+            'direction' => MessageDirection::INBOUND(),
             'content' => $messageData['body'],
-            'message_type' => 'text',
+            'message_type' => MessageType::TEXT(),
             'is_ai_generated' => false,
         ]);
 
@@ -136,9 +152,9 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
     {
         return Message::create([
             'conversation_id' => $conversation->id,
-            'direction' => 'outgoing',
+            'direction' => MessageDirection::OUTBOUND(),
             'content' => $aiResponse['response'],
-            'message_type' => 'text',
+            'message_type' => MessageType::TEXT(),
             'is_ai_generated' => true,
             'ai_model_used' => $aiResponse['model'],
             'ai_confidence' => $aiResponse['confidence'],
@@ -155,7 +171,7 @@ final class WhatsAppAIProcessorService implements WhatsAppAIProcessorServiceInte
             ->reverse()
             ->map(function (Message $message) {
                 return [
-                    'role' => $message->direction === 'incoming' ? 'user' : 'assistant',
+                    'role' => $message->direction->equals(MessageDirection::INBOUND()) ? 'user' : 'assistant',
                     'content' => $message->content,
                     'timestamp' => $message->created_at->toISOString(),
                 ];

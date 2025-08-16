@@ -18,10 +18,17 @@ class WhatsAppManager {
         logger.info("🚀 Initializing WhatsApp Manager...");
         
         try {
-            // Démarrer l'autosave
-            this.sessionManager.startAutosave(5); // Sauvegarde toutes les 5 minutes
+            // IMPORTANT: Configurer le callback par défaut AVANT la restauration
+            this.sessionManager.setDefaultMessageCallback((message, sessionData) => {
+                logger.info("🔥 DEBUG: Callback par défaut WhatsAppManager appelé", {
+                    sessionId: sessionData.sessionId,
+                    messageId: message.id._serialized,
+                    from: message.from
+                });
+                return this.messageManager.handleIncomingMessage(message, sessionData);
+            });
             
-            // Restaurer les sessions existantes
+            // Restaurer les sessions existantes AVANT de démarrer l'autosave
             logger.info("📱 Restoring existing WhatsApp sessions...");
             const restoreResult = await this.sessionManager.restoreSessionsFromPersistence();
             
@@ -50,6 +57,10 @@ class WhatsAppManager {
                 });
             }
             
+            // Démarrer l'autosave APRÈS la restauration pour éviter d'écraser le fichier
+            logger.info("🔄 Starting autosave after session restoration...");
+            this.sessionManager.startAutosave(5); // Sauvegarde toutes les 5 minutes
+            
             return { success: true, restoreResult };
         } catch (error) {
             logger.error("❌ WhatsApp Manager initialization failed", {
@@ -64,11 +75,19 @@ class WhatsAppManager {
         logger.info("🔄 Shutting down WhatsApp Manager...");
         
         try {
-            // Sauvegarder les sessions actives avant fermeture
-            await this.sessionManager.saveActiveSessions();
-            
-            // Arrêter l'autosave
+            // Arrêter l'autosave en premier
             this.sessionManager.stopAutosave();
+            
+            // Sauvegarder les sessions actives avant fermeture SEULEMENT si on a des sessions
+            const sessionCount = this.sessionManager.sessions.size;
+            if (sessionCount > 0) {
+                logger.info("💾 Saving active sessions before shutdown", {
+                    sessionCount
+                });
+                await this.sessionManager.saveActiveSessions();
+            } else {
+                logger.info("📝 No active sessions to save during shutdown");
+            }
             
             logger.info("✅ WhatsApp Manager shutdown completed");
             return { success: true };
@@ -92,7 +111,15 @@ class WhatsAppManager {
     }
 
     async sendMessage(sessionId, to, message) {
-        return await this.messageManager.sendMessage(sessionId, to, message);
+        console.log("🔥 TRACE: WhatsAppManager.sendMessage called", { sessionId, to: to?.substring(0, 10) + "...", messageLength: message?.length });
+        logger.info("🔥 TRACE: WhatsAppManager.sendMessage called", { sessionId, to: to?.substring(0, 10) + "...", messageLength: message?.length });
+        
+        const result = await this.messageManager.sendMessage(sessionId, to, message);
+        
+        console.log("🔥 TRACE: WhatsAppManager.sendMessage result", { success: result?.success });
+        logger.info("🔥 TRACE: WhatsAppManager.sendMessage result", { success: result?.success });
+        
+        return result;
     }
 
     async destroySession(sessionId) {

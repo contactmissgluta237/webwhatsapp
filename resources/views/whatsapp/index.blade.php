@@ -28,6 +28,8 @@
         </div>
     </div>
 
+    {{-- Les messages flash seront gérés par toastr via le script --}}
+
     <div class="content-body">
         <section id="whatsapp-sessions-list">
             @if ($sessions->count() > 0)
@@ -87,36 +89,49 @@
                                     <td>{{ $session->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            {{-- Configurer/Modifier --}}
+                                            {{-- Configurer --}}
                                             <a href="{{ route('whatsapp.configure-ai', $session->id) }}"
-                                                class="btn btn-sm btn-outline-whatsapp"
-                                                title="Configurer l'agent IA">
-                                                <i class="la la-cog mr-1"></i> {{ __('Configurer') }}
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="Configurer l'agent IA">
+                                                <i class="la la-cog"></i>
                                             </a>
-                                            {{-- Activer/Désactiver --}}
+
+                                            {{-- Toggle AI --}}
                                             @if ($session->hasAiAgent())
-                                                <button type="button" class="btn btn-sm btn-outline-warning"
-                                                    onclick="toggleAiAgent({{ $session->id }}, false)"
-                                                    data-toggle="tooltip"
-                                                    title="{{ __('Désactiver l\'agent IA') }}">
-                                                    <i class="la la-pause mr-1"></i> {{ __('Désactiver') }}
-                                                </button>
+                                                <form method="POST" action="{{ route('whatsapp.toggle-ai', $session->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="enable" value="0">
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-warning"
+                                                            title="Désactiver l'agent IA"
+                                                            onclick="return confirm('Désactiver cet agent IA ?')">
+                                                        <i class="la la-pause"></i>
+                                                    </button>
+                                                </form>
                                             @else
-                                                <button type="button" class="btn btn-sm btn-outline-success"
-                                                    onclick="toggleAiAgent({{ $session->id }}, true)"
-                                                    data-toggle="tooltip"
-                                                    title="{{ __('Activer l\'agent IA') }}">
-                                                    <i class="la la-play mr-1"></i> {{ __('Activer') }}
-                                                </button>
+                                                <form method="POST" action="{{ route('whatsapp.toggle-ai', $session->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="enable" value="1">
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-outline-success"
+                                                            title="Activer l'agent IA"
+                                                            onclick="return confirm('Activer cet agent IA ?')">
+                                                        <i class="la la-play"></i>
+                                                    </button>
+                                                </form>
                                             @endif
 
-                                            {{-- Supprimer --}}
-                                            <button type="button" class="btn btn-sm btn-outline-danger"
-                                                onclick="deleteSession({{ $session->id }})"
-                                                data-toggle="tooltip"
-                                                title="{{ __('Supprimer la session') }}">
-                                                <i class="la la-trash mr-1"></i> {{ __('Supprimer') }}
-                                            </button>
+                                            {{-- SUPPRESSION SIMPLE ET DIRECTE --}}
+                                            <form method="POST" action="{{ route('whatsapp.destroy', $session->id) }}" style="display: inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="Supprimer la session"
+                                                        onclick="return confirm('Supprimer définitivement la session « {{ $session->session_name }} » ?')">
+                                                    <i class="la la-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -141,94 +156,20 @@
     </div>
 @endsection
 
-@section('page-script')
+@push('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
-        function toggleAiAgent(sessionId, enable) {
-            const action = enable ? 'activer' : 'désactiver';
-            const title = enable ? 'Activer l\'agent IA' : 'Désactiver l\'agent IA';
-
-            Swal.fire({
-                title: title,
-                text: `Êtes-vous sûr de vouloir ${action} l\'agent IA pour cette session ?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: enable ? '#28a745' : '#ffc107',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: enable ? 'Oui, activer' : 'Oui, désactiver',
-                cancelButtonText: 'Annuler'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send AJAX request to toggle AI agent
-                    fetch(`/whatsapp/${sessionId}/toggle-ai`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            },
-                            body: JSON.stringify({
-                                enable: enable
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                toastr.success(data.message);
-                                window.location.reload();
-                            } else {
-                                toastr.error(data.message || 'Une erreur est survenue');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            toastr.error('Une erreur est survenue lors de la requête');
-                        });
-                }
-            });
-        }
-
-        function deleteSession(sessionId) {
-            Swal.fire({
-                title: 'Supprimer la session',
-                text: 'Êtes-vous sûr de vouloir supprimer cette session WhatsApp ? Cette action est irréversible.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Oui, supprimer',
-                cancelButtonText: 'Annuler'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Send AJAX request to delete session
-                    fetch(`/whatsapp/${sessionId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                    'content')
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                toastr.success(data.message);
-                                window.location.reload();
-                            } else {
-                                toastr.error(data.message || 'Une erreur est survenue');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            toastr.error('Une erreur est survenue lors de la requête');
-                        });
-                }
-            });
-        }
+    $(document).ready(function() {
+        // Affichage des messages flash avec toastr
+        @if(session('success'))
+            toastr.success('{{ session('success') }}');
+        @endif
+        @if(session('error'))
+            toastr.error('{{ session('error') }}');
+        @endif
 
         // Initialize tooltips
-        $(document).ready(function() {
-            $('[data-toggle="tooltip"]').tooltip();
-        });
+        $('[data-toggle="tooltip"]').tooltip();
+    });
     </script>
-@endsection
+@endpush

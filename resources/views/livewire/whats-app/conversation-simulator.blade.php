@@ -126,23 +126,25 @@ $wire.on('schedule-ai-response', (eventData) => {
     console.log('⏰ Event schedule-ai-response reçu:', eventData);
     
     // Extraire les données selon le format
-    let userMessage, delayMs;
+    let userMessage, delayMs, conversationContext;
     
     if (Array.isArray(eventData) && eventData.length > 0) {
-        // Format tableau: [{ userMessage: "...", delayMs: 3000 }]
+        // Format tableau: [{ userMessage: "...", delayMs: 3000, conversationContext: [...] }]
         const data = eventData[0];
         userMessage = data.userMessage;
         delayMs = data.delayMs;
+        conversationContext = data.conversationContext || [];
     } else if (eventData.userMessage && eventData.delayMs) {
-        // Format objet direct: { userMessage: "...", delayMs: 3000 }
+        // Format objet direct: { userMessage: "...", delayMs: 3000, conversationContext: [...] }
         userMessage = eventData.userMessage;
         delayMs = eventData.delayMs;
+        conversationContext = eventData.conversationContext || [];
     } else {
         console.error('❌ Format d\'event inattendu:', eventData);
         return;
     }
     
-    console.log(`⏰ Configuration: délai=${delayMs}ms, message="${userMessage}"`);
+    console.log(`⏰ Configuration: délai=${delayMs}ms, message="${userMessage}", context=${conversationContext.length} msgs`);
     
     if (!userMessage || !delayMs) {
         console.error('❌ Paramètres manquants:', { userMessage, delayMs });
@@ -176,7 +178,7 @@ $wire.on('schedule-ai-response', (eventData) => {
             $wire.call('stopTyping');
             
             // Puis générer la réponse
-            $wire.call('processAiResponse', userMessage).then(() => {
+            $wire.call('processAiResponse', userMessage, conversationContext).then(() => {
                 console.log('✅ Réponse IA générée');
             }).catch(error => {
                 console.error('❌ Erreur processAiResponse:', error);

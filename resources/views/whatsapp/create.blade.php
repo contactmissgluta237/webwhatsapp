@@ -117,5 +117,53 @@
     @livewire('whats-app.create-session')
 @endsection
 
-@section('page-script')
-@endsection
+@push('scripts')
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('scroll-to-qr', (params) => {
+                const targetId = params[0]?.targetId;
+                
+                if (targetId) {
+                    const waitForElement = (id, maxAttempts = 50) => {
+                        return new Promise((resolve, reject) => {
+                            let attempts = 0;
+                            
+                            const checkElement = () => {
+                                const element = document.getElementById(id);
+                                
+                                if (element) {
+                                    resolve(element);
+                                } else if (attempts >= maxAttempts) {
+                                    reject(new Error(`Element ${id} not found`));
+                                } else {
+                                    attempts++;
+                                    setTimeout(checkElement, 100);
+                                }
+                            };
+                            
+                            setTimeout(checkElement, 200);
+                        });
+                    };
+                    
+                    waitForElement(targetId)
+                        .then(element => {
+                            element.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                            
+                            setTimeout(() => {
+                                element.style.transform = 'scale(1.02)';
+                                element.style.transition = 'transform 0.3s ease';
+                                
+                                setTimeout(() => {
+                                    element.style.transform = 'scale(1)';
+                                }, 300);
+                            }, 500);
+                        })
+                        .catch(() => {});
+                }
+            });
+        });
+    </script>
+@endpush

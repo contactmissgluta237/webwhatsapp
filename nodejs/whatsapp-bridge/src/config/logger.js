@@ -81,11 +81,14 @@ if (logDir) {
                 winston.format.timestamp(),
                 winston.format.json(),
             ),
-        }),
+        })
+
+        // NOTE: Les fichiers incoming-messages et outgoing-messages sont gérés 
+        // par des loggers spécialisés séparés pour éviter les doublons
     );
 }
 
-// Créer le logger
+// Créer le logger principal
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || "info",
     format: winston.format.combine(
@@ -99,12 +102,79 @@ const logger = winston.createLogger({
     exitOnError: false, // Ne pas crasher sur erreur de log
 });
 
+// Créer des loggers spécialisés pour les messages
+const createMessageLogger = (filename, logType) => {
+    if (!logDir) return null;
+    
+    return winston.createLogger({
+        level: 'info',
+        format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+        ),
+        transports: [
+            new DailyRotateFile({
+                filename: path.join(logDir, filename),
+                datePattern: "YYYY-MM-DD",
+                maxSize: "100m",
+                maxFiles: "30d",
+                handleExceptions: false,
+            })
+        ],
+        exitOnError: false,
+    });
+};
+
+// Loggers spécialisés
+const incomingLogger = createMessageLogger("incoming-messages-%DATE%.log", "incoming");
+const outgoingLogger = createMessageLogger("outgoing-messages-%DATE%.log", "outgoing");
+
 // Méthodes personnalisées
 logger.api = (message, meta = {}) => logger.info(`[API] ${message}`, meta);
 logger.whatsapp = (message, meta = {}) =>
     logger.info(`[WhatsApp] ${message}`, meta);
 logger.session = (sessionId, message, meta = {}) =>
     logger.info(`[Session:${sessionId}] ${message}`, meta);
+
+// Méthodes personnalisées
+logger.api = (message, meta = {}) => logger.info(`[API] ${message}`, meta);
+logger.whatsapp = (message, meta = {}) =>
+    logger.info(`[WhatsApp] ${message}`, meta);
+logger.session = (sessionId, message, meta = {}) =>
+    logger.info(`[Session:${sessionId}] ${message}`, meta);
+
+// Méthodes spécifiques pour les messages
+logger.incomingMessage = (message, meta = {}) => {
+    const logData = {
+        ...meta,
+        messageDirection: 'incoming',
+        timestamp: new Date().toISOString()
+    };
+    
+    // Log dans le fichier général
+    logger.info(`📨 ${message}`, logData);
+    
+    // Log dans le fichier spécifique incoming si disponible
+    if (incomingLogger) {
+        incomingLogger.info(message, logData);
+    }
+};
+
+logger.outgoingMessage = (message, meta = {}) => {
+    const logData = {
+        ...meta,
+        messageDirection: 'outgoing',
+        timestamp: new Date().toISOString()
+    };
+    
+    // Log dans le fichier général
+    logger.info(`📤 ${message}`, logData);
+    
+    // Log dans le fichier spécifique outgoing si disponible
+    if (outgoingLogger) {
+        outgoingLogger.info(message, logData);
+    }
+};
 
 // Gérer les erreurs de winston lui-même
 logger.on("error", (error) => {

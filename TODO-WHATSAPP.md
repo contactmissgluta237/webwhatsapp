@@ -1,5 +1,4 @@
-- Connect properly by scanned (OK)
-- Should be able to send message (OK)
+
 - Should be able to get message, and store it in the database 
 - Should be able to reply by aI to a message
 - Check how to set the context
@@ -10,7 +9,10 @@
 - Check how to send message with interactive message
 - Update the properway to store media
 - Added a way to filter message and trigger ia!
+- added a way to store and restore sessions properly
 
+
+- Trouvez une solution pour supprimer les qrcode générés après
 
 
 - Check how to send message with quick replies

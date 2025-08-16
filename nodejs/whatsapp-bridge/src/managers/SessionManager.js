@@ -12,6 +12,15 @@ class SessionManager {
         this.persistenceService = new SessionPersistenceService();
         this.autosaveInterval = null;
         this.isRestoring = false;
+        this.defaultMessageCallback = null; // Callback par défaut pour les sessions restaurées
+    }
+
+    setDefaultMessageCallback(callback) {
+        logger.info("🔧 Configuration du callback par défaut pour les sessions", {
+            callbackType: typeof callback,
+            callbackExists: !!callback
+        });
+        this.defaultMessageCallback = callback;
     }
 
     async createSession(sessionId, userId, onMessageCallback, options = {}) {
@@ -50,6 +59,7 @@ class SessionManager {
 
         const sessionData = {
             client,
+            sessionId,
             userId,
             status: "initializing",
             qrCode: null,
@@ -150,12 +160,93 @@ class SessionManager {
         });
 
         client.on("message", async (message) => {
-            if (message.from.includes("@c.us")) {
-                logger.session(sessionId, "Message received", {
-                    from: message.from.substring(0, 10) + "...",
-                    userId: sessionData.userId
+            sessionData.lastActivity = new Date();
+            
+            console.log("🔥 TRACE: RAW MESSAGE EVENT", {
+                sessionId: sessionId,
+                messageId: message.id._serialized,
+                from: message.from,
+                body: message.body?.substring(0, 50),
+                fromMe: message.fromMe,
+                type: message.type
+            });
+            
+            logger.whatsapp("📬 RAW MESSAGE EVENT", {
+                sessionId: sessionId,
+                userId: sessionData.userId,
+                messageId: message.id._serialized,
+                from: message.from,
+                type: message.type,
+                fromMe: message.fromMe,
+                isGroup: message.from.includes("@g.us"),
+                hasMedia: message.hasMedia,
+                timestamp: message.timestamp,
+                deviceType: message.deviceType || null
+            });
+
+            if (message.fromMe) {
+                // Message sortant détecté
+                logger.info("🔍 DEBUG: Message sortant détecté dans SessionManager", {
+                    sessionId: sessionId,
+                    messageId: message.id._serialized
                 });
-                await onMessageCallback(message, sessionData);
+                logger.outgoingMessage("OUTGOING MESSAGE DETECTED", {
+                    sessionId: sessionId,
+                    messageId: message.id._serialized,
+                    to: message.to,
+                    userId: sessionData.userId,
+                    messageLength: message.body?.length || 0,
+                    timestamp: message.timestamp
+                });
+                return;
+            }
+
+            if (message.from.includes("@c.us") || message.from.includes("@g.us")) {
+                logger.info("🔍 DEBUG: Message entrant détecté dans SessionManager", {
+                    sessionId: sessionId,
+                    messageId: message.id._serialized
+                });
+                logger.incomingMessage("INCOMING MESSAGE DETECTED", {
+                    sessionId: sessionId,
+                    userId: sessionData.userId,
+                    from: message.from,
+                    messageId: message.id._serialized,
+                    messageLength: message.body?.length || 0,
+                    isGroup: message.from.includes("@g.us"),
+                    processingTime: new Date().toISOString()
+                });
+                
+                logger.info("🔥 DEBUG: AVANT appel onMessageCallback", {
+                    sessionId: sessionId,
+                    messageId: message.id._serialized,
+                    callbackType: typeof onMessageCallback,
+                    callbackExists: !!onMessageCallback
+                });
+                
+                try {
+                    await onMessageCallback(message, { ...sessionData, sessionId });
+                    
+                    logger.info("✅ DEBUG: APRÈS appel onMessageCallback - succès", {
+                        sessionId: sessionId,
+                        messageId: message.id._serialized
+                    });
+                } catch (error) {
+                    logger.error("❌ MESSAGE CALLBACK ERROR", {
+                        sessionId: sessionId,
+                        userId: sessionData.userId,
+                        messageId: message.id._serialized,
+                        error: error.message,
+                        stack: error.stack
+                    });
+                }
+            } else {
+                logger.whatsapp("❌ UNKNOWN MESSAGE TYPE", {
+                    sessionId: sessionId,
+                    userId: sessionData.userId,
+                    from: message.from,
+                    messageId: message.id._serialized,
+                    type: message.type
+                });
             }
         });
 
@@ -295,7 +386,15 @@ class SessionManager {
                     };
 
                     // Configurer les gestionnaires d'événements
-                    this.setupClientHandlers(client, sessionId, sessionData, () => {});
+                    this.setupClientHandlers(client, sessionId, sessionData, 
+                        // Utiliser le callback par défaut s'il existe, sinon fonction vide
+                        this.defaultMessageCallback || ((message, sessionData) => {
+                            logger.warn("⚠️ Aucun callback configuré pour session restaurée", {
+                                sessionId: sessionId,
+                                messageId: message.id._serialized
+                            });
+                        })
+                    );
 
                     // Ajouter à la map des sessions
                     this.sessions.set(sessionId, sessionData);

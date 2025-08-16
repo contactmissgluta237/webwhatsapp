@@ -15,64 +15,146 @@ final class DeepSeekService implements AiServiceInterface
 {
     public function chat(AiModel $model, AiRequestDTO $request): AiResponseDTO
     {
-        $this->validateConfiguration($model);
+        return $this->generate($request, $model);
+    }
 
+    public function generate(AiRequestDTO $request, AiModel $model): AiResponseDTO
+    {
+        $this->validateConfiguration($model);
+        $messages = $this->prepareMessages($request);
+        
+        Log::info('🔄 Appel API DeepSeek', [
+            'endpoint' => $model->endpoint_url ?? 'https://api.deepseek.com',
+            'model_identifier' => $model->model_identifier,
+            'message_count' => count($messages),
+            'system_prompt_length' => strlen($request->systemPrompt),
+            'user_message_length' => strlen($request->userMessage),
+            'context_count' => count($request->context),
+            'request_config_type' => gettype($request->config),
+            'request_config_content' => $request->config,
+            'model_config_type' => gettype($model->model_config),
+        ]);
+
+        $config = array_merge(
+            $this->getDefaultConfig(),
+            is_string($model->model_config) ? json_decode($model->model_config, true) : ($model->model_config ?? []),
+            is_array($request->config) ? $request->config : []
+        );
+
+        $payload = [
+            'model' => $model->model_identifier,
+            'messages' => $messages,
+            'temperature' => $config['temperature'],
+            'max_tokens' => $config['max_tokens'],
+            'top_p' => $config['top_p'],
+            'stream' => false,
+        ];
+
+        Log::debug('📤 DeepSeek API Request Payload', $payload);
+
+        return $this->executeWithRetry($model, $payload, $this->getTimeoutForOperation($request));
+    }
+
+    private function executeWithRetry(AiModel $model, array $payload, int $timeout, int $maxRetries = 2): AiResponseDTO
+    {
         $baseUrl = rtrim($model->endpoint_url ?? 'https://api.deepseek.com', '/');
         $endpoint = $baseUrl . '/chat/completions';
         $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
-        $messages = $this->prepareMessages($request);
-        $config = $model->getMergedConfig($request->config);
-
-        Log::info('🔄 Appel API DeepSeek', [
-            'endpoint' => $endpoint,
-            'model_identifier' => $model->model_identifier,
-            'message_count' => count($messages),
-        ]);
-
-        try {
-            $response = Http::withToken($apiKey)
-                ->timeout(120)
-                ->post($endpoint, [
-                    'model' => $model->model_identifier,
-                    'messages' => $messages,
-                    'temperature' => (float) $config['temperature'],
-                    'max_tokens' => (int) $config['max_tokens'],
-                    'top_p' => (float) $config['top_p'],
-                    'stream' => false,
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                Log::info('🚀 Tentative API DeepSeek', [
+                    'attempt' => $attempt,
+                    'max_retries' => $maxRetries,
+                    'timeout' => $timeout,
+                    'endpoint' => $endpoint,
                 ]);
 
-            $response->throw();
+                $response = Http::withToken($apiKey)
+                    ->timeout($timeout)
+                    ->post($endpoint, $payload);
 
-            $data = $response->json();
-            $content = $data['choices'][0]['message']['content'] ?? '';
-            $usage = $data['usage'] ?? [];
+                $response->throw();
 
-            Log::info('✅ Réponse DeepSeek reçue', [
-                'model' => $data['model'] ?? $model->model_identifier,
-                'usage' => $usage,
-                'content_length' => strlen($content),
-            ]);
+                $data = $response->json();
+                $content = $data['choices'][0]['message']['content'] ?? '';
+                $usage = $data['usage'] ?? [];
 
-            return new AiResponseDTO(
-                content: $content,
-                tokensUsed: $usage['total_tokens'] ?? 0,
-                metadata: [
-                    'provider' => 'deepseek',
-                    'model_name' => $model->name,
+                Log::info('✅ Réponse DeepSeek reçue', [
+                    'attempt' => $attempt,
                     'model' => $data['model'] ?? $model->model_identifier,
                     'usage' => $usage,
-                    'confidence' => 1.0, // Not provided by API, default to 1.0
-                ]
-            );
+                    'content_length' => strlen($content),
+                ]);
 
-        } catch (RequestException $e) {
-            Log::error('❌ Erreur API DeepSeek', [
-                'message' => $e->getMessage(),
-                'response' => $e->response ? $e->response->body() : 'No response',
-            ]);
-            throw new \Exception("Erreur de communication avec l'API DeepSeek: " . $e->getMessage(), $e->getCode(), $e);
+                return new AiResponseDTO(
+                    content: $content,
+                    tokensUsed: $usage['total_tokens'] ?? 0,
+                    metadata: [
+                        'provider' => 'deepseek',
+                        'model_name' => $model->name,
+                        'model' => $data['model'] ?? $model->model_identifier,
+                        'usage' => $usage,
+                        'confidence' => 1.0,
+                        'attempts' => $attempt,
+                    ]
+                );
+
+            } catch (RequestException $e) {
+                $isLastAttempt = $attempt === $maxRetries;
+                $isTimeoutError = str_contains($e->getMessage(), 'timeout') || str_contains($e->getMessage(), 'timed out');
+
+                Log::warning('⚠️ Tentative DeepSeek échouée', [
+                    'attempt' => $attempt,
+                    'max_retries' => $maxRetries,
+                    'is_last_attempt' => $isLastAttempt,
+                    'is_timeout_error' => $isTimeoutError,
+                    'error' => $e->getMessage(),
+                    'response' => $e->response ? $e->response->body() : 'No response',
+                ]);
+
+                if ($isLastAttempt) {
+                    Log::error('❌ Erreur API DeepSeek - Toutes les tentatives échouées', [
+                        'total_attempts' => $attempt,
+                        'timeout' => $timeout,
+                        'error' => $e->getMessage(),
+                    ]);
+                    throw new \Exception("Erreur de communication avec l'API DeepSeek après {$attempt} tentatives: " . $e->getMessage(), $e->getCode(), $e);
+                }
+
+                if ($isTimeoutError && $attempt < $maxRetries) {
+                    $backoffSeconds = min(5 * $attempt, 15);
+                    Log::info("⏳ Attente avant retry : {$backoffSeconds}s");
+                    sleep($backoffSeconds);
+                }
+            }
         }
+
+        throw new \Exception("Erreur inattendue: toutes les tentatives ont échoué sans exception appropriée");
+    }
+
+    private function getTimeoutForOperation(AiRequestDTO $request): int
+    {
+        $systemPromptLength = strlen($request->systemPrompt);
+        $userMessageLength = strlen($request->userMessage);
+        $totalLength = $systemPromptLength + $userMessageLength;
+
+        if ($this->isPromptEnhancement($request)) {
+            return config('ai.deepseek.timeout.prompt_enhancement', 90);
+        }
+
+        if ($totalLength > 2000) {
+            return config('ai.deepseek.timeout.long_requests', 60);
+        }
+
+        return config('ai.deepseek.timeout.default', 30);
+    }
+
+    private function isPromptEnhancement(AiRequestDTO $request): bool
+    {
+        return str_contains($request->systemPrompt, 'améliorer le prompt') ||
+               str_contains($request->systemPrompt, 'prompt pour agent') ||
+               str_contains($request->userMessage, 'prompt à améliorer');
     }
 
     public function validateConfiguration(AiModel $model): bool
@@ -151,12 +233,32 @@ final class DeepSeekService implements AiServiceInterface
             $messages[] = ['role' => 'system', 'content' => $request->systemPrompt];
         }
 
+        Log::debug('🔍 DeepSeek: Analyse du contexte', [
+            'context_count' => count($request->context),
+            'context_preview' => array_slice($request->context, 0, 2)
+        ]);
+
         foreach ($request->context as $message) {
-            $role = $message['is_user'] ? 'user' : 'assistant';
-            $messages[] = ['role' => $role, 'content' => $message['message']];
+            // Le format standard utilise 'role' et 'content' (comme dans le chat réel et simulateur)
+            if (isset($message['role']) && isset($message['content'])) {
+                $messages[] = [
+                    'role' => $message['role'], 
+                    'content' => $message['content']
+                ];
+            } else {
+                Log::warning('⚠️ DeepSeek: Format de message contexte inattendu', [
+                    'message_keys' => array_keys($message),
+                    'message_sample' => $message
+                ]);
+            }
         }
 
         $messages[] = ['role' => 'user', 'content' => $request->userMessage];
+
+        Log::debug('✅ DeepSeek: Messages préparés', [
+            'total_messages' => count($messages),
+            'messages_preview' => array_map(fn($m) => ['role' => $m['role'], 'content_length' => strlen($m['content'])], $messages)
+        ]);
 
         return $messages;
     }

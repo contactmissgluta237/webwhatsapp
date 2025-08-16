@@ -6,41 +6,51 @@ namespace App\Http\Controllers\WhatsApp\Account;
 
 use App\Http\Controllers\Controller;
 use App\Models\WhatsAppAccount;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 final class DestroyController extends Controller
 {
     /**
      * Delete a WhatsApp account.
-     *
      * Route: DELETE /whatsapp/{account}
-     * Name: whatsapp.destroy
      */
-    public function __invoke(Request $request, WhatsAppAccount $account): JsonResponse
+    public function __invoke(Request $request, WhatsAppAccount $account): RedirectResponse
     {
-        // Ensure the account belongs to the authenticated user
+        // Vérification d\'autorisation
         if ($account->user_id !== $request->user()->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Accès non autorisé à ce compte WhatsApp.',
-            ], 403);
+            return redirect()->route('whatsapp.index')
+                ->with('error', 'Accès non autorisé à ce compte WhatsApp.');
         }
 
         try {
             $sessionName = $account->session_name;
-            $account->delete();
 
-            return response()->json([
-                'success' => true,
-                'message' => "Session '{$sessionName}' supprimée avec succès !",
+            Log::info('️ Suppression session WhatsApp', [
+                'account_id' => $account->id,
+                'session_name' => $sessionName,
+                'user_id' => $account->user_id,
             ]);
 
+            // Suppression directe
+            $account->delete();
+
+            Log::info('✅ Session WhatsApp supprimée', [
+                'session_name' => $sessionName,
+            ]);
+
+            return redirect()->route('whatsapp.index')
+                ->with('success', "Session « {$sessionName} » supprimée avec succès !");
+
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la suppression : '.$e->getMessage(),
-            ], 500);
+            Log::error('❌ Erreur suppression session WhatsApp', [
+                'account_id' => $account->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('whatsapp.index')
+                ->with('error', 'Erreur lors de la suppression : ' . $e->getMessage());
         }
     }
 }

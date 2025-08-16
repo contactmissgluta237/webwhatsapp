@@ -162,44 +162,64 @@ final class AiConfigurationForm extends Component
 
         try {
             $enhancementService = app(PromptEnhancementInterface::class);
+            
+            Log::info('🎯 Demande d\'amélioration de prompt via interface', [
+                'account_id' => $this->account->id,
+                'original_prompt_length' => strlen($this->agent_prompt),
+                'user_interface' => 'livewire',
+            ]);
+
             $this->enhancedPrompt = $enhancementService->enhancePrompt($this->account, $this->agent_prompt);
             
-            // Set flag to prevent updatedAgentPrompt interference
             $this->isProgrammaticUpdate = true;
-            
-            // Replace the original prompt with the enhanced one immediately
             $this->agent_prompt = $this->enhancedPrompt;
             $this->hasEnhancedPrompt = true;
-            
-            // Reset the flag
             $this->isProgrammaticUpdate = false;
 
-            Log::info('✨ Prompt amélioré avec succès', [
+            Log::info('✨ Prompt amélioré avec succès via interface', [
                 'account_id' => $this->account->id,
                 'original_length' => strlen($this->originalPrompt),
                 'enhanced_length' => strlen($this->enhancedPrompt),
+                'improvement_ratio' => round(strlen($this->enhancedPrompt) / strlen($this->originalPrompt), 2),
             ]);
 
             $this->dispatch('config-changed-live', [
                 'agent_prompt' => $this->agent_prompt,
             ]);
 
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'message' => __('Prompt amélioré avec succès ! +:count caractères ajoutés.', [
+                    'count' => strlen($this->enhancedPrompt) - strlen($this->originalPrompt)
+                ]),
+            ]);
+
         } catch (\Exception $e) {
-            // Reset the flag in case of exception
             $this->isProgrammaticUpdate = false;
             
-            Log::error('❌ Erreur amélioration prompt', [
+            Log::error('❌ Erreur amélioration prompt via interface', [
                 'account_id' => $this->account->id,
                 'error' => $e->getMessage(),
+                'original_length' => strlen($this->originalPrompt),
             ]);
+
+            $isTimeoutError = str_contains($e->getMessage(), 'timeout') || str_contains($e->getMessage(), 'timed out');
+            $isServiceUnavailable = str_contains($e->getMessage(), 'indisponibles');
+
+            if ($isTimeoutError) {
+                $errorMessage = __('L\'amélioration a pris trop de temps. Les services IA sont peut-être surchargés. Réessayez dans quelques instants.');
+            } elseif ($isServiceUnavailable) {
+                $errorMessage = __('Tous les services d\'IA sont temporairement indisponibles. Réessayez plus tard ou contactez le support.');
+            } else {
+                $errorMessage = __('Erreur lors de l\'amélioration : :error', ['error' => $e->getMessage()]);
+            }
 
             $this->dispatch('show-toast', [
                 'type' => 'error',
-                'message' => __('Erreur lors de l\'amélioration : :error', ['error' => $e->getMessage()]),
+                'message' => $errorMessage,
             ]);
         }
         
-        // Important: Set isEnhancing to false AFTER hasEnhancedPrompt is set
         $this->isEnhancing = false;
     }
 
