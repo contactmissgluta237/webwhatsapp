@@ -27,3 +27,10 @@ nodejs/whatsapp-bridge/.wwebjs_auth/
 nodejs/whatsapp-bridge/logs/
 nodejs/whatsapp-bridge/backups/
 public/qrcodes/
+ollama
+nodejs/whatsapp-bridge/node_modules/
+bin/chrome-for-testing/
+vendor/composer/tmp-*
+*.mp3
+mkcert*
+/nodejs/whatsapp-bridge/.local-chromium/
