@@ -25,4 +25,9 @@ return [
         'withdrawal' => 3,
         'recharge' => 2,
     ],
+
+    'ai_messaging' => [
+        // Cost per AI message in FCFA
+        'cost_per_message' => 50,
+    ],
 ];

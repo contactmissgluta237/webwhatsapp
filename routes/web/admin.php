@@ -48,6 +48,10 @@ Route::middleware(['auth', 'role:admin'])
         // Settings routes
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', App\Http\Controllers\Admin\Settings\IndexController::class)->name('index');
+            Route::prefix('credit-system')->name('credit-system.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\Settings\CreditSystemController::class, 'index'])->name('index');
+                Route::put('/', [App\Http\Controllers\Admin\Settings\CreditSystemController::class, 'update'])->name('update');
+            });
         });
 
         // Ticket management routes
