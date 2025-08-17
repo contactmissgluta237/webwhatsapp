@@ -53,6 +53,22 @@
                         @endif
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" 
+                            id="products-tab" 
+                            data-toggle="tab" 
+                            data-target="#products" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="products" 
+                            aria-selected="false">
+                        <i class="la la-box"></i>
+                        {{ __('Produits') }}
+                        @if($account->linkedProducts()->count() > 0)
+                            <span class="badge badge-primary ml-1">{{ $account->linkedProducts()->count() }}</span>
+                        @endif
+                    </button>
+                </li>
             </ul>
         </div>
         
@@ -81,6 +97,14 @@
                      role="tabpanel" 
                      aria-labelledby="advanced-tab">
                     @include('livewire.whats-app.tabs.advanced-settings')
+                </div>
+                
+                <!-- Onglet: Produits -->
+                <div class="tab-pane fade" 
+                     id="products" 
+                     role="tabpanel" 
+                     aria-labelledby="products-tab">
+                    @include('livewire.whats-app.tabs.products')
                 </div>
                 
             </div>

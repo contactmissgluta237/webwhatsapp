@@ -26,4 +26,8 @@ Route::middleware(['auth', 'role:customer'])
             Route::get('/create', App\Http\Controllers\Customer\Ticket\CreateController::class)->name('create');
             Route::get('/{ticket}', App\Http\Controllers\Customer\Ticket\ShowController::class)->name('show');
         });
+
+        Route::prefix('products')->name('products.')->group(function () {
+            Route::get('/', App\Http\Controllers\Customer\Products\IndexController::class)->name('index');
+        });
     });

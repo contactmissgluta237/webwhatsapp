@@ -196,6 +196,11 @@ class User extends Authenticatable implements HasMedia
         return $this->morphMany(PushSubscription::class, 'subscribable');
     }
 
+    public function userProducts(): HasMany
+    {
+        return $this->hasMany(UserProduct::class);
+    }
+
     // ================================================================================
     // TRAIT METHODS
     // ================================================================================

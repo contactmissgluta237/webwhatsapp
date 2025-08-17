@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Channels\PushNotificationChannel;
 use App\Contracts\PromptEnhancementInterface;
 use App\Models\Ticket;
+use App\Models\UserProduct;
 use App\Policies\TicketPolicy;
+use App\Policies\UserProductPolicy;
 use App\Services\AI\PromptEnhancementService;
 use App\Services\Shared\Media\MediaService;
 use App\Services\Shared\Media\MediaServiceInterface;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Ticket::class, TicketPolicy::class);
+        Gate::policy(UserProduct::class, UserProductPolicy::class);
 
         $this->app->make(ChannelManager::class)->extend('push', function () {
             return new PushNotificationChannel;
