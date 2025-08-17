@@ -1,22 +1,22 @@
 @extends('modern.layouts.master')
 
-@section('title', 'Paramètres système de crédit')
+@section('title', 'Credit System Settings')
 
 @section('content')
 
 <!-- Breadcrumb start -->
 <div class="row mx-0 mt-1 mb-1">
     <div class="col-8 p-0">
-        <h2 class="content-header-title mb-0">Système de crédit</h2>
+        <h2 class="content-header-title mb-0">Credit System</h2>
         <div class="breadcrumb-wrapper">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="{{ route('admin.dashboard') }}"><i class="ti ti-home"></i>Tableau de bord</a>
+                    <a href="{{ route('admin.dashboard') }}"><i class="ti ti-home"></i>Dashboard</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{{ route('admin.settings.index') }}"><i class="ti ti-settings"></i>Paramètres</a>
+                    <a href="{{ route('admin.settings.index') }}"><i class="ti ti-settings"></i>Settings</a>
                 </li>
-                <li class="breadcrumb-item active">Système de crédit</li>
+                <li class="breadcrumb-item active">Credit System</li>
             </ol>
         </div>
     </div>
@@ -47,10 +47,10 @@
             <div class="card-header">
                 <h4 class="card-title">
                     <i class="ti ti-coins me-2"></i>
-                    Configuration du système de crédit
+                    Credit System Configuration
                 </h4>
                 <p class="card-subtitle mb-0">
-                    Gérer les coûts des messages IA et les paramètres de déduction automatique
+                    Manage AI message costs and automatic deduction settings
                 </p>
             </div>
             <div class="card-body">
@@ -63,7 +63,7 @@
                             <div class="mb-4">
                                 <label for="message_cost" class="form-label">
                                     <i class="ti ti-message-circle me-1"></i>
-                                    Coût par message IA
+                                    AI Message Cost
                                 </label>
                                 <div class="input-group">
                                     <input 
@@ -84,7 +84,7 @@
                                 </div>
                                 <div class="form-text">
                                     <i class="ti ti-info-circle me-1"></i>
-                                    Montant en FCFA qui sera déduit du wallet de l'utilisateur pour chaque réponse IA générée
+                                    Amount in FCFA that will be deducted from user's wallet for each AI response generated
                                 </div>
                             </div>
                         </div>
@@ -93,23 +93,23 @@
                             <div class="mb-4">
                                 <label class="form-label">
                                     <i class="ti ti-info-circle me-1"></i>
-                                    Informations système
+                                    System Information
                                 </label>
                                 <div class="card bg-light">
                                     <div class="card-body p-3">
                                         <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted">Coût actuel :</span>
+                                            <span class="text-muted">Current cost:</span>
                                             <span class="fw-bold">{{ number_format($currentCost, 2) }} FCFA</span>
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted">Statut :</span>
+                                            <span class="text-muted">Status:</span>
                                             <span class="badge bg-success">
-                                                <i class="ti ti-check me-1"></i>Actif
+                                                <i class="ti ti-check me-1"></i>Active
                                             </span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span class="text-muted">Application :</span>
-                                            <span class="text-primary">Messages IA + Simulations</span>
+                                            <span class="text-muted">Application:</span>
+                                            <span class="text-primary">AI Messages Only</span>
                                         </div>
                                     </div>
                                 </div>
@@ -122,19 +122,19 @@
                             <div class="alert alert-info" role="alert">
                                 <h6 class="alert-heading">
                                     <i class="ti ti-info-circle me-2"></i>
-                                    Fonctionnement du système de crédit
+                                    Credit System Operation
                                 </h6>
                                 <p class="mb-2">
-                                    • Chaque réponse IA générée déduira automatiquement le montant configuré du wallet de l'utilisateur
+                                    • Each AI response generated will automatically deduct the configured amount from the user's wallet
                                 </p>
                                 <p class="mb-2">
-                                    • Si l'utilisateur n'a pas suffisamment de crédit, aucune réponse IA ne sera générée
+                                    • If the user does not have sufficient credit, no AI response will be generated
                                 </p>
                                 <p class="mb-2">
-                                    • Le système s'applique aux messages WhatsApp réels et aux simulations
+                                    • The system applies to real WhatsApp messages only (not simulations)
                                 </p>
                                 <p class="mb-0">
-                                    • Toutes les déductions sont enregistrées comme transactions internes pour traçabilité
+                                    • All deductions are recorded as internal transactions for traceability
                                 </p>
                             </div>
                         </div>
@@ -143,11 +143,11 @@
                     <div class="d-flex justify-content-end gap-2">
                         <a href="{{ route('admin.settings.index') }}" class="btn btn-secondary">
                             <i class="ti ti-arrow-left me-2"></i>
-                            Retour aux paramètres
+                            Back to Settings
                         </a>
                         <button type="submit" class="btn btn-primary">
                             <i class="ti ti-device-floppy me-2"></i>
-                            Enregistrer les modifications
+                            Save Changes
                         </button>
                     </div>
                 </form>
@@ -157,39 +157,3 @@
 </div>
 
 @endsection
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Validate form before submission
-    const form = document.querySelector('form');
-    const messageCostInput = document.getElementById('message_cost');
-    
-    form.addEventListener('submit', function(e) {
-        const cost = parseFloat(messageCostInput.value);
-        
-        if (isNaN(cost) || cost < 0) {
-            e.preventDefault();
-            alert('Veuillez saisir un coût valide (nombre positif).');
-            messageCostInput.focus();
-            return;
-        }
-        
-        if (cost > 1000) {
-            e.preventDefault();
-            alert('Le coût par message ne peut pas dépasser 1000 FCFA.');
-            messageCostInput.focus();
-            return;
-        }
-    });
-    
-    // Auto-format number input
-    messageCostInput.addEventListener('blur', function() {
-        const value = parseFloat(this.value);
-        if (!isNaN(value)) {
-            this.value = value.toFixed(2);
-        }
-    });
-});
-</script>
-@endpush

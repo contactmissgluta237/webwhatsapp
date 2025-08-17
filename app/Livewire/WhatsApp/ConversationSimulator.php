@@ -7,7 +7,6 @@ namespace App\Livewire\WhatsApp;
 use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\Models\WhatsAppAccount;
-use App\Services\CreditSystemService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
@@ -32,16 +31,10 @@ final class ConversationSimulator extends Component
     // Configuration
     public int $maxMessages = 10;
 
-    // Credit system
-    public float $userBalance = 0.0;
-    public float $messageCost = 0.0;
-    public bool $hasEnoughCredit = true;
-
     public function mount(WhatsAppAccount $account): void
     {
         $this->account = $account;
         $this->loadCurrentConfiguration();
-        $this->loadCreditInfo();
     }
 
     private function loadCurrentConfiguration(): void
@@ -57,21 +50,6 @@ final class ConversationSimulator extends Component
             'current_contextual_info_length' => strlen($this->currentContextualInfo),
             'current_model_id' => $this->currentModelId,
             'current_response_time' => $this->currentResponseTime,
-        ]);
-    }
-
-    private function loadCreditInfo(): void
-    {
-        $creditService = app(CreditSystemService::class);
-        $this->userBalance = $creditService->getUserBalance($this->account->user);
-        $this->messageCost = $creditService->getMessageCost();
-        $this->hasEnoughCredit = $creditService->hasEnoughCredit($this->account->user);
-
-        Log::info('💳 Informations crédit chargées pour simulateur', [
-            'account_id' => $this->account->id,
-            'user_balance' => $this->userBalance,
-            'message_cost' => $this->messageCost,
-            'has_enough_credit' => $this->hasEnoughCredit,
         ]);
     }
 
@@ -153,18 +131,6 @@ final class ConversationSimulator extends Component
 
         $userMessage = trim($this->newMessage);
         $this->newMessage = '';
-
-        // Vérifier le crédit avant de poursuivre
-        $this->loadCreditInfo();
-        if (!$this->hasEnoughCredit) {
-            $this->addMessage('system', '❌ Crédit insuffisant pour générer une réponse IA');
-            Log::warning('[SIMULATOR] ❌ Crédit insuffisant pour la simulation', [
-                'account_id' => $this->account->id,
-                'user_balance' => $this->userBalance,
-                'message_cost' => $this->messageCost,
-            ]);
-            return;
-        }
 
         try {
             // IMPORTANT: Construire le contexte AVANT d'ajouter le nouveau message
@@ -337,21 +303,7 @@ final class ConversationSimulator extends Component
         $this->showTyping = false;
         $this->isProcessing = false;
 
-        // Recharger les informations de crédit après la réponse
-        $this->loadCreditInfo();
-
         Log::info('[SIMULATOR] 📡 Réponse IA ajoutée après simulation timing');
-    }
-
-    /**
-     * Rafraîchir les informations de crédit manuellement
-     */
-    public function refreshCreditInfo(): void
-    {
-        $this->loadCreditInfo();
-        $this->dispatch('credit-info-updated');
-        
-        Log::info('[SIMULATOR] 🔄 Informations crédit actualisées manuellement');
     }
 
     public function render()

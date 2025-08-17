@@ -27,7 +27,6 @@ return [
     ],
 
     'ai_messaging' => [
-        // Cost per AI message in FCFA
-        'cost_per_message' => 50,
+        'cost_per_message' => 10,
     ],
 ];

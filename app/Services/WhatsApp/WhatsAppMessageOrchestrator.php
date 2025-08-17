@@ -51,7 +51,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
-            // Step 2: Check credit system - verify user has enough credits
+            // Step 2: Check credit system
             $whatsappAccount = WhatsAppAccount::find($accountMetadata->accountId);
             if (! $whatsappAccount) {
                 Log::error('[ORCHESTRATOR] WhatsApp account not found', [
@@ -62,14 +62,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
             }
 
             $accountOwner = $whatsappAccount->user;
-            if (! $this->creditSystemService->hasEnoughCredit($accountOwner)) {
-                Log::warning('[ORCHESTRATOR] Insufficient credits, blocking AI response', [
-                    'session_id' => $accountMetadata->sessionId,
-                    'user_id' => $accountOwner->id,
-                    'user_balance' => $this->creditSystemService->getUserBalance($accountOwner),
-                    'message_cost' => $this->creditSystemService->getMessageCost(),
-                ]);
-
+            if (! $this->verifyUserCredit($accountOwner, $accountMetadata->sessionId)) {
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
@@ -110,14 +103,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
             }
 
             // Step 8: Deduct credit cost for successful AI response
-            $messageContext = "Session: {$accountMetadata->sessionId}";
-            if (! $this->creditSystemService->deductMessageCost($accountOwner, $messageContext)) {
-                Log::error('[ORCHESTRATOR] Failed to deduct message cost after successful AI response', [
-                    'session_id' => $accountMetadata->sessionId,
-                    'user_id' => $accountOwner->id,
-                ]);
-                // Note: We continue with the response even if deduction fails to avoid inconsistent state
-            }
+            $this->deductCreditCost($accountOwner, $accountMetadata->sessionId);
 
             // Step 9: Format and store response
             $finalResponse = $this->responseFormatterService->formatAndStoreResponse(
@@ -159,42 +145,20 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
         ]);
 
         try {
-            // Step 1: Check credit system for simulation
-            $whatsappAccount = WhatsAppAccount::find($accountMetadata->accountId);
-            if (! $whatsappAccount) {
-                Log::error('[ORCHESTRATOR] WhatsApp account not found for simulation', [
-                    'account_id' => $accountMetadata->accountId,
-                ]);
-
-                return WhatsAppMessageResponseDTO::processedWithoutResponse();
-            }
-
-            $accountOwner = $whatsappAccount->user;
-            if (! $this->creditSystemService->hasEnoughCredit($accountOwner)) {
-                Log::warning('[ORCHESTRATOR] Insufficient credits for simulation, blocking AI response', [
-                    'session_id' => $accountMetadata->sessionId,
-                    'user_id' => $accountOwner->id,
-                    'user_balance' => $this->creditSystemService->getUserBalance($accountOwner),
-                    'message_cost' => $this->creditSystemService->getMessageCost(),
-                ]);
-
-                return WhatsAppMessageResponseDTO::processedWithoutResponse();
-            }
-
-            // Step 2: For simulation, we create a mock conversation context
+            // Step 1: For simulation, we create a mock conversation context
             $conversationContext = $this->buildSimulatedContext(
                 $accountMetadata,
                 $existingContext ?? []
             );
 
-            // Step 3: Build AI request
+            // Step 2: Build AI request
             $aiRequest = $this->messageBuildService->buildAiRequest(
                 $accountMetadata,
                 $conversationContext,
                 $userMessage
             );
 
-            // Step 4: Generate AI response
+            // Step 3: Generate AI response
             $aiResponse = $this->aiProviderService->generateResponse(
                 $accountMetadata,
                 $aiRequest
@@ -208,17 +172,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
-            // Step 5: Deduct credit cost for successful simulation response
-            $messageContext = "Simulation - Session: {$accountMetadata->sessionId}";
-            if (! $this->creditSystemService->deductMessageCost($accountOwner, $messageContext)) {
-                Log::error('[ORCHESTRATOR] Failed to deduct message cost for simulation after successful AI response', [
-                    'session_id' => $accountMetadata->sessionId,
-                    'user_id' => $accountOwner->id,
-                ]);
-                // Continue with the response even if deduction fails
-            }
-
-            // Step 6: For simulation, we return success without storing to database
+            // Step 4: For simulation, we return success without storing to database
             $response = WhatsAppMessageResponseDTO::success(
                 $aiResponse->response,
                 $aiResponse
@@ -286,5 +240,38 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
     {
         return $accountMetadata->isAgentActive() &&
                $this->aiProviderService->canGenerateResponse($accountMetadata);
+    }
+
+    /**
+     * Verify user has enough credit for AI response
+     */
+    private function verifyUserCredit($user, string $sessionId): bool
+    {
+        if (! $this->creditSystemService->hasEnoughCredit($user)) {
+            Log::warning('[ORCHESTRATOR] Insufficient credits, blocking AI response', [
+                'session_id' => $sessionId,
+                'user_id' => $user->id,
+                'user_balance' => $this->creditSystemService->getUserBalance($user),
+                'message_cost' => $this->creditSystemService->getMessageCost(),
+            ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Deduct credit cost after successful AI response
+     */
+    private function deductCreditCost($user, string $sessionId): void
+    {
+        $messageContext = "Session: {$sessionId}";
+        if (! $this->creditSystemService->deductMessageCost($user, $messageContext)) {
+            Log::error('[ORCHESTRATOR] Failed to deduct message cost after successful AI response', [
+                'session_id' => $sessionId,
+                'user_id' => $user->id,
+            ]);
+        }
     }
 }
