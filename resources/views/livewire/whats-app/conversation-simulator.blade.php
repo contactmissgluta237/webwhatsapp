@@ -123,42 +123,72 @@ $wire.on('conversation-cleared', () => {
 
 // Programmer la réponse IA avec délai
 $wire.on('schedule-ai-response', (eventData) => {
-    console.log('⏰ Event schedule-ai-response reçu:', eventData);
+    console.log('⏰ Event schedule-ai-response reçu (sans délai préfix):', eventData);
     
     // Extraire les données selon le format
-    let userMessage, delayMs, conversationContext;
+    let userMessage, conversationContext;
     
     if (Array.isArray(eventData) && eventData.length > 0) {
-        // Format tableau: [{ userMessage: "...", delayMs: 3000, conversationContext: [...] }]
+        // Format tableau: [{ userMessage: "...", conversationContext: [...] }]
         const data = eventData[0];
         userMessage = data.userMessage;
-        delayMs = data.delayMs;
         conversationContext = data.conversationContext || [];
-    } else if (eventData.userMessage && eventData.delayMs) {
-        // Format objet direct: { userMessage: "...", delayMs: 3000, conversationContext: [...] }
+    } else if (eventData.userMessage) {
+        // Format objet direct: { userMessage: "...", conversationContext: [...] }
         userMessage = eventData.userMessage;
-        delayMs = eventData.delayMs;
         conversationContext = eventData.conversationContext || [];
     } else {
         console.error('❌ Format d\'event inattendu:', eventData);
         return;
     }
     
-    console.log(`⏰ Configuration: délai=${delayMs}ms, message="${userMessage}", context=${conversationContext.length} msgs`);
-    
-    if (!userMessage || !delayMs) {
-        console.error('❌ Paramètres manquants:', { userMessage, delayMs });
+    if (!userMessage) {
+        console.error('❌ userMessage manquant:', eventData);
         return;
     }
     
     // Nettoyer timeouts précédents
     clearAllTimeouts();
     
-    console.log(`⏱️ Attente de ${delayMs/1000}s avant de commencer le typing...`);
+    console.log(`📝 Traitement immédiat du message: "${userMessage}" avec ${conversationContext.length} messages de contexte`);
     
-    // ÉTAPE 1: Attendre le délai configuré (3-5s selon ResponseTime)
+    // Traitement immédiat - l'orchestrateur calculera les timings
+    $wire.call('processAiResponse', userMessage, conversationContext).then(() => {
+        console.log('✅ processAiResponse appelé - timings gérés par le backend');
+    }).catch(error => {
+        console.error('❌ Erreur processAiResponse:', error);
+    });
+});
+
+// Nouveau: Gérer la simulation de timing avec les données du backend
+$wire.on('simulate-response-timing', (eventData) => {
+    console.log('⏰ Event simulate-response-timing reçu:', eventData);
+    
+    // Extraire les données selon le format
+    let waitTimeMs, typingDurationMs, responseMessage;
+    
+    if (Array.isArray(eventData) && eventData.length > 0) {
+        const data = eventData[0];
+        waitTimeMs = data.waitTimeMs;
+        typingDurationMs = data.typingDurationMs;
+        responseMessage = data.responseMessage;
+    } else if (eventData.waitTimeMs !== undefined) {
+        waitTimeMs = eventData.waitTimeMs;
+        typingDurationMs = eventData.typingDurationMs;
+        responseMessage = eventData.responseMessage;
+    } else {
+        console.error('❌ Format de timing inattendu:', eventData);
+        return;
+    }
+    
+    console.log(`⏰ Timings UI (divisés par 10): attente=${waitTimeMs}ms, typing=${typingDurationMs}ms`);
+    
+    // Nettoyer timeouts précédents
+    clearAllTimeouts();
+    
+    // ÉTAPE 1: Attendre le délai de réponse (wait_time)
     activeTimeout = setTimeout(() => {
-        console.log('💭 Délai écoulé - Démarrage du typing indicator');
+        console.log('💭 Délai de réponse écoulé - Démarrage du typing');
         
         // Démarrer le typing indicator
         $wire.call('startTyping').then(() => {
@@ -167,28 +197,22 @@ $wire.on('schedule-ai-response', (eventData) => {
             console.error('❌ Erreur startTyping:', error);
         });
         
-        // ÉTAPE 2: Typing pendant 2-3 secondes
-        const typingDuration = 2000 + Math.random() * 1000;
-        console.log(`⌨️ Typing pendant ${typingDuration}ms...`);
-        
+        // ÉTAPE 2: Typing pendant la durée calculée
         typingTimeout = setTimeout(() => {
-            console.log('🤖 Fin du typing - Génération de la réponse IA');
+            console.log('🤖 Fin du typing - Affichage de la réponse');
             
-            // D'abord arrêter le typing
-            $wire.call('stopTyping');
-            
-            // Puis générer la réponse
-            $wire.call('processAiResponse', userMessage, conversationContext).then(() => {
-                console.log('✅ Réponse IA générée');
+            // Arrêter le typing et afficher la réponse
+            $wire.call('addAiResponse', responseMessage).then(() => {
+                console.log('✅ Réponse IA affichée après simulation timing');
             }).catch(error => {
-                console.error('❌ Erreur processAiResponse:', error);
+                console.error('❌ Erreur addAiResponse:', error);
             });
             
-        }, typingDuration);
+        }, typingDurationMs);
         
-    }, delayMs);
+    }, waitTimeMs);
     
-    console.log('✅ Timeouts programmés');
+    console.log('✅ Simulation timing programmée');
 });
 
 // Scroll automatique après mise à jour

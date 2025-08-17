@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * == Properties ==
  *
  * @property int $id
- * @property int $conversation_id
+ * @property int $whatsapp_conversation_id
  * @property string|null $whatsapp_message_id
  * @property MessageDirection $direction
  * @property string $content
@@ -29,19 +29,20 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  *
  * == Relationships ==
- * @property-read Conversation $conversation
+ * @property-read WhatsAppConversation $conversation
  */
-final class Message extends Model
+final class WhatsAppMessage extends Model
 {
     use HasFactory;
 
+    protected $table = 'whatsapp_messages';
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
-        'conversation_id',
+        'whatsapp_conversation_id',
         'whatsapp_message_id',
         'direction',
         'content',
@@ -71,7 +72,7 @@ final class Message extends Model
 
     public function conversation(): BelongsTo
     {
-        return $this->belongsTo(Conversation::class);
+        return $this->belongsTo(WhatsAppConversation::class, 'whatsapp_conversation_id');
     }
 
     // ================================================================================

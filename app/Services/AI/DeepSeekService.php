@@ -10,6 +10,7 @@ use App\Models\AiModel;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\DTOs\WhatsApp\ConversationContextDTO;
 
 final class DeepSeekService implements AiServiceInterface
 {
@@ -21,8 +22,8 @@ final class DeepSeekService implements AiServiceInterface
     public function generate(AiRequestDTO $request, AiModel $model): AiResponseDTO
     {
         $this->validateConfiguration($model);
-        $messages = $this->prepareMessages($request);
-        
+        $messages = $this->prepareMessages($request->systemPrompt, $request->userMessage, $request->context);
+
         Log::info('🔄 Appel API DeepSeek', [
             'endpoint' => $model->endpoint_url ?? 'https://api.deepseek.com',
             'model_identifier' => $model->model_identifier,
@@ -58,7 +59,7 @@ final class DeepSeekService implements AiServiceInterface
     private function executeWithRetry(AiModel $model, array $payload, int $timeout, int $maxRetries = 2): AiResponseDTO
     {
         $baseUrl = rtrim($model->endpoint_url ?? 'https://api.deepseek.com', '/');
-        $endpoint = $baseUrl . '/chat/completions';
+        $endpoint = $baseUrl.'/chat/completions';
         $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
@@ -119,7 +120,7 @@ final class DeepSeekService implements AiServiceInterface
                         'timeout' => $timeout,
                         'error' => $e->getMessage(),
                     ]);
-                    throw new \Exception("Erreur de communication avec l'API DeepSeek après {$attempt} tentatives: " . $e->getMessage(), $e->getCode(), $e);
+                    throw new \Exception("Erreur de communication avec l'API DeepSeek après {$attempt} tentatives: ".$e->getMessage(), $e->getCode(), $e);
                 }
 
                 if ($isTimeoutError && $attempt < $maxRetries) {
@@ -130,7 +131,7 @@ final class DeepSeekService implements AiServiceInterface
             }
         }
 
-        throw new \Exception("Erreur inattendue: toutes les tentatives ont échoué sans exception appropriée");
+        throw new \Exception('Erreur inattendue: toutes les tentatives ont échoué sans exception appropriée');
     }
 
     private function getTimeoutForOperation(AiRequestDTO $request): int
@@ -176,7 +177,7 @@ final class DeepSeekService implements AiServiceInterface
         try {
             $this->validateConfiguration($model);
             $baseUrl = rtrim($model->endpoint_url ?? 'https://api.deepseek.com', '/');
-            $endpoint = $baseUrl . '/chat/completions';
+            $endpoint = $baseUrl.'/chat/completions';
             $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
             Log::info('🔍 Test connexion DeepSeek', [
@@ -194,6 +195,7 @@ final class DeepSeekService implements AiServiceInterface
 
             if ($response->successful()) {
                 Log::info('✅ Connexion DeepSeek réussie');
+
                 return true;
             }
 
@@ -201,6 +203,7 @@ final class DeepSeekService implements AiServiceInterface
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return false;
 
         } catch (\Exception $e) {
@@ -225,40 +228,21 @@ final class DeepSeekService implements AiServiceInterface
         ];
     }
 
-    private function prepareMessages(AiRequestDTO $request): array
+    private function prepareMessages(string $systemPrompt, string $userMessage, array $context): array
     {
         $messages = [];
 
-        if ($request->systemPrompt) {
-            $messages[] = ['role' => 'system', 'content' => $request->systemPrompt];
-        }
+        // Add system message with conversation context already included
+        $messages[] = [
+            'role' => 'system',
+            'content' => $systemPrompt // SystemPrompt contains formatted conversation history
+        ];
 
-        Log::debug('🔍 DeepSeek: Analyse du contexte', [
-            'context_count' => count($request->context),
-            'context_preview' => array_slice($request->context, 0, 2)
-        ]);
-
-        foreach ($request->context as $message) {
-            // Le format standard utilise 'role' et 'content' (comme dans le chat réel et simulateur)
-            if (isset($message['role']) && isset($message['content'])) {
-                $messages[] = [
-                    'role' => $message['role'], 
-                    'content' => $message['content']
-                ];
-            } else {
-                Log::warning('⚠️ DeepSeek: Format de message contexte inattendu', [
-                    'message_keys' => array_keys($message),
-                    'message_sample' => $message
-                ]);
-            }
-        }
-
-        $messages[] = ['role' => 'user', 'content' => $request->userMessage];
-
-        Log::debug('✅ DeepSeek: Messages préparés', [
-            'total_messages' => count($messages),
-            'messages_preview' => array_map(fn($m) => ['role' => $m['role'], 'content_length' => strlen($m['content'])], $messages)
-        ]);
+        // Add current user message
+        $messages[] = [
+            'role' => 'user', 
+            'content' => $userMessage
+        ];
 
         return $messages;
     }

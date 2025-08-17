@@ -16,7 +16,7 @@ final class AiConfigurationService
     public static function getDefaultModels(): array
     {
         $defaultModels = [];
-        
+
         foreach (Config::get('ai.providers', []) as $provider => $config) {
             $defaultModels[] = [
                 'name' => $config['name'],

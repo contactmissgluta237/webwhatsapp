@@ -43,11 +43,11 @@ final class QRScannedController extends Controller
             // Force la sauvegarde de CETTE session spécifique sur Node.js (OPTIMISÉ)
             $nodeJsBackup = app(\App\Services\NodeJsBackupService::class);
             $backupSuccess = $nodeJsBackup->saveSpecificSession($validated['sessionId']);
-            
-            if (!$backupSuccess) {
+
+            if (! $backupSuccess) {
                 Log::warning('Failed to trigger specific session backup after QR scan', [
                     'session_id' => $validated['sessionId'],
-                    'account_id' => $whatsappAccount->id
+                    'account_id' => $whatsappAccount->id,
                 ]);
             }
 
@@ -55,7 +55,7 @@ final class QRScannedController extends Controller
                 'account_id' => $whatsappAccount->id,
                 'session_id' => $validated['sessionId'],
                 'user_id' => $user->id,
-                'backup_triggered' => $backupSuccess
+                'backup_triggered' => $backupSuccess,
             ]);
 
             return response()->json([

@@ -28,7 +28,6 @@ RÈGLES DE RÉPONSE ABSOLUES :
 - AUCUNE section (Rôle:, Comportement:, etc.)
 - Juste le prompt directement utilisable";
 
-
     public function enhancePrompt(WhatsAppAccount $account, string $originalPrompt): string
     {
         $model = $this->getEnhancementModel($account);
@@ -37,12 +36,14 @@ RÈGLES DE RÉPONSE ABSOLUES :
             throw new \Exception('Aucun modèle IA disponible pour l\'amélioration du prompt');
         }
 
+
         Log::info('🚀 Amélioration de prompt demandée', [
             'account_id' => $account->id,
             'model_id' => $model->id,
-            'model_provider' => $model->provider,
+            'model_provider' => $model->provider->value, // ← Correction
             'original_length' => strlen($originalPrompt),
         ]);
+
 
         $userMessage = "Voici le prompt à améliorer pour un agent WhatsApp :\n\n" . $originalPrompt;
 
@@ -72,11 +73,10 @@ RÈGLES DE RÉPONSE ABSOLUES :
                 'account_id' => $account->id,
                 'enhanced_length' => strlen($response->content),
                 'model_used' => $primaryModel->name,
-                'provider' => $primaryModel->provider,
+                'provider' => $primaryModel->provider->value, // ← Correction
             ]);
 
             return $this->cleanEnhancedPrompt($response->content);
-
         } catch (\Exception $e) {
             Log::warning('⚠️ Échec amélioration avec modèle principal', [
                 'account_id' => $account->id,
@@ -88,6 +88,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         }
     }
 
+
     private function tryFallbackModels(
         WhatsAppAccount $account,
         AiRequestDTO $request,
@@ -96,12 +97,13 @@ RÈGLES DE RÉPONSE ABSOLUES :
     ): string {
         $fallbackModels = $this->getFallbackModels($excludeModelIds);
 
+
         foreach ($fallbackModels as $model) {
             try {
                 Log::info('🔄 Tentative fallback avec modèle', [
                     'account_id' => $account->id,
                     'fallback_model' => $model->name,
-                    'provider' => $model->provider,
+                    'provider' => $model->provider->value, // ← Correction
                 ]);
 
                 $service = $model->provider->createService();
@@ -111,11 +113,10 @@ RÈGLES DE RÉPONSE ABSOLUES :
                     'account_id' => $account->id,
                     'enhanced_length' => strlen($response->content),
                     'fallback_model_used' => $model->name,
-                    'provider' => $model->provider,
+                    'provider' => $model->provider->value, // ← Correction
                 ]);
 
                 return $this->cleanEnhancedPrompt($response->content);
-
             } catch (\Exception $e) {
                 Log::warning('⚠️ Échec fallback', [
                     'account_id' => $account->id,
@@ -134,6 +135,9 @@ RÈGLES DE RÉPONSE ABSOLUES :
         throw new \Exception('Impossible d\'améliorer le prompt : tous les services IA sont indisponibles');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<AiModel>
+     */
     private function getFallbackModels(array $excludeModelIds = []): \Illuminate\Database\Eloquent\Collection
     {
         return AiModel::where('is_active', true)
@@ -204,7 +208,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
             $beforeClean = $cleaned;
             $cleaned = preg_replace('/^' . preg_quote($prefix, '/') . '\s*:?\s*/i', '', $cleaned);
             $cleaned = preg_replace('/\*\*' . preg_quote($prefix, '/') . '\s*\*\*\s*:?\s*/i', '', $cleaned);
-            
+
             if ($beforeClean !== $cleaned) {
                 Log::info("🧹 Préfixe supprimé: '{$prefix}'", [
                     'before_length' => strlen($beforeClean),
@@ -221,7 +225,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
 
         // Étape 2: Supprimer tout le formatage Markdown et étoiles
         Log::info('🧹 ÉTAPE 2: Suppression du formatage Markdown');
-        
+
         $beforeMarkdown = $cleaned;
         $cleaned = preg_replace('/\*\*([^*]*)\*\*/', '$1', $cleaned); // **texte** -> texte
         Log::info('🧹 Suppression **texte**', [
@@ -244,12 +248,12 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'content' => $cleaned,
             'length' => strlen($cleaned),
         ]);
-        
+
         // Étape 3: Supprimer tous les emojis et symboles
         Log::info('🧹 ÉTAPE 3: Suppression des emojis');
         $beforeEmojis = $cleaned;
         $cleaned = preg_replace('/[✅❌🔥💡📱⚡🚀💼📞👋😊🎯]/u', '', $cleaned);
-        
+
         if ($beforeEmojis !== $cleaned) {
             Log::info('🧹 Emojis supprimés', [
                 'before_length' => strlen($beforeEmojis),
@@ -261,14 +265,14 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'content' => $cleaned,
             'length' => strlen($cleaned),
         ]);
-        
+
         // Étape 4: Supprimer les sections structurées
         Log::info('🧹 ÉTAPE 4: Suppression des sections structurées');
         $beforeSections = $cleaned;
         $cleaned = preg_replace('/\*\*[^:]+:\*\*\s*/', '', $cleaned);
         // Regex plus spécifique pour les vraies sections de structure (lignes entières qui commencent par des mots clés)
         $cleaned = preg_replace('/^(Rôle|Comportement|Gestion|Interdits|Exemple|Note|Objectifs|Tonalité)\s*:\s*.*$/m', '', $cleaned);
-        
+
         if ($beforeSections !== $cleaned) {
             Log::info('🧹 Sections supprimées', [
                 'before_length' => strlen($beforeSections),
@@ -281,12 +285,12 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'content' => $cleaned,
             'length' => strlen($cleaned),
         ]);
-        
+
         // Étape 5: Nettoyer les listes avec tirets/puces
         Log::info('🧹 ÉTAPE 5: Suppression des puces');
         $beforeBullets = $cleaned;
         $cleaned = preg_replace('/^[\s]*[-•]\s*/m', '', $cleaned);
-        
+
         if ($beforeBullets !== $cleaned) {
             Log::info('🧹 Puces supprimées', [
                 'before_length' => strlen($beforeBullets),
@@ -298,7 +302,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'content' => $cleaned,
             'length' => strlen($cleaned),
         ]);
-        
+
         // Étape 6: Nettoyer les espaces multiples et retours à la ligne excessifs
         Log::info('🧹 ÉTAPE 6: Nettoyage des espaces');
         $beforeSpaces = $cleaned;

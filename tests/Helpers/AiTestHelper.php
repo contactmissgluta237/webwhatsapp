@@ -32,7 +32,7 @@ final class AiTestHelper
     public static function createTestModelData(string $provider = 'ollama', array $overrides = []): array
     {
         $providerConfig = AiConfigurationService::getProviderConfig($provider);
-        
+
         return array_merge([
             'name' => $providerConfig['name'],
             'provider' => $provider,

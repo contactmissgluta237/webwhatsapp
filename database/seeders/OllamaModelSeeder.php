@@ -14,7 +14,7 @@ final class OllamaModelSeeder extends Seeder
     public function run(): void
     {
         $ollamaConfig = AiConfigurationService::getProviderConfig('ollama');
-        
+
         AiModel::updateOrCreate(
             [
                 'provider' => AiProvider::OLLAMA(),

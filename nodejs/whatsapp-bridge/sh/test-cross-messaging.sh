@@ -19,7 +19,7 @@ SESSION_A="session_2_17552805081829_3d3b6b43"
 PHONE_A="237676636794"
 
 SESSION_B="session_2_17552805689246_e3929ee8"
-PHONE_B="237655332183"  # Corrigé pour le bon numéro
+PHONE_B="23755332183"  # Corrigé avec le bon numéro de active_sessions.json
 
 echo -e "${BLUE}=== Test de Communication Croisée WhatsApp ===${NC}"
 echo -e "${BLUE}Session A: ${SESSION_A} (${PHONE_A})${NC}"

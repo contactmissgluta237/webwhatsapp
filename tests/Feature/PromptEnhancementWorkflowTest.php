@@ -9,12 +9,12 @@ use App\Livewire\WhatsApp\AiConfigurationForm;
 use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Mockery;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
-use PHPUnit\Framework\Attributes\Test;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 
 class PromptEnhancementWorkflowTest extends TestCase
 {

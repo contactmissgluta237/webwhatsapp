@@ -29,7 +29,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
 
         // Vérifier que la colonne peut stocker des booléens
         $columnType = Schema::getColumnType('whatsapp_accounts', 'stop_on_human_reply');
-        $this->assertContains($columnType, ['boolean', 'tinyint'], 
+        $this->assertContains($columnType, ['boolean', 'tinyint'],
             'La colonne stop_on_human_reply doit être de type boolean ou tinyint');
     }
 
@@ -81,8 +81,8 @@ final class WhatsAppAccountMigrationTest extends TestCase
     /** @test */
     public function stop_on_human_reply_is_included_in_fillable_array(): void
     {
-        $account = new \App\Models\WhatsAppAccount();
-        
+        $account = new \App\Models\WhatsAppAccount;
+
         $this->assertContains('stop_on_human_reply', $account->getFillable(),
             'stop_on_human_reply doit être dans le tableau fillable du modèle');
     }
@@ -90,12 +90,12 @@ final class WhatsAppAccountMigrationTest extends TestCase
     /** @test */
     public function stop_on_human_reply_is_cast_to_boolean(): void
     {
-        $account = new \App\Models\WhatsAppAccount();
+        $account = new \App\Models\WhatsAppAccount;
         $casts = $account->getCasts();
-        
+
         $this->assertArrayHasKey('stop_on_human_reply', $casts,
             'stop_on_human_reply doit être défini dans les casts');
-        
+
         $this->assertEquals('boolean', $casts['stop_on_human_reply'],
             'stop_on_human_reply doit être casté en boolean');
     }

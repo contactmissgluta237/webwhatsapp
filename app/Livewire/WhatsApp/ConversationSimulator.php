@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\WhatsApp;
 
+use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
+use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\Enums\ResponseTime;
 use App\Models\WhatsAppAccount;
-use App\Services\WhatsApp\AI\WhatsAppAIService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
@@ -39,7 +40,7 @@ final class ConversationSimulator extends Component
 
     private function loadCurrentConfiguration(): void
     {
-        $this->currentPrompt = $this->account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel.';
+        $this->currentPrompt = $this->account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
         $this->currentContextualInfo = $this->account->contextual_information ?? '';
         $this->currentModelId = $this->account->getEffectiveAiModelId();
         $this->currentResponseTime = $this->account->response_time ?? 'random';
@@ -69,7 +70,7 @@ final class ConversationSimulator extends Component
 
         // Mettre à jour la configuration en temps réel pour la simulation
         if (isset($data['agent_prompt'])) {
-            $this->currentPrompt = $data['agent_prompt'] ?: 'Tu es un assistant WhatsApp utile et professionnel.';
+            $this->currentPrompt = $data['agent_prompt'] ?: 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
             Log::info('📝 Prompt mis à jour en temps réel', [
                 'new_prompt_length' => strlen($this->currentPrompt),
                 'new_prompt_preview' => substr($this->currentPrompt, 0, 100).'...',
@@ -134,30 +135,16 @@ final class ConversationSimulator extends Component
 
         try {
             // IMPORTANT: Construire le contexte AVANT d'ajouter le nouveau message
-            $conversationContext = $this->buildConversationContext();
-            
+            // Prendre les 10 derniers messages pour le contexte
+            $conversationContext = array_slice($this->simulationMessages, -10);
+
             // Ajouter le message utilisateur
             $this->addMessage('user', $userMessage);
             $this->dispatch('message-added');
 
-            // Calculer délai de réponse selon configuration
-            $responseTime = ResponseTime::from($this->currentResponseTime);
-            $delayInSeconds = $responseTime->getDelay();
-
-            Log::info('⏰ Configuration délai de réponse', [
-                'current_response_time_config' => $this->currentResponseTime,
-                'response_time_enum' => $responseTime->value,
-                'delay_seconds' => $delayInSeconds,
-                'delay_ms' => $delayInSeconds * 1000,
-                'user_message' => $userMessage,
-                'context_count' => count($conversationContext),
-            ]);
-
-            // Programmer la réponse avec le bon délai
             $this->dispatch('schedule-ai-response', [
                 'userMessage' => $userMessage,
                 'conversationContext' => $conversationContext, // Passer le contexte
-                'delayMs' => $delayInSeconds * 1000,
             ]);
 
             Log::info('✅ Réponse IA programmée avec succès');
@@ -238,44 +225,62 @@ final class ConversationSimulator extends Component
 
     private function simulateAiResponse(string $userMessage, array $conversationContext = []): void
     {
-        Log::info('🤖 Début simulateAiResponse() - Service centralisé', [
+        Log::info('[SIMULATOR] Début simulation réponse IA via orchestrateur', [
             'userMessage' => $userMessage,
             'account_id' => $this->account->id,
             'provided_context_count' => count($conversationContext),
         ]);
 
         try {
-            Log::info('🚀 Appel service IA centralisé');
+            // Créer les métadonnées du compte avec configuration actuelle
+            $accountMetadata = new WhatsAppAccountMetadataDTO(
+                sessionId: 'simulator_' . $this->account->id,
+                sessionName: 'simulator_' . $this->account->session_name,
+                accountId: $this->account->id,
+                agentEnabled: true, // Toujours actif en simulation
+                agentPrompt: $this->currentPrompt,
+                aiModelId: $this->currentModelId,
+                responseTime: $this->currentResponseTime,
+                contextualInformation: $this->currentContextualInfo,
+                settings: []
+            );
 
-            // Utiliser le contexte fourni ou le construire en fallback
-            if (empty($conversationContext)) {
-                Log::warning('⚠️ Aucun contexte fourni, reconstruction en fallback');
-                $conversationContext = $this->buildConversationContext();
-            }
-
-            $whatsappAIService = app(WhatsAppAIService::class);
-            $aiResponse = $whatsappAIService->generateResponse(
-                $this->account,
+            // Appeler l'orchestrateur
+            $orchestrator = app(WhatsAppMessageOrchestratorInterface::class);
+            $response = $orchestrator->processSimulatedMessage(
+                $accountMetadata,
                 $userMessage,
                 $conversationContext
             );
 
-            if ($aiResponse && ! empty($aiResponse['response'])) {
-                Log::info('✅ Réponse IA générée via service centralisé', [
-                    'response_length' => strlen($aiResponse['response']),
-                    'response_preview' => substr($aiResponse['response'], 0, 100).(strlen($aiResponse['response']) > 100 ? '...' : ''),
+            if ($response->hasAiResponse) {
+                // Récupérer les timings calculés par Laravel et les diviser par 10 pour UI
+                $waitTimeMs = ceil(($response->waitTimeSeconds * 1000) / 10); // Diviser par 10, arrondir par excès
+                $typingDurationMs = ceil(($response->typingDurationSeconds * 1000) / 10); // Diviser par 10, arrondir par excès
+
+                Log::info('[SIMULATOR] ⏰ Timings calculés par Laravel', [
+                    'original_wait_seconds' => $response->waitTimeSeconds,
+                    'original_typing_seconds' => $response->typingDurationSeconds,
+                    'ui_wait_ms' => $waitTimeMs,
+                    'ui_typing_ms' => $typingDurationMs,
+                    'response_length' => strlen($response->aiResponse),
                 ]);
 
-                $this->addMessage('ai', $aiResponse['response']);
-                $this->dispatch('message-added');
+                // Programmer la réponse avec les timings accélérés pour l'UI
+                $this->dispatch('simulate-response-timing', [
+                    'waitTimeMs' => $waitTimeMs,
+                    'typingDurationMs' => $typingDurationMs,
+                    'responseMessage' => $response->aiResponse,
+                ]);
 
-                Log::info('📡 Event message-added dispatché après réponse IA');
+                Log::info('[SIMULATOR] ✅ Timings programmés pour la simulation UI');
+
             } else {
-                throw new \Exception('Aucune réponse générée par le service IA');
+                throw new \Exception('Aucune réponse générée par l\'orchestrateur');
             }
 
         } catch (\Exception $e) {
-            Log::error('❌ Erreur lors de la simulation IA', [
+            Log::error('[SIMULATOR] ❌ Erreur lors de la simulation IA', [
                 'error' => $e->getMessage(),
                 'user_message' => $userMessage,
                 'account_id' => $this->account->id,
@@ -289,21 +294,17 @@ final class ConversationSimulator extends Component
         }
     }
 
-    private function buildConversationContext(): array
+    /**
+     * Méthode appelée par le JavaScript après les délais de timing
+     */
+    public function addAiResponse(string $responseMessage): void
     {
-        $context = [];
-
-        // Prendre les 10 derniers messages pour le contexte
-        $recentMessages = array_slice($this->simulationMessages, -10);
-
-        foreach ($recentMessages as $message) {
-            $context[] = [
-                'role' => $message['type'] === 'user' ? 'user' : 'assistant',
-                'content' => $message['content'],
-            ];
-        }
-
-        return $context;
+        $this->addMessage('ai', $responseMessage);
+        $this->dispatch('message-added');
+        $this->showTyping = false;
+        $this->isProcessing = false;
+        
+        Log::info('[SIMULATOR] 📡 Réponse IA ajoutée après simulation timing');
     }
 
     public function render()

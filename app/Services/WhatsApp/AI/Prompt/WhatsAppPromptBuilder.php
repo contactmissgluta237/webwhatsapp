@@ -23,7 +23,7 @@ final class WhatsAppPromptBuilder
 
     private function buildBasePrompt(WhatsAppAccount $account): string
     {
-        $basePrompt = $account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel.';
+        $basePrompt = $account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
 
         $consistencyRules = "\n\nRÈGLES IMPORTANTES :\n";
         $consistencyRules .= "- MAINTIENS UN TON COHÉRENT ET PROFESSIONNEL tout au long de la conversation\n";

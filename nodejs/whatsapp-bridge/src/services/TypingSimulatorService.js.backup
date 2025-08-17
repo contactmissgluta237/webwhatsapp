@@ -1,0 +1,135 @@
+class TypingSimulatorService {
+    /**
+     * Simulate response delay + typing and send message
+     * Uses timing data from Laravel backend instead of calculating locally
+     * 
+     * @param {Object} client - WhatsApp client
+     * @param {string} chatId - Chat ID to send message to
+     * @param {string} messageText - Message content
+     * @param {number} waitTimeSeconds - Wait time before starting to type (from backend)
+     * @param {number} typingDurationSeconds - Duration of typing simulation (from backend)
+     */
+    async simulateResponseAndSendMessage(client, chatId, messageText, waitTimeSeconds = 0, typingDurationSeconds = 2) {
+        console.log(`[Response Simulation] Starting response simulation for chat ${chatId}`);
+        console.log(`[Response Simulation] Wait time: ${waitTimeSeconds}s, Typing duration: ${typingDurationSeconds}s`);
+
+        try {
+            // Step 1: Wait for the response delay (time before starting to respond)
+            if (waitTimeSeconds > 0) {
+                console.log(`[Response Simulation] Waiting ${waitTimeSeconds}s before responding...`);
+                await new Promise(resolve => setTimeout(resolve, waitTimeSeconds * 1000));
+            }
+    /**
+     * Simulate response delay + typing and send message
+     * Uses timing data from Laravel backend instead of calculating locally
+     * 
+     * @param {Object} client - WhatsApp client
+     * @param {string} chatId - Chat ID to send message to
+     * @param {string} messageText - Message content
+     * @param {number} waitTimeSeconds - Wait time before starting to type (from backend)
+     * @param {number} typingDurationSeconds - Duration of typing simulation (from backend)
+     */
+    async simulateResponseAndSendMessage(client, chatId, messageText, waitTimeSeconds = 0, typingDurationSeconds = 2) {
+        console.log(`[Response Simulation] Starting response simulation for chat ${chatId}`);
+        console.log(`[Response Simulation] Wait time: ${waitTimeSeconds}s, Typing duration: ${typingDurationSeconds}s`);
+
+        try {
+            // Step 0: Mark the original message as read first
+            try {
+                console.log(`[Response Simulation] Marking original message as read...`);
+                await client.sendSeen(chatId);
+                console.log(`[Response Simulation] Message marked as read successfully`);
+            } catch (seenError) {
+                console.warn(`[Response Simulation] Failed to mark as read: ${seenError.message}`);
+            }
+
+            // Step 1: Wait for the response delay (time before starting to respond)
+            if (waitTimeSeconds > 0) {
+                console.log(`[Response Simulation] Waiting ${waitTimeSeconds}s before responding...`);
+                await new Promise(resolve => setTimeout(resolve, waitTimeSeconds * 1000));
+            }
+
+            // Step 2: Start typing indicator and simulate typing duration
+            console.log(`[Response Simulation] Starting typing simulation for ${typingDurationSeconds}s...`);
+            
+            try {
+                // Get the chat object and send typing state
+                const chat = await client.getChatById(chatId);
+                await chat.sendStateTyping();
+                
+                // Maintain typing state during the duration by sending periodic updates
+                const typingInterval = setInterval(async () => {
+                    try {
+                        await chat.sendStateTyping();
+                    } catch (err) {
+                        console.warn(`[Response Simulation] Failed to maintain typing state: ${err.message}`);
+                    }
+                }, 3000); // Refresh typing state every 3 seconds
+                
+                // Wait for typing duration
+                await new Promise(resolve => setTimeout(resolve, typingDurationSeconds * 1000));
+                
+                // Clear the typing interval
+                clearInterval(typingInterval);
+                
+            } catch (typingError) {
+                console.warn(`[Response Simulation] Failed to send typing state: ${typingError.message}`);
+                console.log(`[Response Simulation] Continuing without typing simulation...`);
+                // Still wait for the typing duration even if typing failed
+                await new Promise(resolve => setTimeout(resolve, typingDurationSeconds * 1000));
+            }
+
+            // Step 3: Send the actual message
+            console.log(`[Response Simulation] Sending message to ${chatId}`);
+            await client.sendMessage(chatId, messageText);
+            
+            console.log(`[Response Simulation] Complete! Message sent successfully`);
+
+        } catch (error) {
+            console.error(`[Response Simulation] Error during simulation: ${error.message}`);
+            // If simulation fails, still try to send the message
+            try {
+                await client.sendMessage(chatId, messageText);
+                console.log(`[Response Simulation] Fallback: Message sent without simulation`);
+            } catch (sendError) {
+                console.error(`[Response Simulation] Failed to send message: ${sendError.message}`);
+                throw sendError;
+            }
+        }
+    }
+
+    /**
+     * Legacy method for backward compatibility
+     * @deprecated Use simulateResponseAndSendMessage instead
+     */
+    async simulateTypingAndSendMessage(client, chatId, messageText) {
+        console.warn(`[Typing Simulation] Using deprecated method. Consider using simulateResponseAndSendMessage with backend timings.`);
+        
+        const TYPING_SPEED_CPS = 15; // Characters per second
+        const MIN_TYPING_DURATION_MS = 1000; // Minimum 1 second typing
+        const MAX_TYPING_VARIATION = 0.2; // +/- 20% variation
+
+        const messageLength = messageText.length;
+        let typingDuration = (messageLength / TYPING_SPEED_CPS) * 1000;
+
+        // Add random variation
+        typingDuration = typingDuration * (1 + (Math.random() * MAX_TYPING_VARIATION * 2) - MAX_TYPING_VARIATION);
+        typingDuration = Math.max(typingDuration, MIN_TYPING_DURATION_MS); // Ensure minimum duration
+
+        console.log(`[Typing Simulation] Simulating typing for ${typingDuration.toFixed(0)}ms for message length ${messageLength}`);
+
+        try {
+            // Get the chat object and send typing state
+            const chat = await client.getChatById(chatId);
+            await chat.sendStateTyping();
+            await new Promise(resolve => setTimeout(resolve, typingDuration)); // Wait
+        } catch (error) {
+            console.warn(`[Typing Simulation] Failed to send typing state or wait: ${error.message}`);
+            // Continue anyway, don't block message sending
+        }
+
+        await client.sendMessage(chatId, messageText); // Send the actual message
+    }
+}
+
+module.exports = TypingSimulatorService;

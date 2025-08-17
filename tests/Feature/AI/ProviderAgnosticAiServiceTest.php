@@ -94,14 +94,14 @@ final class ProviderAgnosticAiServiceTest extends TestCase
         $response = $service->chat($model, $request);
 
         $this->assertNotEmpty($response->content, "Le provider {$provider} doit générer une réponse avec contexte");
-        
+
         // Pour Ollama, on accepte qu'il n'ait pas de mémoire persistante
         // Pour les autres providers, on s'attend à ce qu'ils utilisent le contexte
         if ($provider !== 'ollama') {
             $this->assertStringContainsStringIgnoringCase('jean', $response->content, "Le provider {$provider} doit se souvenir du contexte");
         } else {
             // Pour Ollama, on vérifie juste qu'il répond de manière cohérente
-            $this->assertGreaterThan(10, strlen($response->content), "Ollama doit fournir une réponse substantielle même sans mémoire");
+            $this->assertGreaterThan(10, strlen($response->content), 'Ollama doit fournir une réponse substantielle même sans mémoire');
         }
     }
 
@@ -221,8 +221,8 @@ final class ProviderAgnosticAiServiceTest extends TestCase
         // Vérifications des métadonnées obligatoires
         $this->assertArrayHasKey('provider', $response->metadata, "Le provider {$provider} doit fournir son nom dans les métadonnées");
         $this->assertArrayHasKey('model', $response->metadata, "Le provider {$provider} doit fournir le nom du modèle");
-        $this->assertEquals($provider, $response->metadata['provider'], "Le nom du provider doit correspondre");
-        
+        $this->assertEquals($provider, $response->metadata['provider'], 'Le nom du provider doit correspondre');
+
         // Vérifications optionnelles mais recommandées
         if (isset($response->metadata['usage'])) {
             $this->assertIsArray($response->metadata['usage'], "Les informations d'usage doivent être un tableau");
@@ -239,11 +239,11 @@ final class ProviderAgnosticAiServiceTest extends TestCase
     private function shouldSkipProvider(string $provider, AiModel $model): bool
     {
         // Vérifier si le provider est configuré
-        if ($provider === 'deepseek' && !($model->api_key ?? config('services.deepseek.api_key'))) {
+        if ($provider === 'deepseek' && ! ($model->api_key ?? config('services.deepseek.api_key'))) {
             return true;
         }
 
-        if ($provider === 'openai' && !($model->api_key ?? config('services.openai.api_key'))) {
+        if ($provider === 'openai' && ! ($model->api_key ?? config('services.openai.api_key'))) {
             return true;
         }
 
@@ -251,8 +251,9 @@ final class ProviderAgnosticAiServiceTest extends TestCase
         if ($provider === 'ollama') {
             try {
                 $response = @file_get_contents($model->endpoint_url, false, stream_context_create([
-                    'http' => ['timeout' => 2]
+                    'http' => ['timeout' => 2],
                 ]));
+
                 return $response === false;
             } catch (\Exception) {
                 return true;

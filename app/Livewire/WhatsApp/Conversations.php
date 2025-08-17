@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\WhatsApp;
 
-use App\Models\Conversation;
+use App\Models\WhatsAppConversation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -25,7 +25,7 @@ class Conversations extends Component
 
     public function selectConversation($conversationId)
     {
-        $this->selectedConversation = Conversation::find($conversationId);
+        $this->selectedConversation = WhatsAppConversation::find($conversationId);
     }
 
     public function render()
@@ -33,7 +33,7 @@ class Conversations extends Component
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        $conversations = Conversation::whereHas('whatsappAccount', function ($query) use ($user) {
+        $conversations = WhatsAppConversation::whereHas('whatsappAccount', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })
             ->with(['whatsappAccount', 'messages' => function ($query) {

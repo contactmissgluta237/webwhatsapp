@@ -51,7 +51,7 @@ class LaravelWebhookService {
                 payload,
                 {
                     headers: this.getHeaders(),
-                    timeout: 10000,
+                    timeout: 30000,
                 },
             );
 
@@ -106,7 +106,7 @@ class LaravelWebhookService {
                 payload,
                 {
                     headers: this.getHeaders(),
-                    timeout: 10000,
+                    timeout: 30000,
                 },
             );
 

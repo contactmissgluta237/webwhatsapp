@@ -19,7 +19,7 @@ final class AiModelFactory extends Factory
     public function definition(): array
     {
         $ollamaConfig = AiConfigurationService::getProviderConfig('ollama');
-        
+
         return [
             'name' => $this->faker->words(2, true).' AI Model',
             'provider' => AiProvider::OLLAMA()->value,
@@ -40,7 +40,7 @@ final class AiModelFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $ollamaConfig = AiConfigurationService::getProviderConfig('ollama');
-            
+
             return [
                 'provider' => AiProvider::OLLAMA()->value,
                 'model_identifier' => $this->faker->randomElement(['gemma2:2b', 'llama3.1:8b', 'mistral:latest']),
@@ -56,7 +56,7 @@ final class AiModelFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $openaiConfig = AiConfigurationService::getProviderConfig('openai');
-            
+
             return [
                 'provider' => AiProvider::OPENAI()->value,
                 'model_identifier' => $this->faker->randomElement(['gpt-4o-mini', 'gpt-3.5-turbo', 'gpt-4']),
@@ -72,7 +72,7 @@ final class AiModelFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $anthropicConfig = AiConfigurationService::getProviderConfig('anthropic');
-            
+
             return [
                 'provider' => AiProvider::ANTHROPIC()->value,
                 'model_identifier' => $anthropicConfig['model_identifier'],
@@ -88,7 +88,7 @@ final class AiModelFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             $deepseekConfig = AiConfigurationService::getProviderConfig('deepseek');
-            
+
             return [
                 'provider' => AiProvider::DEEPSEEK()->value,
                 'model_identifier' => $deepseekConfig['model_identifier'],

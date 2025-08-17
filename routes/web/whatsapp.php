@@ -1,10 +1,5 @@
 <?php
 
-use App\Http\Controllers\WhatsApp\Account\ConfigureAiController;
-use App\Http\Controllers\WhatsApp\Account\CreateController;
-use App\Http\Controllers\WhatsApp\Account\DestroyController;
-use App\Http\Controllers\WhatsApp\Account\IndexController;
-use App\Http\Controllers\WhatsApp\Account\ToggleAiController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])
@@ -12,11 +7,11 @@ Route::middleware(['auth'])
     ->name('whatsapp.')
     ->group(function () {
 
-        Route::get('/', IndexController::class)->name('index');
-        Route::get('/create', CreateController::class)->name('create');
-        
-        //actions
-        Route::get('/configure-ai/{account}', ConfigureAiController::class)->name('configure-ai');
-        Route::post('/{account}/toggle-ai', ToggleAiController::class)->name('toggle-ai');
-        Route::delete('/{account}', DestroyController::class)->name('destroy');
+        Route::get('/', App\Http\Controllers\WhatsApp\Account\IndexController::class)->name('index');
+        Route::get('/create', App\Http\Controllers\WhatsApp\Account\CreateController::class)->name('create');
+
+        // actions
+        Route::get('/configure-ai/{account}', App\Http\Controllers\WhatsApp\Account\ConfigureAiController::class)->name('configure-ai');
+        Route::post('/{account}/toggle-ai', App\Http\Controllers\WhatsApp\Account\ToggleAiController::class)->name('toggle-ai');
+        Route::delete('/{account}', App\Http\Controllers\WhatsApp\Account\DestroyController::class)->name('destroy');
     });

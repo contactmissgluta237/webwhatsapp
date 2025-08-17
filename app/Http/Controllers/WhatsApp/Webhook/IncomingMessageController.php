@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\WhatsApp\Webhook;
 
+use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
+use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WhatsApp\Webhook\IncomingMessageRequest;
-use App\Services\WhatsApp\AI\WhatsAppAIProcessorServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 final class IncomingMessageController extends Controller
 {
     public function __construct(
-        private readonly WhatsAppAIProcessorServiceInterface $aiProcessor
+        private readonly WhatsAppMessageOrchestratorInterface $orchestrator
     ) {}
 
     /**
@@ -25,36 +27,42 @@ final class IncomingMessageController extends Controller
     {
         $validated = $request->validated();
 
-        Log::info('[WEBHOOK RECEIVED] Incoming WhatsApp message from Node.js bridge', [
+        Log::info('[WEBHOOK CONTROLLER] Incoming WhatsApp message from Node.js bridge', [
             'session_id' => $validated['session_id'],
             'from' => $validated['message']['from'],
             'message_id' => $validated['message']['id'],
-            'body_preview' => substr($validated['message']['body'], 0, 50) . '...', // Ajout d'un aperçu du corps du message
+            'body_preview' => substr($validated['message']['body'], 0, 50).'...',
         ]);
 
         try {
-            $response = $this->aiProcessor->processIncomingMessage(
+            // Step 1: Create account metadata from session information
+            $accountMetadata = $this->orchestrator->createAccountMetadata(
                 $validated['session_id'],
-                $validated['session_name'],
-                $validated['message']
+                $validated['session_name']
             );
 
-            if ($response['has_ai_response']) {
-                return response()->json([
-                    'success' => true,
-                    'response_message' => $response['ai_response'],
-                    'processed' => true,
-                ]);
-            }
+            // Step 2: Create message request DTO from webhook data
+            $messageRequest = WhatsAppMessageRequestDTO::fromWebhookData($validated['message']);
 
-            return response()->json([
-                'success' => true,
-                'processed' => true,
-                'message' => 'Message stored successfully',
+            // Step 3: Process through orchestrator
+            $response = $this->orchestrator->processIncomingMessage(
+                $accountMetadata,
+                $messageRequest
+            );
+
+            // Step 4: Return formatted response
+            $responseData = $response->toWebhookResponse();
+
+            Log::info('[WEBHOOK CONTROLLER] Message processing completed', [
+                'session_id' => $validated['session_id'],
+                'success' => $responseData['success'],
+                'has_response' => $response->hasAiResponse,
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Failed to process incoming WhatsApp message', [
+            return response()->json($responseData, $responseData['success'] ? 200 : 500);
+
+        } catch (Exception $e) {
+            Log::error('[WEBHOOK CONTROLLER] Failed to process incoming WhatsApp message', [
                 'session_id' => $validated['session_id'],
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -62,7 +70,8 @@ final class IncomingMessageController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to process message',
+                'processed' => false,
+                'error' => 'Failed to process message',
             ], 500);
         }
     }

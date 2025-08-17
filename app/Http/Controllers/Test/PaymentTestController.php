@@ -13,89 +13,42 @@ use Illuminate\Support\Facades\Log;
 
 class PaymentTestController extends Controller
 {
+    private const VALID_ACTIONS = ['recharge', 'withdraw'];
+    private const TEST_CUSTOMER = [
+        'phone' => '699123456',
+        'name' => 'Test Customer',
+        'email' => 'test@example.com',
+    ];
+
     public function __construct(
-        private PaymentService $paymentService
-    ) {}
+        private readonly PaymentService $paymentService
+    ) {
+    }
 
     public function test(string $action, int $amount): JsonResponse|RedirectResponse
     {
         try {
-            // Validate action
-            if (! in_array($action, ['recharge', 'withdraw'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Action must be either "recharge" or "withdraw"',
-                ], 400);
+            // Validate inputs
+            $validationError = $this->validateTestInputs($action, $amount);
+            if ($validationError) {
+                return $validationError;
             }
 
-            // Validate amount
-            if ($amount <= 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Amount must be positive',
-                ], 400);
-            }
+            // Create and execute payment
+            $dto = $this->createTestPaymentDTO($action, $amount);
+            $result = $this->executePaymentAction($action, $dto);
 
-            // Create test DTO
-            $dto = PaymentInitiateDTO::from([
-                'amount' => $amount,
-                'payment_method' => PaymentMethod::MOBILE_MONEY(),
-                'reference' => 'TEST_'.strtoupper($action).'_'.uniqid(),
-                'customer_phone' => '699123456',
-                'customer_name' => 'Test Customer',
-                'customer_email' => 'test@example.com',
-                'description' => "Test {$action} - {$amount} FCFA",
-            ]);
-
-            // Execute payment (synchrone)
-            if ($action === 'recharge') {
-                $result = $this->paymentService->initiateRecharge($dto);
-            } else {
-                $result = $this->paymentService->initiateWithdrawal($dto);
-            }
-
-            // If a payment URL is provided, redirect the user
+            // Handle redirect if payment URL exists
             if ($result->payment_url) {
                 return redirect($result->payment_url);
             }
 
-            return response()->json([
-                'success' => true,
-                'action' => $action,
-                'amount' => $amount,
-                'reference' => $dto->reference,
-                'result' => [
-                    'success' => $result->success,
-                    'transaction_id' => $result->transaction_id,
-                    'status' => $result->status->value,
-                    'payment_url' => $result->payment_url,
-                    'message' => $result->message,
-                    'raw_response' => $result->gateway_data,
-                ],
-            ]);
+            return $this->buildSuccessResponse($action, $amount, $dto, $result);
 
         } catch (PaymentException $e) {
-            return response()->json([
-                'success' => false,
-                'action' => $action,
-                'amount' => $amount,
-                'error' => 'Payment Error: '.$e->getMessage(),
-            ], 422);
-
+            return $this->buildErrorResponse($action, $amount, 'Payment Error: '.$e->getMessage(), 422);
         } catch (\Exception $e) {
-            Log::error('Payment test unexpected error', [
-                'action' => $action,
-                'amount' => $amount,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'action' => $action,
-                'amount' => $amount,
-                'error' => 'System Error: '.$e->getMessage(),
-            ], 500);
+            return $this->handleUnexpectedError($action, $amount, $e);
         }
     }
 
@@ -141,5 +94,125 @@ class PaymentTestController extends Controller
                 'error' => 'Status Check Error: '.$e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Validate test inputs
+     */
+    private function validateTestInputs(string $action, int $amount): ?JsonResponse
+    {
+        if (!in_array($action, self::VALID_ACTIONS)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Action must be either "recharge" or "withdraw"',
+            ], 400);
+        }
+
+        if ($amount <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Amount must be positive',
+            ], 400);
+        }
+
+        return null;
+    }
+
+    /**
+     * Create test payment DTO
+     */
+    private function createTestPaymentDTO(string $action, int $amount): PaymentInitiateDTO
+    {
+        return PaymentInitiateDTO::from([
+            'amount' => $amount,
+            'payment_method' => PaymentMethod::MOBILE_MONEY(),
+            'reference' => $this->generateTestReference($action),
+            'customer_phone' => self::TEST_CUSTOMER['phone'],
+            'customer_name' => self::TEST_CUSTOMER['name'],
+            'customer_email' => self::TEST_CUSTOMER['email'],
+            'description' => "Test {$action} - {$amount} FCFA",
+        ]);
+    }
+
+    /**
+     * Execute payment action based on type
+     */
+    private function executePaymentAction(string $action, PaymentInitiateDTO $dto): mixed
+    {
+        return match ($action) {
+            'recharge' => $this->paymentService->initiateRecharge($dto),
+            'withdraw' => $this->paymentService->initiateWithdrawal($dto),
+            default => throw new \InvalidArgumentException("Invalid action: {$action}")
+        };
+    }
+
+    /**
+     * Generate test reference
+     */
+    private function generateTestReference(string $action): string
+    {
+        return 'TEST_' . strtoupper($action) . '_' . uniqid();
+    }
+
+    /**
+     * Build success response
+     */
+    private function buildSuccessResponse(
+        string $action,
+        int $amount,
+        PaymentInitiateDTO $dto,
+        mixed $result
+    ): JsonResponse {
+        return response()->json([
+            'success' => true,
+            'action' => $action,
+            'amount' => $amount,
+            'reference' => $dto->reference,
+            'result' => [
+                'success' => $result->success,
+                'transaction_id' => $result->transaction_id,
+                'status' => $result->status->value,
+                'payment_url' => $result->payment_url,
+                'message' => $result->message,
+                'raw_response' => $result->gateway_data,
+            ],
+        ]);
+    }
+
+    /**
+     * Build error response
+     */
+    private function buildErrorResponse(
+        string $action,
+        int $amount,
+        string $errorMessage,
+        int $statusCode
+    ): JsonResponse {
+        return response()->json([
+            'success' => false,
+            'action' => $action,
+            'amount' => $amount,
+            'error' => $errorMessage,
+        ], $statusCode);
+    }
+
+    /**
+     * Handle unexpected errors with logging
+     */
+    private function handleUnexpectedError(string $action, int $amount, \Exception $e): JsonResponse
+    {
+        Log::error('Payment test unexpected error', [
+            'action' => $action,
+            'amount' => $amount,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return $this->buildErrorResponse(
+            $action,
+            $amount,
+            'System Error: ' . $e->getMessage(),
+            500
+        );
     }
 }

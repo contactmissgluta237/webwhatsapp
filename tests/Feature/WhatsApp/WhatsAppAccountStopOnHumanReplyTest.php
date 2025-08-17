@@ -37,7 +37,7 @@ final class WhatsAppAccountStopOnHumanReplyTest extends TestCase
     public function test_stop_on_human_reply_is_fillable(): void
     {
         $user = User::factory()->create();
-        
+
         $account = WhatsAppAccount::factory()->create([
             'user_id' => $user->id,
             'stop_on_human_reply' => true,
@@ -52,7 +52,7 @@ final class WhatsAppAccountStopOnHumanReplyTest extends TestCase
         $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Test avec valeur string "1"
-        $account->stop_on_human_reply = "1";
+        $account->stop_on_human_reply = '1';
         $account->save();
         $account->refresh();
 
@@ -60,7 +60,7 @@ final class WhatsAppAccountStopOnHumanReplyTest extends TestCase
         $this->assertTrue($account->stop_on_human_reply);
 
         // Test avec valeur string "0"
-        $account->stop_on_human_reply = "0";
+        $account->stop_on_human_reply = '0';
         $account->save();
         $account->refresh();
 

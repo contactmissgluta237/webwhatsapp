@@ -152,7 +152,7 @@ final class ConfigureAiAgent extends Component
             }
 
             // Simulate AI response based on model and prompt
-            $prompt = $this->ai_prompt ?: 'Tu es un assistant WhatsApp utile et professionnel.';
+            $prompt = $this->ai_prompt ?: 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
             $responseTime = ResponseTime::from($this->ai_response_time);
 
             $this->simulationResponse = "✅ Réponse simulée du modèle {$selectedModel->name}:\n\n";

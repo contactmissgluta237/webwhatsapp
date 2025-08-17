@@ -10,8 +10,8 @@ use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\AiServiceInterface;
 use App\Services\AI\PromptEnhancementService;
-use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
 
 final class PromptEnhancementServiceTest extends TestCase
@@ -25,16 +25,16 @@ final class PromptEnhancementServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->service = new PromptEnhancementService();
-        
+
+        $this->service = new PromptEnhancementService;
+
         $this->ollamaModel = AiModel::factory()->create(
             AiTestHelper::createTestModelData('ollama', [
                 'name' => 'Test Ollama',
                 'is_default' => true,
             ])
         );
-        
+
         $this->account = WhatsAppAccount::factory()->create([
             'ai_model_id' => $this->ollamaModel->id,
         ]);
@@ -45,7 +45,7 @@ final class PromptEnhancementServiceTest extends TestCase
     {
         $originalPrompt = 'Tu es un assistant.';
         $enhancedPrompt = 'Tu es un assistant professionnel spécialisé dans le support client.';
-        
+
         // Mock du service IA
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
@@ -58,11 +58,11 @@ final class PromptEnhancementServiceTest extends TestCase
                 content: $enhancedPrompt,
                 tokensUsed: 50,
             ));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $result = $this->service->enhancePrompt($this->account, $originalPrompt);
-        
+
         $this->assertEquals($enhancedPrompt, $result);
     }
 
@@ -70,10 +70,10 @@ final class PromptEnhancementServiceTest extends TestCase
     public function it_uses_default_ollama_model_when_account_has_no_model(): void
     {
         $this->account->update(['ai_model_id' => null]);
-        
+
         $originalPrompt = 'Salut';
         $enhancedPrompt = 'Salut ! Je suis votre assistant virtuel.';
-        
+
         // Mock du service IA
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
@@ -82,11 +82,11 @@ final class PromptEnhancementServiceTest extends TestCase
                 content: $enhancedPrompt,
                 tokensUsed: 30,
             ));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $result = $this->service->enhancePrompt($this->account, $originalPrompt);
-        
+
         $this->assertEquals($enhancedPrompt, $result);
     }
 
@@ -95,12 +95,12 @@ final class PromptEnhancementServiceTest extends TestCase
     {
         // Supprimer tous les modèles IA
         AiModel::query()->delete();
-        
+
         $this->account->update(['ai_model_id' => null]);
-        
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Aucun modèle IA disponible pour l\'amélioration du prompt');
-        
+
         $this->service->enhancePrompt($this->account, 'Test prompt');
     }
 
@@ -108,18 +108,18 @@ final class PromptEnhancementServiceTest extends TestCase
     public function it_throws_exception_when_ai_service_fails(): void
     {
         $originalPrompt = 'Test prompt';
-        
+
         // Mock du service IA qui échoue
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
             ->once()
             ->andThrow(new \Exception('API Error'));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Erreur lors de l\'amélioration du prompt: API Error');
-        
+
         $this->service->enhancePrompt($this->account, $originalPrompt);
     }
 
@@ -134,27 +134,27 @@ final class PromptEnhancementServiceTest extends TestCase
             'is_active' => true,
             'is_default' => true,
         ]);
-        
+
         $originalPrompt = 'Test';
         $enhancedPrompt = 'Test amélioré';
-        
+
         // Mock du service IA - doit utiliser le modèle du compte, pas le défaut
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
             ->once()
             ->with(
-                \Mockery::on(fn($model) => $model->id === $this->ollamaModel->id),
+                \Mockery::on(fn ($model) => $model->id === $this->ollamaModel->id),
                 \Mockery::type(AiRequestDTO::class)
             )
             ->andReturn(new AiResponseDTO(
                 content: $enhancedPrompt,
                 tokensUsed: 25,
             ));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $result = $this->service->enhancePrompt($this->account, $originalPrompt);
-        
+
         $this->assertEquals($enhancedPrompt, $result);
     }
 
@@ -162,7 +162,7 @@ final class PromptEnhancementServiceTest extends TestCase
     public function it_handles_empty_ai_response(): void
     {
         $originalPrompt = 'Test prompt';
-        
+
         // Mock du service IA qui retourne une réponse vide
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
@@ -171,12 +171,12 @@ final class PromptEnhancementServiceTest extends TestCase
                 content: '',
                 tokensUsed: 0,
             ));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('L\'IA n\'a pas pu améliorer le prompt');
-        
+
         $this->service->enhancePrompt($this->account, $originalPrompt);
     }
 
@@ -185,7 +185,7 @@ final class PromptEnhancementServiceTest extends TestCase
     {
         $originalPrompt = 'Tu es un bot.';
         $enhancedPrompt = 'Tu es un assistant professionnel.';
-        
+
         // Mock du service IA pour vérifier le contenu du système prompt
         $mockAiService = $this->mock(AiServiceInterface::class);
         $mockAiService->shouldReceive('chat')
@@ -202,11 +202,11 @@ final class PromptEnhancementServiceTest extends TestCase
                 content: $enhancedPrompt,
                 tokensUsed: 40,
             ));
-        
-        $this->app->bind(AiServiceInterface::class, fn() => $mockAiService);
-        
+
+        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+
         $result = $this->service->enhancePrompt($this->account, $originalPrompt);
-        
+
         $this->assertEquals($enhancedPrompt, $result);
     }
 }

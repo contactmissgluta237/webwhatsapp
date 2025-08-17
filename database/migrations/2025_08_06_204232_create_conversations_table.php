@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conversations', function (Blueprint $table) {
+        Schema::create('whatsapp_conversations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('whatsapp_account_id')->constrained()->onDelete('cascade');
-            $table->string('chat_id'); // Format WhatsApp: 1234567890@c.us
+            $table->foreignId('whatsapp_account_id')->constrained('whatsapp_accounts')->onDelete('cascade');
+            $table->string('chat_id');
             $table->string('contact_phone');
             $table->string('contact_name')->nullable();
             $table->boolean('is_group')->default(false);
@@ -22,6 +22,10 @@ return new class extends Migration
             $table->integer('unread_count')->default(0);
             $table->boolean('is_ai_enabled')->default(true);
             $table->timestamps();
+
+            // Index pour optimiser les recherches
+            $table->index(['whatsapp_account_id', 'chat_id']);
+            $table->index('contact_phone');
         });
     }
 
@@ -30,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conversations');
+        Schema::dropIfExists('whatsapp_conversations');
     }
 };

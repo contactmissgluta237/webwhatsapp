@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp;
 
-use App\DTOs\AI\AiRequestDTO;
-use App\DTOs\AI\AiResponseDTO;
 use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
-use App\Services\AI\OllamaService;
 use App\Services\AI\PromptEnhancementService;
-use Tests\Helpers\AiTestHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
 
 final class PromptEnhancementIntegrationTest extends TestCase
@@ -30,7 +27,7 @@ final class PromptEnhancementIntegrationTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        
+
         // Créer un modèle Ollama avec le bon endpoint basé sur la configuration centralisée
         $this->ollamaModel = AiModel::factory()->create(
             AiTestHelper::createTestModelData('ollama', [
@@ -78,7 +75,7 @@ final class PromptEnhancementIntegrationTest extends TestCase
         // Vérifier que l'API a été appelée avec les bons paramètres
         Http::assertSent(function ($request) use ($originalPrompt) {
             $body = $request->data();
-            
+
             return $request->url() === 'http://209.126.83.125:11434/api/chat'
                 && $body['model'] === 'gemma2:2b'
                 && str_contains($body['messages'][1]['content'], $originalPrompt)
@@ -113,7 +110,7 @@ final class PromptEnhancementIntegrationTest extends TestCase
         // Créer plusieurs modèles pour tester la priorité
         $specificModel = AiModel::factory()->create([
             'name' => 'Specific Model',
-            'provider' => 'ollama', 
+            'provider' => 'ollama',
             'endpoint_url' => 'http://specific-endpoint:11434',
             'is_active' => true,
             'is_default' => false,
@@ -190,20 +187,22 @@ final class PromptEnhancementIntegrationTest extends TestCase
 
         // Vérifier que le résultat est plus long que l'original
         $this->assertGreaterThan(strlen($originalPrompt), strlen($result));
-        
+
         // Vérifier que l'API a été appelée avec le prompt original
         Http::assertSent(function ($request) use ($originalPrompt) {
             $body = $request->data();
+
             return str_contains($body['messages'][1]['content'], $originalPrompt);
         });
-        
+
         // Vérifier que le résultat correspond au mock
         $this->assertEquals($enhancedPrompt, $result);
-        
+
         // Vérifier que le service utilise les bons paramètres
         Http::assertSent(function ($request) {
             $body = $request->data();
-            return $body['options']['temperature'] === 0.3 
+
+            return $body['options']['temperature'] === 0.3
                 && $body['model'] === 'gemma2:2b'
                 && $body['stream'] === false;
         });

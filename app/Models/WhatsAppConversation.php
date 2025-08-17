@@ -28,13 +28,14 @@ use Illuminate\Support\Carbon;
  *
  * == Relationships ==
  * @property-read WhatsAppAccount $whatsappAccount
- * @property-read Collection<int, Message> $messages
- * @property-read Message|null $lastMessage
+ * @property-read Collection<int, WhatsAppMessage> $messages
+ * @property-read WhatsAppMessage|null $lastMessage
  */
-final class Conversation extends Model
+final class WhatsAppConversation extends Model
 {
     use HasFactory;
 
+    protected $table = 'whatsapp_conversations';
     /**
      * The attributes that are mass assignable.
      *
@@ -73,19 +74,19 @@ final class Conversation extends Model
     }
 
     /**
-     * @return HasMany<Message, $this>
+     * @return HasMany<WhatsAppMessage, $this>
      */
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(WhatsAppMessage::class, 'whatsapp_conversation_id');
     }
 
     /**
-     * @return HasMany<Message, $this>
+     * @return HasMany<WhatsAppMessage, $this>
      */
     public function lastMessage(): HasMany
     {
-        return $this->hasMany(Message::class)->latest();
+        return $this->hasMany(WhatsAppMessage::class)->latest();
     }
 
     // ================================================================================
@@ -122,7 +123,7 @@ final class Conversation extends Model
      */
     public function getTodayMessagesCount(): array
     {
-        /** @var Collection<int, Message> $messages */
+        /** @var Collection<int, WhatsAppMessage> $messages */
         $messages = $this->messages()
             ->whereDate('created_at', today())
             ->get();
@@ -139,21 +140,21 @@ final class Conversation extends Model
 
     public function getAverageResponseTime(): ?float
     {
-        /** @var Collection<int, Message> $allMessages */
+        /** @var Collection<int, WhatsAppMessage> $allMessages */
         $allMessages = $this->messages()
             ->orderBy('created_at')
             ->get();
 
-        $conversations = $allMessages->groupBy(function (Message $message): string {
+        $conversations = $allMessages->groupBy(function (WhatsAppMessage $message): string {
             return $message->created_at->format('Y-m-d H:i');
         });
 
         $responseTimes = [];
 
         foreach ($conversations as $group) {
-            /** @var Message|null $inbound */
+            /** @var WhatsAppMessage|null $inbound */
             $inbound = $group->where('direction', 'inbound')->first();
-            /** @var Message|null $outbound */
+            /** @var WhatsAppMessage|null $outbound */
             $outbound = $group->where('direction', 'outbound')->first();
 
             if ($inbound && $outbound && $outbound->created_at > $inbound->created_at) {

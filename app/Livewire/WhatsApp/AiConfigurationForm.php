@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\WhatsApp;
 
+use App\Contracts\PromptEnhancementInterface;
 use App\Enums\ResponseTime;
-use App\Http\Requests\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
-use App\Contracts\PromptEnhancementInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
@@ -107,6 +106,7 @@ final class AiConfigurationForm extends Component
             $this->dispatch('config-changed-live', [
                 'agent_prompt' => $this->agent_prompt,
             ]);
+
             return;
         }
 
@@ -114,7 +114,7 @@ final class AiConfigurationForm extends Component
         if ($this->hasEnhancedPrompt && $this->agent_prompt !== $this->enhancedPrompt) {
             $this->resetEnhancementState();
         }
-        
+
         // Reset validated state when prompt is manually modified after validation
         if ($this->isPromptValidated) {
             $this->isPromptValidated = false;
@@ -162,7 +162,7 @@ final class AiConfigurationForm extends Component
 
         try {
             $enhancementService = app(PromptEnhancementInterface::class);
-            
+
             Log::info('🎯 Demande d\'amélioration de prompt via interface', [
                 'account_id' => $this->account->id,
                 'original_prompt_length' => strlen($this->agent_prompt),
@@ -170,7 +170,7 @@ final class AiConfigurationForm extends Component
             ]);
 
             $this->enhancedPrompt = $enhancementService->enhancePrompt($this->account, $this->agent_prompt);
-            
+
             $this->isProgrammaticUpdate = true;
             $this->agent_prompt = $this->enhancedPrompt;
             $this->hasEnhancedPrompt = true;
@@ -190,13 +190,13 @@ final class AiConfigurationForm extends Component
             $this->dispatch('show-toast', [
                 'type' => 'success',
                 'message' => __('Prompt amélioré avec succès ! +:count caractères ajoutés.', [
-                    'count' => strlen($this->enhancedPrompt) - strlen($this->originalPrompt)
+                    'count' => strlen($this->enhancedPrompt) - strlen($this->originalPrompt),
                 ]),
             ]);
 
         } catch (\Exception $e) {
             $this->isProgrammaticUpdate = false;
-            
+
             Log::error('❌ Erreur amélioration prompt via interface', [
                 'account_id' => $this->account->id,
                 'error' => $e->getMessage(),
@@ -219,7 +219,7 @@ final class AiConfigurationForm extends Component
                 'message' => $errorMessage,
             ]);
         }
-        
+
         $this->isEnhancing = false;
     }
 
@@ -248,7 +248,7 @@ final class AiConfigurationForm extends Component
         $this->isProgrammaticUpdate = true;
         $this->agent_prompt = $this->originalPrompt;
         $this->isProgrammaticUpdate = false;
-        
+
         $this->resetEnhancementState();
 
         $this->dispatch('config-changed-live', [

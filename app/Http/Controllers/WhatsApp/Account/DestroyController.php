@@ -50,7 +50,7 @@ final class DestroyController extends Controller
             ]);
 
             return redirect()->route('whatsapp.index')
-                ->with('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+                ->with('error', 'Erreur lors de la suppression : '.$e->getMessage());
         }
     }
 }

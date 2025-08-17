@@ -44,7 +44,7 @@ use Spatie\MediaLibrary\HasMedia;
  *
  * == Relationships ==
  * @property-read User $user
- * @property-read Collection|Conversation[] $conversations
+ * @property-read Collection|WhatsAppConversation[] $conversations
  * @property-read AiContext|null $aiContext
  * @property-read AiModel|null $aiModel
  */
@@ -110,7 +110,7 @@ final class WhatsAppAccount extends Model implements HasMedia
 
     public function conversations(): HasMany
     {
-        return $this->hasMany(Conversation::class, 'whatsapp_account_id');
+        return $this->hasMany(WhatsAppConversation::class, 'whatsapp_account_id');
     }
 
     public function aiContext(): HasOne
@@ -180,7 +180,7 @@ final class WhatsAppAccount extends Model implements HasMedia
 
     public function getTodayMessagesCount(): array
     {
-        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\Conversation> $conversations */
+        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\WhatsAppConversation> $conversations */
         $conversations = $this->conversations()->with(['messages' => function ($query) {
             $query->whereDate('created_at', today());
         }])->get();
@@ -189,7 +189,7 @@ final class WhatsAppAccount extends Model implements HasMedia
         $outbound = 0;
 
         foreach ($conversations as $conversation) {
-            /** @var \App\Models\Message $message */
+            /** @var \App\Models\WhatsAppMessage $message */
             foreach ($conversation->messages as $message) {
                 if ($message->direction === 'inbound') {
                     $inbound++;
@@ -255,6 +255,18 @@ final class WhatsAppAccount extends Model implements HasMedia
         $this->update([
             'agent_enabled' => false,
         ]);
+    }
+
+    /**
+     * Retourne le prompt par défaut pour l'agent IA
+     */
+    public static function getDefaultAgentPrompt(): string
+    {
+        return "Je suis un commercial, je travaille dans l'équipe commerciale et support. J'aide nos clients avec leurs projets tech et leurs questions. 
+
+🔥 RÈGLE ABSOLUE : Je ne dois JAMAIS inventer d'informations que je ne connais pas avec certitude. Si je ne connais pas quelque chose (coordonnées, prix, détails techniques, dates, etc.), je dis honnêtement que je reviens vers toi avec la bonne info.
+
+Je réponds de manière naturelle et professionnelle, comme un vrai membre de l'équipe.";
     }
 
     public function updateAiConfiguration(array $config): void

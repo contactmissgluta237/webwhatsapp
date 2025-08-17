@@ -1,11 +1,12 @@
 const LaravelWebhookService = require("../services/LaravelWebhookService");
-
+const TypingSimulatorService = require("../services/TypingSimulatorService");
 const logger = require("../config/logger");
 
 class MessageManager {
     constructor(sessionManager) {
         this.sessionManager = sessionManager;
         this.webhookService = new LaravelWebhookService();
+        this.typingSimulator = new TypingSimulatorService();
     }
 
     async handleIncomingMessage(message, sessionData) {
@@ -60,6 +61,25 @@ class MessageManager {
             messageId: message.id._serialized
         });
 
+        // Marquer le message comme lu immédiatement
+        try {
+            const session = this.sessionManager.getSession(sessionData.sessionId);
+            if (session && session.client) {
+                await session.client.sendSeen(message.from);
+                logger.incomingMessage("MESSAGE MARKED AS READ", {
+                    sessionId: sessionData.sessionId,
+                    messageId: message.id._serialized,
+                    from: message.from
+                });
+            }
+        } catch (readError) {
+            logger.warning("FAILED TO MARK MESSAGE AS READ", {
+                sessionId: sessionData.sessionId,
+                messageId: message.id._serialized,
+                error: readError.message
+            });
+        }
+
         if (message.hasMedia) {
             logger.incomingMessage("MEDIA MESSAGE", {
                 sessionId: sessionData.sessionId,
@@ -89,7 +109,37 @@ class MessageManager {
             });
 
             if (response?.response_message) {
-                await message.reply(response.response_message);
+                // Extract timing data from Laravel response
+                const waitTimeSeconds = response.wait_time_seconds || 0;
+                const typingDurationSeconds = response.typing_duration_seconds || 2;
+
+                logger.incomingMessage("AI RESPONSE TIMING", {
+                    sessionId: sessionData.sessionId,
+                    messageId: message.id._serialized,
+                    waitTimeSeconds: waitTimeSeconds,
+                    typingDurationSeconds: typingDurationSeconds,
+                    responseLength: response.response_message.length
+                });
+
+                // Get the session client for typing simulation
+                const session = this.sessionManager.getSession(sessionData.sessionId);
+                if (session && session.client) {
+                    // Use TypingSimulatorService with Laravel timings
+                    await this.typingSimulator.simulateResponseAndSendMessage(
+                        session.client,
+                        message.from, // Reply to sender
+                        response.response_message,
+                        waitTimeSeconds,
+                        typingDurationSeconds
+                    );
+                } else {
+                    // Fallback: send without simulation
+                    logger.warning("SESSION NOT FOUND FOR TYPING", {
+                        sessionId: sessionData.sessionId,
+                        messageId: message.id._serialized
+                    });
+                    await message.reply(response.response_message);
+                }
                 
                 // Log de la réponse envoyée dans outgoing-messages.log
                 logger.debug("🔍 DEBUG: Appel logger.outgoingMessage AI RESPONSE SENT dans MessageManager", {

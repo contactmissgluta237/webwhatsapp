@@ -1,0 +1,101 @@
+[90m= [39m[34;4mApp\Models\WhatsAppConversation[39;24m {#5918
+    [34mid[39m: [35m1[39m,
+    [34mwhatsapp_account_id[39m: [35m5[39m,
+    [34mchat_id[39m: "[32m23755332183@c.us[39m",
+    [34mcontact_phone[39m: "[32m23755332183[39m",
+    [34mcontact_name[39m: [36mnull[39m,
+    [34mis_group[39m: [35m0[39m,
+    [34mlast_message_at[39m: "[32m2025-08-16 10:44:02[39m",
+    [34munread_count[39m: [35m4[39m,
+    [34mis_ai_enabled[39m: [35m1[39m,
+    [34mcreated_at[39m: "[32m2025-08-16 09:34:32[39m",
+    [34mupdated_at[39m: "[32m2025-08-16 10:44:02[39m",
+    [34mmessages[39m: [34;4mIlluminate\Database\Eloquent\Collection[39;24m {#5926
+      [34mall[39m: [
+        [34;4mApp\Models\WhatsAppMessage[39;24m {#5929
+          [34mid[39m: [35m25[39m,
+          [34mwhatsapp_conversation_id[39m: [35m1[39m,
+          [34mwhatsapp_message_id[39m: "[32mfalse_23755332183@c.us_3EB0890D9DE3A88E5AD209[39m",
+          [34mdirection[39m: "[32minbound[39m",
+          [34mcontent[39m: "[32mmon grand 1[39m",
+          [34mmessage_type[39m: "[32mtext[39m",
+          [34mis_ai_generated[39m: [35m0[39m,
+          [34mai_model_used[39m: [36mnull[39m,
+          [34mai_confidence[39m: [36mnull[39m,
+          [34mprocessed_at[39m: [36mnull[39m,
+          [34mcreated_at[39m: "[32m2025-08-16 10:19:56[39m",
+          [34mupdated_at[39m: "[32m2025-08-16 10:19:56[39m",
+        },
+        [34;4mApp\Models\WhatsAppMessage[39;24m {#5930
+          [34mid[39m: [35m26[39m,
+          [34mwhatsapp_conversation_id[39m: [35m1[39m,
+          [34mwhatsapp_message_id[39m: [36mnull[39m,
+          [34mdirection[39m: "[32moutbound[39m",
+          [34mcontent[39m: "[32mJe suis votre assistant WhatsApp professionnel. Pour mieux vous aider, pourriez-vous préciser votre demande ou votre question ? Je reste à votre disposition pour tout renseignement complémentaire.[39m",
+          [34mmessage_type[39m: "[32mtext[39m",
+          [34mis_ai_generated[39m: [35m1[39m,
+          [34mai_model_used[39m: "[32mDeepSeek Chat[39m",
+          [34mai_confidence[39m: [33m0.9[39m,
+          [34mprocessed_at[39m: "[32m2025-08-16 10:20:02[39m",
+          [34mcreated_at[39m: "[32m2025-08-16 10:20:02[39m",
+          [34mupdated_at[39m: "[32m2025-08-16 10:20:02[39m",
+        },
+        [34;4mApp\Models\WhatsAppMessage[39;24m {#5931
+          [34mid[39m: [35m29[39m,
+          [34mwhatsapp_conversation_id[39m: [35m1[39m,
+          [34mwhatsapp_message_id[39m: "[32mfalse_23755332183@c.us_3EB0FCA30B7A692E00BB3B[39m",
+          [34mdirection[39m: "[32minbound[39m",
+          [34mcontent[39m: """
+            [32mJe comprends qu'il semble y avoir une répétition dans votre message. Pour vous apporter la meilleure assistance possible, pourriez-vous reformuler ou préciser votre demande ? [39m\n
+            \n
+            [32mJe reste à votre écoute pour toute information complémentaire dont vous pourriez avoir besoin. N'hésitez pas à me faire part de votre question ou de votre requête spécifique.[39m
+            """,
+          [34mmessage_type[39m: "[32mtext[39m",
+          [34mis_ai_generated[39m: [35m0[39m,
+          [34mai_model_used[39m: [36mnull[39m,
+          [34mai_confidence[39m: [36mnull[39m,
+          [34mprocessed_at[39m: [36mnull[39m,
+          [34mcreated_at[39m: "[32m2025-08-16 10:20:39[39m",
+          [34mupdated_at[39m: "[32m2025-08-16 10:20:39[39m",
+        },
+        [34;4mApp\Models\WhatsAppMessage[39;24m {#5932
+          [34mid[39m: [35m30[39m,
+          [34mwhatsapp_conversation_id[39m: [35m1[39m,
+          [34mwhatsapp_message_id[39m: [36mnull[39m,
+          [34mdirection[39m: "[32moutbound[39m",
+          [34mcontent[39m: """
+            [32mJe constate qu'il y a effectivement une répétition dans notre échange. Permettez-moi de recentrer la conversation pour vous offrir un service optimal.[39m\n
+            \n
+            [32mPourriez-vous m'indiquer précisément :[39m\n
+            [32m1. La nature de votre demande[39m\n
+            [32m2. Vos attentes spécifiques[39m\n
+            [32m3. Toute information utile pour vous accompagner au mieux[39m\n
+            \n
+            [32mJe reste à votre disposition pour traiter votre requête de manière efficace et personnalisée.[39m
+            """,
+          [34mmessage_type[39m: "[32mtext[39m",
+          [34mis_ai_generated[39m: [35m1[39m,
+          [34mai_model_used[39m: "[32mDeepSeek Chat[39m",
+          [34mai_confidence[39m: [33m0.9[39m,
+          [34mprocessed_at[39m: "[32m2025-08-16 10:20:49[39m",
+          [34mcreated_at[39m: "[32m2025-08-16 10:20:49[39m",
+          [34mupdated_at[39m: "[32m2025-08-16 10:20:49[39m",
+        },
+        [34;4mApp\Models\WhatsAppMessage[39;24m {#5933
+          [34mid[39m: [35m72[39m,
+          [34mwhatsapp_conversation_id[39m: [35m1[39m,
+          [34mwhatsapp_message_id[39m: "[32mfalse_23755332183@c.us_778EC982C2025C98076BD971B8493041[39m",
+          [34mdirection[39m: "[32minbound[39m",
+          [34mcontent[39m: "[32mNon non grand[39m",
+          [34mmessage_type[39m: "[32mtext[39m",
+          [34mis_ai_generated[39m: [35m0[39m,
+          [34mai_model_used[39m: [36mnull[39m,
+          [34mai_confidence[39m: [36mnull[39m,
+          [34mprocessed_at[39m: [36mnull[39m,
+          [34mcreated_at[39m: "[32m2025-08-16 10:44:02[39m",
+          [34mupdated_at[39m: "[32m2025-08-16 10:44:02[39m",
+        },
+      ],
+    },
+  }
+
