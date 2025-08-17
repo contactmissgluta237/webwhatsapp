@@ -1,24 +1,20 @@
-FROM node:18-alpine
+FROM node:18-slim
 
-# Install Chrome dependencies
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
+# Install basic dependencies (skip chromium for now due to network limitations)
+RUN apt-get update && apt-get install -y \
     ca-certificates \
-    ttf-freefont
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Tell Puppeteer to use installed Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# Tell Puppeteer to skip chromium download (will need manual installation in production)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 # Set working directory
 WORKDIR /app
 
 # Install app dependencies
 COPY package*.json ./
-RUN npm install --production && npm cache clean --force
+RUN npm config set strict-ssl false && npm install --production && npm cache clean --force
 
 # Copy app source
 COPY . .

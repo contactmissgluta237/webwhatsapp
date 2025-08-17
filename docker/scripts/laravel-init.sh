@@ -22,6 +22,11 @@ echo "✅ Redis is ready!"
 
 cd /var/www/html
 
+# Fix git safe directory issue
+echo "🔧 Fixing git safe directory..."
+git config --global --add safe.directory /var/www/html || true
+echo "✅ Git configuration fixed!"
+
 # Set permissions ONLY for specific Laravel directories (not everything)
 echo "🔧 Setting up Laravel-specific permissions..."
 # Créer les dossiers s'ils n'existent pas
@@ -35,7 +40,7 @@ echo "✅ Laravel permissions configured!"
 # Install Composer dependencies if vendor doesn't exist
 if [ ! -d "vendor" ]; then
     echo "📦 Installing Composer dependencies..."
-    composer install --no-dev --optimize-autoloader --no-interaction
+    composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-zip
     echo "✅ Dependencies installed!"
 else
     echo "✅ Dependencies already installed"

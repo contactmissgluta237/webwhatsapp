@@ -152,7 +152,7 @@ services:
       - genericsaas_network
   
   whatsapp-bridge:
-    build: ./docker/whatsapp-bridge
+    build: ./nodejs/whatsapp-bridge
     container_name: genericsaas_whatsapp_bridge
     restart: unless-stopped
     ports:
