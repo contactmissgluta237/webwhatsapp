@@ -1,163 +1,261 @@
-# Principes de Développement - Instructions Génériques
+# WhatsApp Agent - GitHub Copilot Development Instructions
 
-## ⚠️ RÈGLES ABSOLUES - NON NÉGOCIABLES
+Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
-### 1. INTERDICTIONS CATÉGORIQUES
-- ❌ **AUCUN commentaire inutile** : Pas de "TODO", "FIXME", "variable renommée", "code ajouté", etc.
-- ❌ **AUCUNE hallucination** : Ne JAMAIS inventer de classes, méthodes ou propriétés inexistantes
-- ❌ **AUCUNE initiative non demandée** : Faire UNIQUEMENT ce qui est explicitement demandé
-- ❌ **AUCUN code déprécié** : Toujours utiliser les versions actuelles et bonnes pratiques
-- ❌ **AUCUN path complet** : Importer avec `use`, jamais de `\App\Models\User` dans le code
+## Working Effectively
 
-### 2. OBLIGATIONS PRÉALABLES
-```markdown
-AVANT CHAQUE CODE, OBLIGATOIREMENT :
-1. 🔍 ANALYSER le code existant pour comprendre les patterns
-2. 🔍 VÉRIFIER l'existence réelle de toutes les classes utilisées
-3. 🔍 IDENTIFIER les conventions de nommage du projet
-4. 🔍 COMPRENDRE l'architecture en place
-5. ✅ CONFIRMER ma compréhension de la demande
+### Bootstrap, Build, and Test the Repository:
+- **Environment Requirements**: Docker 20.10+, Docker Compose 2.0+, Git
+- **CRITICAL**: Copy environment configuration: `cp .env.docker .env`
+- **Build Command**: `docker compose up --build -d`
+- **Build Time**: Takes 3-6 minutes for initial build. NEVER CANCEL. Set timeout to 15+ minutes.
+- **Initialization Time**: Additional 2-4 minutes for Laravel dependencies and database setup
+- **Network Limitations**: In restricted environments, npm/composer may be slow or fail due to SSL/network issues
+
+### Build Process Details:
+1. **Docker Services Build** (30-90 seconds):
+   - PHP-FPM containers (app, queue) with Laravel dependencies
+   - Node.js WhatsApp bridge service (may fail in restricted networks)
+   - Supporting services: MySQL, Redis, Nginx, Mailpit, Selenium, Ollama
+
+2. **Laravel Initialization** (60-180 seconds):
+   - Composer dependency installation (may take 3-5 minutes in restricted networks)
+   - Database migrations and setup
+   - Cache optimization
+   - Permission configuration
+
+3. **Service Startup** (10-30 seconds):
+   - All services start and become available
+   - Nginx may restart several times until PHP-FPM is ready
+
+### Core Commands:
+```bash
+# Standard build and start
+docker compose up -d
+
+# Complete rebuild from scratch - NEVER CANCEL, takes 6-10 minutes
+./docker/scripts/rebuild.sh
+
+# Manual rebuild
+docker compose down --volumes --remove-orphans
+docker compose up --build -d
+
+# Check status
+docker compose ps
+
+# View logs
+docker compose logs app
+docker compose logs -f  # follow logs
+
+# Test application
+curl -I http://localhost:8082/
 ```
 
-### 3. PRINCIPES DE DÉVELOPPEMENT SENIOR
+## Service Configuration
 
-#### Code Propre & Architecture
-- Fonctions courtes : Maximum 15-20 lignes par méthode
-- Noms explicites : $userRepository au lieu de $repo ou $data
-- Une responsabilité : Une classe/méthode = Un objectif précis
-- Imports propres : Toujours use ClassName puis utiliser ClassName
-- Typage strict : Toujours typer paramètres et retours
+### Ports and Services:
+| Service | Local Port | Internal Port | Description |
+|---------|------------|---------------|-------------|
+| Application | http://localhost:8082 | 80 | Main Laravel web app |
+| MySQL | localhost:3310 | 3306 | Database |
+| Redis | localhost:6382 | 6379 | Cache/Sessions |
+| Mailpit | http://localhost:8027 | 8025 | Email testing interface |
+| Selenium | localhost:4446 | 4444 | E2E testing |
+| Ollama | localhost:11434 | 11434 | AI services |
+| WhatsApp Bridge | localhost:3000 | 3000 | Node.js WhatsApp API |
 
-#### Principes SOLID (Obligatoires)
-- **S** - Single Responsibility : Une classe = Une raison de changer
-- **O** - Open/Closed : Ouvert à l'extension, fermé à la modification
-- **L** - Liskov Substitution : Les sous-classes doivent être substituables
-- **I** - Interface Segregation : Interfaces spécifiques plutôt que générales
-- **D** - Dependency Inversion : Dépendre d'abstractions, pas de concrétions
+### Environment Configuration:
+- **Primary config**: `.env.docker` → copy to `.env`
+- **Database**: MySQL on port 3310, database `genericsaas`
+- **Cache/Sessions**: Redis on port 6382
+- **Email**: Mailpit for local email testing
 
-#### Design Patterns & Bonnes Pratiques
-- Repository Pattern : Pour l'accès aux données
-- Service Pattern : Pour la logique métier
-- Factory Pattern : Pour la création d'objets complexes
-- Strategy Pattern : Pour les algorithmes interchangeables
-- DRY : Ne pas répéter le code
-- KISS : Simplicité avant tout
+## Development Workflows
 
-### 4. STRUCTURE DE RÉPONSE OBLIGATOIRE
-```markdown
-## Analyse du Code Existant
-- Pattern identifié : [Repository/Service/etc.]
-- Classes trouvées : [liste vérifiée]
-- Conventions : [nommage, structure]
+### Laravel Development:
+```bash
+# Access Laravel container
+docker exec -it genericsaas_app bash
 
-## Solution Proposée
-- Approche : [justification technique]
-- Design pattern utilisé : [lequel et pourquoi]
+# Laravel commands
+docker exec genericsaas_app php artisan migrate
+docker exec genericsaas_app php artisan make:controller UserController
+docker exec genericsaas_app php artisan queue:work
+docker exec genericsaas_app php artisan tinker
 
-## Code
-[Code clean sans commentaires inutiles]
+# Database operations
+docker exec genericsaas_app php artisan migrate:status
+docker exec genericsaas_app php artisan migrate:rollback
+docker exec genericsaas_app php artisan db:seed
 
-## Validation
-Dois-je procéder à autre chose ou avez-vous des ajustements ?
+# Clear caches
+docker exec genericsaas_app php artisan optimize:clear
 ```
 
-### 5. QUALITÉ CODE NIVEAU SENIOR
+### Node.js WhatsApp Bridge:
+```bash
+# Access WhatsApp bridge container (if running)
+docker exec -it genericsaas_whatsapp_bridge bash
 
-#### Structure Type Attendue
-```php
-<?php
+# Check bridge logs
+docker compose logs whatsapp-bridge
 
-declare(strict_types=1);
-
-namespace App\Services;
-
-use App\Models\User;
-use App\Contracts\UserRepositoryInterface;
-use App\Exceptions\UserNotFoundException;
-
-final class UserManagementService
-{
-    public function __construct(
-        private readonly UserRepositoryInterface $userRepository
-    ) {}
-
-    public function findUserById(int $userId): User
-    {
-        $user = $this->userRepository->findById($userId);
-        
-        if (!$user) {
-            throw new UserNotFoundException("User with ID {$userId} not found");
-        }
-        
-        return $user;
-    }
-}
+# Restart bridge service
+docker compose restart whatsapp-bridge
 ```
 
-### 6. COMMENTAIRES AUTORISÉS (Rare)
-```php
-/**
- * Complex business logic explanation - WHY, not WHAT
- * Used only for non-obvious business rules
- */
+## Testing and Validation
 
-// Only for complex algorithms where the business logic isn't obvious
+### Manual Validation Requirements:
+ALWAYS run through at least one complete end-to-end scenario after making changes:
+
+1. **Basic Application Test**:
+   ```bash
+   # Check all services are running
+   docker compose ps
+   
+   # Test web application response
+   curl -I http://localhost:8082/
+   
+   # Check application loads in browser
+   # Expected: Laravel application with login page
+   ```
+
+2. **Database Connectivity Test**:
+   ```bash
+   # Test database connection
+   docker exec genericsaas_app php artisan migrate:status
+   
+   # Should show migration table without errors
+   ```
+
+3. **Cache/Session Test**:
+   ```bash
+   # Test Redis connection
+   docker exec genericsaas_app php artisan cache:clear
+   
+   # Should complete without Redis connection errors
+   ```
+
+4. **Email Testing**:
+   - Access http://localhost:8027
+   - Should show Mailpit interface
+
+### Testing Commands:
+```bash
+# Laravel tests
+docker exec genericsaas_app php artisan test
+
+# Browser tests (Dusk) - requires running application
+docker exec genericsaas_app php artisan dusk
+
+# Custom test scripts
+./tests/run-registration-tests.sh
+./tests/run-profile-tests.sh
 ```
 
-### 7. PROCESS DE VALIDATION AUTO
-Avant de répondre, JE DOIS vérifier :
-- ✅ Toutes mes classes existent-elles réellement ?
-- ✅ Ai-je respecté les patterns existants ?
-- ✅ Mon code respecte-t-il SOLID ?
-- ✅ Ai-je éliminé tous commentaires inutiles ?
-- ✅ Mes imports sont-ils propres ?
-- ✅ Mon code est-il digne d'un senior ?
-- ✅ Fais-je UNIQUEMENT ce qui est demandé ?
+## Known Issues and Troubleshooting
 
-### 8. EXEMPLES INTERDITS vs AUTORISÉS
+### Common Build Issues:
 
-#### ❌ CODE INACCEPTABLE
-```php
-// J'ai créé cette méthode pour gérer les utilisateurs
-public function handleUser($data) // Pas de typage
-{
-    $user = new \App\Models\User(); // Path complet
-    $user->name = $data['name']; // Pas de validation
-    return $user;
-}
+1. **WhatsApp Bridge npm SSL Errors**:
+   - Common in restricted network environments
+   - Workaround: Build without whatsapp-bridge service initially
+   - Command: `docker compose up --build -d app queue nginx mysql redis mailpit selenium ollama`
+
+2. **Composer SSL/Network Issues**:
+   - Composer may fallback to git source downloads (slower but works)
+   - Expected behavior in restricted environments
+   - Allow 3-5 minutes for completion
+
+3. **Nginx "host not found in upstream app" Error**:
+   - Normal during startup - nginx starts before PHP-FPM is ready
+   - Nginx will automatically restart and connect once PHP-FPM is available
+   - No action needed, wait 1-2 minutes
+
+4. **Permission Issues**:
+   ```bash
+   # Fix Laravel permissions if needed
+   docker exec genericsaas_app chown -R www-data:www-data storage bootstrap/cache
+   docker exec genericsaas_app chmod -R 775 storage bootstrap/cache
+   ```
+
+### Port Conflicts:
+If ports are in use, modify `.env`:
+```env
+NGINX_PORT=8083
+MYSQL_PORT=3311
+REDIS_PORT=6383
 ```
 
-#### ✅ CODE ATTENDU
-```php
-use App\Models\User;
-use App\DTOs\CreateUserDTO;
-
-public function createUser(CreateUserDTO $userData): User
-{
-    return User::create([
-        'name' => $userData->name,
-        'email' => $userData->email,
-    ]);
-}
+### Complete Reset:
+```bash
+# Nuclear option - removes all data
+docker compose down --volumes --remove-orphans
+docker system prune -f
+# Then rebuild from scratch
 ```
 
-### 9. GESTION D'ERREURS
-- Toujours valider les entrées
-- Lancer des exceptions spécifiques
-- Gérer les cas d'erreur explicitement
-- Ne jamais ignorer les erreurs silencieusement
+## Project Structure
 
-### 10. PERFORMANCE & SÉCURITÉ
-- Éviter les N+1 queries
-- Utiliser les relations Eloquent appropriées
-- Valider et assainir toutes les entrées
-- Appliquer le principe du moindre privilège
+### Key Directories:
+- `app/` - Laravel application code
+- `resources/views/` - Blade templates
+- `routes/web.php` - Web routes
+- `database/migrations/` - Database migrations
+- `database/seeders/` - Database seeders
+- `docker/` - Docker configuration
+- `nodejs/whatsapp-bridge/` - Node.js WhatsApp integration
+- `tests/` - Laravel tests
 
-## CONSÉQUENCE DU NON-RESPECT
-Le non-respect de ces règles entraînera le rejet de la réponse et la demande de refaire en respectant ces standards.
+### Important Files:
+- `.env.docker` - Docker environment template
+- `docker-compose.yml` - Service orchestration
+- `composer.json` - PHP dependencies
+- `package.json` - Frontend build tools
+- `BUILD.md` - Detailed build documentation
 
-**Objectif Final** : Produire un code de qualité production, maintenable, testable et digne d'un développeur senior expérimenté.
+## Validation Requirements
 
-**TU dois strictement suivre et rigoureusement suivre les standards actuels**, si je te donne une tâche sur une vue, avant de créer une vue explore les autres vues et comprend quel layout on utilise! 
-pr créer un controller explore les autres controllers et comprend comment on fonctionne! 
-pareil pour les autres classes et tout! tout est important , il faut dabord analyser lexistant avant toute chose
+### Before Committing Changes:
+- ALWAYS run `docker compose ps` to ensure all services are healthy
+- ALWAYS test the application loads at http://localhost:8082/
+- ALWAYS run `docker compose logs app` to check for errors
+- For Laravel changes: run `docker exec genericsaas_app php artisan test`
+- For frontend changes: test in browser with real user interactions
+
+### CI/Build Validation:
+- The build process must complete successfully
+- All core services (app, queue, nginx, mysql, redis) must start
+- Application must respond to HTTP requests
+- Database migrations must run without errors
+
+## Time Expectations
+
+### Build Timing (with generous safety margins):
+- **Initial Docker build**: 6-10 minutes. NEVER CANCEL. Set timeout to 15+ minutes.
+- **Subsequent builds**: 1-3 minutes (cached)
+- **Laravel initialization**: 2-5 minutes (network dependent)
+- **Total startup time**: 8-15 minutes for fresh build
+
+### Development Timing:
+- **Code changes**: Near-instant with Docker volumes
+- **Dependency updates**: 2-5 minutes for composer/npm
+- **Database migrations**: 10-30 seconds
+- **Cache clearing**: 5-10 seconds
+
+## Success Indicators
+
+✅ **Build Successful When**:
+- `docker compose ps` shows all services "Up" (nginx may restart initially)
+- `curl -I http://localhost:8082/` returns HTTP 200
+- `docker compose logs app` shows "Laravel initialization completed successfully!"
+- Application accessible in browser
+
+❌ **Build Failed When**:
+- Services showing "Exit" status after 10+ minutes
+- HTTP 500 errors that persist after initialization
+- Database connection errors in logs
+- Composer/npm errors that cause container exit
+
+This WhatsApp Agent codebase is a complex multi-service application. Following these instructions ensures reliable development and deployment.
