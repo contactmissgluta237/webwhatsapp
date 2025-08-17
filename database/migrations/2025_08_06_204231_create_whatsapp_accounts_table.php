@@ -41,6 +41,10 @@ return new class extends Migration
             $table->timestamp('last_ai_response_at')->nullable();
             $table->integer('daily_ai_responses')->default(0);
             
+            // Métadonnées de connexion/déconnexion
+            $table->timestamp('last_disconnected_at')->nullable();
+            $table->timestamp('last_reconnected_at')->nullable();
+            
             $table->timestamps();
         });
     }

@@ -250,11 +250,21 @@ class SessionManager {
             }
         });
 
-        client.on("disconnected", () => {
+        client.on("disconnected", (reason) => {
             sessionData.status = "disconnected";
             logger.session(sessionId, "Session disconnected", {
-                userId: sessionData.userId
+                userId: sessionData.userId,
+                reason: reason
             });
+            
+            // Notifier Laravel de la déconnexion
+            this.notifyDisconnection(sessionId, sessionData, reason)
+                .catch(error => {
+                    logger.error("Failed to notify Laravel of disconnection", {
+                        sessionId,
+                        error: error.message
+                    });
+                });
         });
     }
 
@@ -533,6 +543,34 @@ class SessionManager {
             createdAt: data.createdAt,
             restoredAt: data.restoredAt,
         }));
+    }
+
+    async notifyDisconnection(sessionId, sessionData, reason = null) {
+        try {
+            logger.session(sessionId, "Notifying Laravel of session disconnection", {
+                userId: sessionData.userId,
+                phoneNumber: sessionData.phoneNumber,
+                reason: reason
+            });
+
+            await this.webhookService.notifySessionDisconnected(
+                sessionId,
+                sessionData.phoneNumber,
+                reason
+            );
+
+            logger.session(sessionId, "Laravel disconnection notification sent successfully", {
+                userId: sessionData.userId
+            });
+
+        } catch (error) {
+            logger.error("Failed to notify Laravel of session disconnection", {
+                sessionId,
+                userId: sessionData.userId,
+                error: error.message,
+                stack: error.stack
+            });
+        }
     }
 }
 
