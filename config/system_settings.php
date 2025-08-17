@@ -25,4 +25,8 @@ return [
         'withdrawal' => 3,
         'recharge' => 2,
     ],
+
+    'ai_messaging' => [
+        'cost_per_message' => 10,
+    ],
 ];
