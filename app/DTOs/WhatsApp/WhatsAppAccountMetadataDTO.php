@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\DTOs\WhatsApp;
 
 use App\DTOs\BaseDTO;
-use App\Models\WhatsAppAccount;
 use App\Enums\ResponseTime;
+use App\Models\WhatsAppAccount;
 
 final class WhatsAppAccountMetadataDTO extends BaseDTO
 {
@@ -75,12 +75,13 @@ final class WhatsAppAccountMetadataDTO extends BaseDTO
     public function getResponseTimeDelay(): int
     {
         $responseTimeValue = $this->getEffectiveResponseTime();
-        
+
         if ($responseTimeValue instanceof ResponseTime) {
             return $responseTimeValue->getDelay();
         }
-        
+
         $responseTime = ResponseTime::from($responseTimeValue);
+
         return $responseTime->getDelay();
     }
 }

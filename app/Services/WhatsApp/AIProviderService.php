@@ -6,12 +6,12 @@ namespace App\Services\WhatsApp;
 
 use App\Contracts\WhatsApp\AIProviderServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
-use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\Models\AiModel;
 use App\Services\WhatsApp\AI\Prompt\WhatsAppPromptBuilder;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 final class AIProviderService implements AIProviderServiceInterface
 {
@@ -35,36 +35,39 @@ final class AIProviderService implements AIProviderServiceInterface
 
         try {
             // Validate prerequisites
-            if (!$this->canGenerateResponse($accountMetadata)) {
+            if (! $this->canGenerateResponse($accountMetadata)) {
                 Log::warning('[AI_PROVIDER] Cannot generate response - prerequisites not met', [
                     'session_id' => $accountMetadata->sessionId,
                     'agent_enabled' => $accountMetadata->agentEnabled,
                     'ai_model_id' => $accountMetadata->aiModelId,
                 ]);
+
                 return null;
             }
 
             // Get AI model for the account
             $model = $this->getAIModel($accountMetadata);
-            if (!$model) {
+            if (! $model) {
                 Log::warning('[AI_PROVIDER] No AI model configured', [
                     'session_id' => $accountMetadata->sessionId,
                     'ai_model_id' => $accountMetadata->aiModelId,
                 ]);
+
                 return $this->createFallbackResponse($aiRequest->userMessage);
             }
 
             // Get the AI service for this model's provider
             $aiService = $model->getService();
-            
+
             // Call the real AI service
             $response = $aiService->chat($model, $aiRequest);
 
-            if (!$response || empty($response->content)) {
+            if (! $response || empty($response->content)) {
                 Log::warning('[AI_PROVIDER] Empty response from AI service', [
                     'session_id' => $accountMetadata->sessionId,
                     'model' => $model->name,
                 ]);
+
                 return $this->createFallbackResponse($aiRequest->userMessage);
             }
 
@@ -104,7 +107,7 @@ final class AIProviderService implements AIProviderServiceInterface
      */
     public function canGenerateResponse(WhatsAppAccountMetadataDTO $accountMetadata): bool
     {
-        $canGenerate = $accountMetadata->isAgentActive() && 
+        $canGenerate = $accountMetadata->isAgentActive() &&
                       $accountMetadata->getEffectiveAiModelId() !== null;
 
         Log::debug('[AI_PROVIDER] Checking if can generate response', [
@@ -146,11 +149,13 @@ final class AIProviderService implements AIProviderServiceInterface
     {
         if (empty(trim($aiRequest->userMessage))) {
             Log::warning('[AI_PROVIDER] Empty user message in AI request');
+
             return false;
         }
 
         if (empty(trim($aiRequest->systemPrompt))) {
             Log::warning('[AI_PROVIDER] Empty system prompt in AI request');
+
             return false;
         }
 
@@ -158,6 +163,7 @@ final class AIProviderService implements AIProviderServiceInterface
             Log::warning('[AI_PROVIDER] User message too long', [
                 'length' => strlen($aiRequest->userMessage),
             ]);
+
             return false;
         }
 
@@ -231,7 +237,7 @@ final class AIProviderService implements AIProviderServiceInterface
      */
     private function getAIModel(WhatsAppAccountMetadataDTO $accountMetadata): ?AiModel
     {
-        if (!$accountMetadata->aiModelId) {
+        if (! $accountMetadata->aiModelId) {
             return null;
         }
 

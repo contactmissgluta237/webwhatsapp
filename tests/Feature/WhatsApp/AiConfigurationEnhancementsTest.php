@@ -135,7 +135,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
 
         // Vérifier que le prompt contient des améliorations typiques d'Ollama
         $enhancedLower = strtolower($enhancedPrompt);
-        $hasRelevantTerms = 
+        $hasRelevantTerms =
             str_contains($enhancedLower, 'whatsapp') ||
             str_contains($enhancedLower, 'professionnel') ||
             str_contains($enhancedLower, 'assistant') ||
@@ -145,7 +145,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             str_contains($enhancedLower, 'customer') ||
             str_contains($enhancedLower, 'support') ||
             strlen($enhancedPrompt) > strlen($originalPrompt) * 1.5; // Au moins 50% plus long
-            
+
         $this->assertTrue(
             $hasRelevantTerms,
             'Le prompt amélioré devrait contenir des termes professionnels ou être significativement plus long'

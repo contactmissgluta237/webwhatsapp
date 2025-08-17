@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\WhatsApp\Services;
 
-use App\Services\WhatsApp\MessageBuildService;
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
-use App\DTOs\WhatsApp\ConversationContextDTO;
 use App\DTOs\AI\AiRequestDTO;
+use App\DTOs\WhatsApp\ConversationContextDTO;
+use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\Services\AI\AiServiceInterface;
+use App\Services\WhatsApp\MessageBuildService;
 use Tests\TestCase;
 
 class MessageBuildServiceTest extends TestCase
@@ -17,7 +17,7 @@ class MessageBuildServiceTest extends TestCase
     {
         $aiService = $this->createMock(AiServiceInterface::class);
         $service = new MessageBuildService($aiService);
-        
+
         $this->assertInstanceOf(MessageBuildService::class, $service);
     }
 
@@ -48,10 +48,10 @@ class MessageBuildServiceTest extends TestCase
 
         // Act & Assert - Test that method exists and can be called
         $this->assertTrue(method_exists($service, 'buildAiRequest'));
-        
+
         // Basic structure test
         $result = $service->buildAiRequest($accountMetadata, $conversationContext, $userMessage);
-        
+
         $this->assertInstanceOf(AiRequestDTO::class, $result);
     }
 

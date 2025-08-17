@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Services\WhatsApp;
 
 use App\Contracts\WhatsApp\ResponseFormatterServiceInterface;
-use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Enums\MessageDirection;
 use App\Enums\MessageType;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Arr;
 use Exception;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 final class ResponseFormatterService implements ResponseFormatterServiceInterface
 {
@@ -77,7 +77,7 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
     ): array {
         // Calculate wait time before responding
         $waitTimeSeconds = $accountMetadata->getResponseTimeDelay();
-        
+
         // Calculate typing duration based on response length
         $responseLength = strlen($aiResponse->response);
         $typingDurationSeconds = $this->calculateTypingDuration($responseLength);
@@ -106,9 +106,9 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
         $randomValue = Arr::random(range(70, 130));
         $variation = ($randomValue - 100) / 100;
         $actualTypingSpeed = $baseTypingSpeed * (1 + $variation);
-        
+
         $typingDuration = (int) ceil($messageLength / $actualTypingSpeed);
-        
+
         return max(2, $typingDuration);
     }
 
@@ -122,7 +122,7 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
         Log::debug('[RESPONSE_FORMATTER] Webhook response formatted', [
             'success' => $webhookData['success'],
             'processed' => $webhookData['processed'],
-            'has_response_message' => !empty($webhookData['response_message']),
+            'has_response_message' => ! empty($webhookData['response_message']),
         ]);
 
         return $webhookData;
@@ -184,8 +184,9 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
      */
     public function validateResponse(WhatsAppAIResponseDTO $aiResponse): bool
     {
-        if (!$aiResponse->hasValidResponse()) {
+        if (! $aiResponse->hasValidResponse()) {
             Log::warning('[RESPONSE_FORMATTER] Invalid AI response - empty content');
+
             return false;
         }
 
@@ -193,6 +194,7 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
             Log::warning('[RESPONSE_FORMATTER] AI response too long', [
                 'length' => $aiResponse->getResponseLength(),
             ]);
+
             return false;
         }
 

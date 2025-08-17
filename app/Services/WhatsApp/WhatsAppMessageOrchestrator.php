@@ -13,8 +13,8 @@ use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Models\WhatsAppAccount;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorInterface
 {
@@ -41,11 +41,11 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
 
         try {
             // Step 1: Validate agent is enabled
-            if (!$accountMetadata->isAgentActive()) {
+            if (! $accountMetadata->isAgentActive()) {
                 Log::info('[ORCHESTRATOR] Agent disabled, skipping AI processing', [
                     'session_id' => $accountMetadata->sessionId,
                 ]);
-                
+
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
@@ -77,11 +77,11 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 $aiRequest
             );
 
-            if (!$aiResponse || !$aiResponse->hasValidResponse()) {
+            if (! $aiResponse || ! $aiResponse->hasValidResponse()) {
                 Log::warning('[ORCHESTRATOR] No valid AI response generated', [
                     'session_id' => $accountMetadata->sessionId,
                 ]);
-                
+
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
@@ -144,11 +144,11 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 $aiRequest
             );
 
-            if (!$aiResponse || !$aiResponse->hasValidResponse()) {
+            if (! $aiResponse || ! $aiResponse->hasValidResponse()) {
                 Log::warning('[ORCHESTRATOR] No valid AI response for simulation', [
                     'session_id' => $accountMetadata->sessionId,
                 ]);
-                
+
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
@@ -182,12 +182,12 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
     {
         $account = WhatsAppAccount::where('session_id', $sessionId)->first();
 
-        if (!$account) {
+        if (! $account) {
             Log::warning('WhatsApp account not found for incoming message', [
                 'session_id' => $sessionId,
                 'session_name' => $sessionName,
             ]);
-            
+
             // Retourner un DTO avec agent désactivé pour gérer gracieusement
             return WhatsAppAccountMetadataDTO::createDisabled($sessionId, $sessionName);
         }
@@ -218,7 +218,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
      */
     private function validatePrerequisites(WhatsAppAccountMetadataDTO $accountMetadata): bool
     {
-        return $accountMetadata->isAgentActive() && 
+        return $accountMetadata->isAgentActive() &&
                $this->aiProviderService->canGenerateResponse($accountMetadata);
     }
 }

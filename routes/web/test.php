@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-
 Route::get('/test/notification', App\Http\Controllers\TestNotificationController::class)->middleware('auth');
 
 Route::prefix('test/payment')->name('test.payment.')->group(function () {

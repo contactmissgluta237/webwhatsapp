@@ -8,9 +8,9 @@ use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WhatsApp\Webhook\IncomingMessageRequest;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 final class IncomingMessageController extends Controller
 {

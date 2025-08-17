@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts\WhatsApp;
 
-use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Models\WhatsAppConversation;
 

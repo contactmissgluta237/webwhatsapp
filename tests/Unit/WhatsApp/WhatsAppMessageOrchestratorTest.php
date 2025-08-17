@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\WhatsApp;
 
-use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
+use App\Contracts\WhatsApp\AIProviderServiceInterface;
 use App\Contracts\WhatsApp\ContextPreparationServiceInterface;
 use App\Contracts\WhatsApp\MessageBuildServiceInterface;
-use App\Contracts\WhatsApp\AIProviderServiceInterface;
 use App\Contracts\WhatsApp\ResponseFormatterServiceInterface;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
+use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Tests\TestCase;
 
 class WhatsAppMessageOrchestratorTest extends TestCase
@@ -23,7 +23,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
         $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-        
+
         // Create orchestrator instance
         $orchestrator = new WhatsAppMessageOrchestrator(
             $contextService,
@@ -31,7 +31,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
             $aiProviderService,
             $responseFormatterService
         );
-        
+
         // Assert instance is created correctly
         $this->assertInstanceOf(WhatsAppMessageOrchestrator::class, $orchestrator);
     }
@@ -60,7 +60,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
         $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-        
+
         $orchestrator = new WhatsAppMessageOrchestrator(
             $contextService,
             $messageBuildService,
@@ -96,7 +96,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
         $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-        
+
         $orchestrator = new WhatsAppMessageOrchestrator(
             $contextService,
             $messageBuildService,
@@ -106,7 +106,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
 
         // Act & Assert (test basic structure)
         $this->assertInstanceOf(WhatsAppMessageOrchestrator::class, $orchestrator);
-        
+
         // Method exists check
         $this->assertTrue(method_exists($orchestrator, 'processSimulatedMessage'));
     }
@@ -118,7 +118,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
         $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-        
+
         $orchestrator = new WhatsAppMessageOrchestrator(
             $contextService,
             $messageBuildService,

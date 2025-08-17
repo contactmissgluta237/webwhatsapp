@@ -54,9 +54,9 @@ final class MessageBuildService implements MessageBuildServiceInterface
         ConversationContextDTO $conversationContext
     ): string {
         $basePrompt = $accountMetadata->getEffectivePrompt();
-        
+
         $systemPrompt = $basePrompt;
-        
+
         // Add contextual information if available
         if ($conversationContext->contextualInformation) {
             $systemPrompt .= "\n\nInformations contextuelles importantes :\n";
@@ -68,7 +68,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
         $systemPrompt .= "\n- Réponds en français de manière naturelle et conversationnelle";
         $systemPrompt .= "\n- Reste concis et pertinent";
         $systemPrompt .= "\n- Utilise un ton professionnel mais chaleureux";
-        
+
         // RÈGLES ANTI-HALLUCINATION STRICTES - GÉNÉRALES
         $systemPrompt .= "\n\n⚠️ RÈGLES CRITIQUES - INTERDICTION ABSOLUE D'INVENTER :";
         $systemPrompt .= "\n- ❌ JAMAIS inventer d'informations que tu ne connais pas avec certitude";
@@ -86,7 +86,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
 
         Log::debug('[MESSAGE_BUILD] System prompt built', [
             'prompt_length' => strlen($systemPrompt),
-            'has_contextual_info' => !empty($conversationContext->contextualInformation),
+            'has_contextual_info' => ! empty($conversationContext->contextualInformation),
             'has_conversation_history' => $conversationContext->hasRecentMessages(),
         ]);
 
@@ -113,7 +113,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
         }
 
         // Add metadata if available
-        if (!empty($conversationContext->metadata)) {
+        if (! empty($conversationContext->metadata)) {
             $context['metadata'] = $conversationContext->metadata;
         }
 
@@ -138,14 +138,14 @@ final class MessageBuildService implements MessageBuildServiceInterface
         ];
 
         // Add account-specific settings
-        if (!empty($accountMetadata->settings)) {
+        if (! empty($accountMetadata->settings)) {
             $config['account_settings'] = $accountMetadata->settings;
         }
 
         Log::debug('[MESSAGE_BUILD] AI config built', [
             'model_id' => $config['model_id'],
             'response_time' => $config['response_time'],
-            'has_custom_settings' => !empty($accountMetadata->settings),
+            'has_custom_settings' => ! empty($accountMetadata->settings),
         ]);
 
         return $config;
@@ -158,9 +158,10 @@ final class MessageBuildService implements MessageBuildServiceInterface
     {
         // Basic validation rules
         $trimmedMessage = trim($message);
-        
+
         if (empty($trimmedMessage)) {
             Log::warning('[MESSAGE_BUILD] Empty message content');
+
             return false;
         }
 
@@ -168,6 +169,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
             Log::warning('[MESSAGE_BUILD] Message too long', [
                 'length' => strlen($trimmedMessage),
             ]);
+
             return false;
         }
 
@@ -187,7 +189,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
         ];
 
         // Question detection
-        if (str_contains($message, '?') || 
+        if (str_contains($message, '?') ||
             str_starts_with($message, 'comment') ||
             str_starts_with($message, 'pourquoi') ||
             str_starts_with($message, 'quand') ||
@@ -226,13 +228,13 @@ final class MessageBuildService implements MessageBuildServiceInterface
     {
         // Basic cleanup
         $formatted = trim($message);
-        
+
         // Remove excessive whitespace
         $formatted = preg_replace('/\s+/', ' ', $formatted);
-        
+
         // Remove common noise characters
         $formatted = str_replace(['📱', '💬', '🤖'], '', $formatted);
-        
+
         return $formatted;
     }
 }

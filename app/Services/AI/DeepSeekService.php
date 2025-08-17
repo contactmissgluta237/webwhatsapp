@@ -10,7 +10,6 @@ use App\Models\AiModel;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use App\DTOs\WhatsApp\ConversationContextDTO;
 
 final class DeepSeekService implements AiServiceInterface
 {
@@ -235,13 +234,13 @@ final class DeepSeekService implements AiServiceInterface
         // Add system message with conversation context already included
         $messages[] = [
             'role' => 'system',
-            'content' => $systemPrompt // SystemPrompt contains formatted conversation history
+            'content' => $systemPrompt, // SystemPrompt contains formatted conversation history
         ];
 
         // Add current user message
         $messages[] = [
-            'role' => 'user', 
-            'content' => $userMessage
+            'role' => 'user',
+            'content' => $userMessage,
         ];
 
         return $messages;

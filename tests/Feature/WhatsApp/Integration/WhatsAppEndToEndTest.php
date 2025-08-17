@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp\Integration;
 
-use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Models\WhatsAppAccount;
-use Tests\TestCase;
+use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class WhatsAppEndToEndTest extends TestCase
 {
@@ -18,12 +18,12 @@ class WhatsAppEndToEndTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create test data
         WhatsAppAccount::factory()->create([
             'id' => 1,
             'agent_enabled' => true,
-            'contextual_information' => 'Test business information'
+            'contextual_information' => 'Test business information',
         ]);
     }
 
@@ -31,7 +31,7 @@ class WhatsAppEndToEndTest extends TestCase
     {
         // Arrange - Get orchestrator from container
         $orchestrator = app(WhatsAppMessageOrchestrator::class);
-        
+
         $accountMetadata = new WhatsAppAccountMetadataDTO(
             sessionId: 'test_session',
             sessionName: 'Test Session',
@@ -54,10 +54,10 @@ class WhatsAppEndToEndTest extends TestCase
 
         // Assert
         $this->assertNotNull($result);
-        
+
         // Debug: Let's see what we get
         $this->assertInstanceOf(\App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, $result);
-        
+
         // If agent is enabled, we should get some kind of response (but processing might fail gracefully)
         if ($accountMetadata->isAgentActive()) {
             $this->assertTrue(true); // Basic success assertion - processing happened
@@ -68,7 +68,7 @@ class WhatsAppEndToEndTest extends TestCase
     {
         // Arrange
         $orchestrator = app(WhatsAppMessageOrchestrator::class);
-        
+
         $accountMetadata = new WhatsAppAccountMetadataDTO(
             sessionId: 'test_session',
             sessionName: 'Test Session',
@@ -98,7 +98,7 @@ class WhatsAppEndToEndTest extends TestCase
     {
         // Arrange
         $orchestrator = app(WhatsAppMessageOrchestrator::class);
-        
+
         $accountMetadata = new WhatsAppAccountMetadataDTO(
             sessionId: 'simulation_session',
             sessionName: 'Simulation',
@@ -109,7 +109,7 @@ class WhatsAppEndToEndTest extends TestCase
         $userMessage = 'Bonjour, comment allez-vous ?';
         $context = [
             ['type' => 'user', 'content' => 'Message précédent'],
-            ['type' => 'ai', 'content' => 'Réponse précédente']
+            ['type' => 'ai', 'content' => 'Réponse précédente'],
         ];
 
         // Act
@@ -124,7 +124,7 @@ class WhatsAppEndToEndTest extends TestCase
     {
         // Arrange
         $orchestrator = app(WhatsAppMessageOrchestrator::class);
-        
+
         $accountMetadata = new WhatsAppAccountMetadataDTO(
             sessionId: 'test_session',
             sessionName: 'Test Session',

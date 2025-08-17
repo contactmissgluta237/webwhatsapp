@@ -10,9 +10,9 @@ use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Enums\MessageDirection;
 use App\Enums\MessageType;
+use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
-use App\Models\WhatsAppAccount;
 use Illuminate\Support\Facades\Log;
 
 final class ContextPreparationService implements ContextPreparationServiceInterface
@@ -39,7 +39,7 @@ final class ContextPreparationService implements ContextPreparationServiceInterf
             ->where('chat_id', $chatId)
             ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             $conversation = $this->createNewConversation(
                 $account,
                 $messageRequest
@@ -69,7 +69,7 @@ final class ContextPreparationService implements ContextPreparationServiceInterf
     ): ConversationContextDTO {
         Log::debug('[CONTEXT] Building conversation context', [
             'conversation_id' => $conversation->id,
-            'has_additional_context' => !empty($additionalContext),
+            'has_additional_context' => ! empty($additionalContext),
         ]);
 
         return ConversationContextDTO::fromConversation(
@@ -187,7 +187,7 @@ final class ContextPreparationService implements ContextPreparationServiceInterf
     public function cleanOldContexts(int $daysOld = 30): int
     {
         $cutoffDate = now()->subDays($daysOld);
-        
+
         $deletedCount = WhatsAppMessage::where('created_at', '<', $cutoffDate)
             ->whereHas('conversation', function ($query) {
                 $query->whereDoesntHave('messages', function ($subQuery) {

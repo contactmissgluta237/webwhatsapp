@@ -10,7 +10,7 @@ use App\Models\WhatsAppConversation;
 final class ConversationContextDTO extends BaseDTO
 {
     private const MAX_RECENT_MESSAGES = 25;
-    
+
     public function __construct(
         public int $conversationId,
         public string $chatId,
@@ -44,7 +44,7 @@ final class ConversationContextDTO extends BaseDTO
 
     public function hasRecentMessages(): bool
     {
-        return !empty($this->recentMessages);
+        return ! empty($this->recentMessages);
     }
 
     public function getFormattedHistory(): string
@@ -61,7 +61,7 @@ final class ConversationContextDTO extends BaseDTO
                 $role = $message['direction'] === 'incoming' ? 'User' : 'Assistant';
             } elseif (isset($message['role'])) {
                 // AI format: role field (from simulation)
-                $role = match($message['role']) {
+                $role = match ($message['role']) {
                     'user' => 'User',
                     'assistant' => 'Assistant',
                     'system' => 'System',
@@ -71,7 +71,7 @@ final class ConversationContextDTO extends BaseDTO
                 // Fallback
                 $role = 'User';
             }
-            
+
             $history .= "{$role}: {$message['content']}\n";
         }
 

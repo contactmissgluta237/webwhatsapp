@@ -32,7 +32,7 @@ class WhatsAppAccountMetadataDTOTest extends TestCase
             'id' => 1,
             'agent_enabled' => true,
             'agent_prompt' => 'Test prompt',
-            'contextual_information' => 'Test context'
+            'contextual_information' => 'Test context',
         ]);
 
         $dto = WhatsAppAccountMetadataDTO::fromAccount($account, 'session_123', 'Test Session');
@@ -76,7 +76,7 @@ class WhatsAppAccountMetadataDTOTest extends TestCase
         );
 
         $prompt = $dto->getEffectivePrompt();
-        
+
         $this->assertIsString($prompt);
         $this->assertNotEmpty($prompt);
     }
@@ -84,7 +84,7 @@ class WhatsAppAccountMetadataDTOTest extends TestCase
     public function test_get_effective_prompt_returns_custom_when_set(): void
     {
         $customPrompt = 'Custom prompt for testing';
-        
+
         $dto = new WhatsAppAccountMetadataDTO(
             sessionId: 'session_123',
             sessionName: 'Test Session',

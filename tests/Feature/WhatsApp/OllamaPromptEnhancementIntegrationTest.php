@@ -146,15 +146,15 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
 
         try {
             $result = $this->service->enhancePrompt($this->account, 'Test prompt');
-            
+
             // Si ça ne lance pas d'exception, on vérifie que le résultat est géré
             $this->assertIsString($result);
-            
+
         } catch (\Exception $e) {
             // Si ça lance une exception, c'est acceptable aussi
             $this->assertStringContainsString('Impossible', $e->getMessage());
         }
-        
+
         // L'important est que ça ne crash pas l'application
         $this->assertTrue(true, 'Le service gère gracieusement les erreurs de connexion');
     }

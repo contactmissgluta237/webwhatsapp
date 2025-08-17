@@ -6,9 +6,9 @@ namespace Tests\Feature\WhatsApp;
 
 use App\Enums\MessageDirection;
 use App\Enums\MessageType;
-use App\Models\WhatsAppMessage;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
+use App\Models\WhatsAppMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -70,8 +70,8 @@ class IncomingMessageWebhookTest extends TestCase
 
         // Debug: Afficher la réponse si elle échoue
         if ($response->getStatusCode() !== 200) {
-            dump('Response Status: ' . $response->getStatusCode());
-            dump('Response Content: ' . $response->getContent());
+            dump('Response Status: '.$response->getStatusCode());
+            dump('Response Content: '.$response->getContent());
             dump('Response Headers: ', $response->headers->all());
         }
 

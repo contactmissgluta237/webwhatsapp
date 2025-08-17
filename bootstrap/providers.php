@@ -8,5 +8,5 @@ return [
     App\Providers\CachedServiceProvider::class,
     App\Providers\EventServiceProvider::class,
     App\Providers\WhatsAppServiceProvider::class,
-    App\Providers\MyCoolPayServiceProvider::class
+    App\Providers\MyCoolPayServiceProvider::class,
 ];

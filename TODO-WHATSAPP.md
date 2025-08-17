@@ -1,8 +1,3 @@
-
-- Should be able to get message, and store it in the database 
-- Should be able to reply by aI to a message
-- Check how to set the context
-- Check how to send emoji
 - Check how to send media
 - Check how to send template message
 - Check how to send message with buttons

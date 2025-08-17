@@ -6,7 +6,6 @@ namespace App\Livewire\WhatsApp;
 
 use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
-use App\Enums\ResponseTime;
 use App\Models\WhatsAppAccount;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -234,8 +233,8 @@ final class ConversationSimulator extends Component
         try {
             // Créer les métadonnées du compte avec configuration actuelle
             $accountMetadata = new WhatsAppAccountMetadataDTO(
-                sessionId: 'simulator_' . $this->account->id,
-                sessionName: 'simulator_' . $this->account->session_name,
+                sessionId: 'simulator_'.$this->account->id,
+                sessionName: 'simulator_'.$this->account->session_name,
                 accountId: $this->account->id,
                 agentEnabled: true, // Toujours actif en simulation
                 agentPrompt: $this->currentPrompt,
@@ -303,7 +302,7 @@ final class ConversationSimulator extends Component
         $this->dispatch('message-added');
         $this->showTyping = false;
         $this->isProcessing = false;
-        
+
         Log::info('[SIMULATOR] 📡 Réponse IA ajoutée après simulation timing');
     }
 

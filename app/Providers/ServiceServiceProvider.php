@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+
 class ServiceServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**

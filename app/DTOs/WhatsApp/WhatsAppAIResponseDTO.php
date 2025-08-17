@@ -31,7 +31,7 @@ final class WhatsAppAIResponseDTO extends BaseDTO
 
     public function hasValidResponse(): bool
     {
-        return !empty(trim($this->response));
+        return ! empty(trim($this->response));
     }
 
     public function getResponseLength(): int

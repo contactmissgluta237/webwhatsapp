@@ -22,8 +22,7 @@ class PaymentTestController extends Controller
 
     public function __construct(
         private readonly PaymentService $paymentService
-    ) {
-    }
+    ) {}
 
     public function test(string $action, int $amount): JsonResponse|RedirectResponse
     {
@@ -101,7 +100,7 @@ class PaymentTestController extends Controller
      */
     private function validateTestInputs(string $action, int $amount): ?JsonResponse
     {
-        if (!in_array($action, self::VALID_ACTIONS)) {
+        if (! in_array($action, self::VALID_ACTIONS)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Action must be either "recharge" or "withdraw"',
@@ -151,7 +150,7 @@ class PaymentTestController extends Controller
      */
     private function generateTestReference(string $action): string
     {
-        return 'TEST_' . strtoupper($action) . '_' . uniqid();
+        return 'TEST_'.strtoupper($action).'_'.uniqid();
     }
 
     /**
@@ -211,7 +210,7 @@ class PaymentTestController extends Controller
         return $this->buildErrorResponse(
             $action,
             $amount,
-            'System Error: ' . $e->getMessage(),
+            'System Error: '.$e->getMessage(),
             500
         );
     }

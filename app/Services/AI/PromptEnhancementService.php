@@ -36,7 +36,6 @@ RÈGLES DE RÉPONSE ABSOLUES :
             throw new \Exception('Aucun modèle IA disponible pour l\'amélioration du prompt');
         }
 
-
         Log::info('🚀 Amélioration de prompt demandée', [
             'account_id' => $account->id,
             'model_id' => $model->id,
@@ -44,8 +43,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'original_length' => strlen($originalPrompt),
         ]);
 
-
-        $userMessage = "Voici le prompt à améliorer pour un agent WhatsApp :\n\n" . $originalPrompt;
+        $userMessage = "Voici le prompt à améliorer pour un agent WhatsApp :\n\n".$originalPrompt;
 
         $request = new AiRequestDTO(
             systemPrompt: self::ENHANCEMENT_SYSTEM_PROMPT,
@@ -88,7 +86,6 @@ RÈGLES DE RÉPONSE ABSOLUES :
         }
     }
 
-
     private function tryFallbackModels(
         WhatsAppAccount $account,
         AiRequestDTO $request,
@@ -96,7 +93,6 @@ RÈGLES DE RÉPONSE ABSOLUES :
         array $excludeModelIds = []
     ): string {
         $fallbackModels = $this->getFallbackModels($excludeModelIds);
-
 
         foreach ($fallbackModels as $model) {
             try {
@@ -206,8 +202,8 @@ RÈGLES DE RÉPONSE ABSOLUES :
 
         foreach ($unwantedPrefixes as $prefix) {
             $beforeClean = $cleaned;
-            $cleaned = preg_replace('/^' . preg_quote($prefix, '/') . '\s*:?\s*/i', '', $cleaned);
-            $cleaned = preg_replace('/\*\*' . preg_quote($prefix, '/') . '\s*\*\*\s*:?\s*/i', '', $cleaned);
+            $cleaned = preg_replace('/^'.preg_quote($prefix, '/').'\s*:?\s*/i', '', $cleaned);
+            $cleaned = preg_replace('/\*\*'.preg_quote($prefix, '/').'\s*\*\*\s*:?\s*/i', '', $cleaned);
 
             if ($beforeClean !== $cleaned) {
                 Log::info("🧹 Préfixe supprimé: '{$prefix}'", [

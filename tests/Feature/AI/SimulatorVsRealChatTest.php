@@ -62,13 +62,13 @@ final class SimulatorVsRealChatTest extends TestCase
 
         // Vérifier que les deux réponses ont la même structure
         $this->assertInstanceOf(
-            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, 
-            $realResponse, 
+            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class,
+            $realResponse,
             'La réponse du chat réel doit être un WhatsAppMessageResponseDTO'
         );
         $this->assertInstanceOf(
-            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, 
-            $simulatorResponse, 
+            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class,
+            $simulatorResponse,
             'La réponse du simulateur doit être un WhatsAppMessageResponseDTO'
         );
 
@@ -123,13 +123,13 @@ final class SimulatorVsRealChatTest extends TestCase
         $this->assertNotNull($responseWithoutContext, 'Réponse sans contexte doit être générée');
 
         $this->assertInstanceOf(
-            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, 
-            $responseWithContext, 
+            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class,
+            $responseWithContext,
             'Réponse avec contexte doit être un WhatsAppMessageResponseDTO'
         );
         $this->assertInstanceOf(
-            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, 
-            $responseWithoutContext, 
+            \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class,
+            $responseWithoutContext,
             'Réponse sans contexte doit être un WhatsAppMessageResponseDTO'
         );
 
@@ -172,14 +172,14 @@ final class SimulatorVsRealChatTest extends TestCase
         // En cas d'erreur, l'orchestrateur peut retourner null ou une réponse avec fallback
         if ($response !== null && $response->hasAiResponse) {
             $this->assertInstanceOf(
-                \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, 
-                $response, 
+                \App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class,
+                $response,
                 'Une réponse de fallback doit être un WhatsAppMessageResponseDTO'
             );
             $this->assertNotEmpty($response->aiResponse, 'La réponse de fallback ne doit pas être vide');
             $this->assertStringContainsString('difficultés', $response->aiResponse, 'Le message d\'erreur doit être utilisateur-friendly');
         } else {
-            $this->assertTrue($response === null || !$response->hasAiResponse, 'En cas d\'erreur, null ou pas de réponse IA est accepté');
+            $this->assertTrue($response === null || ! $response->hasAiResponse, 'En cas d\'erreur, null ou pas de réponse IA est accepté');
         }
     }
 }

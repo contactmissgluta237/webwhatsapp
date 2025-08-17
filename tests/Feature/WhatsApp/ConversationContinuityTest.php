@@ -6,9 +6,9 @@ namespace Tests\Feature\WhatsApp;
 
 use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\Enums\ResponseTime;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
-use App\Enums\ResponseTime;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;
@@ -43,7 +43,7 @@ final class ConversationContinuityTest extends TestCase
         $this->runConversationContinuityTest('ollama');
     }
 
-    #[Test]  
+    #[Test]
     public function simulator_maintains_conversation_context_across_multiple_messages_with_deepseek(): void
     {
         $this->runConversationContinuityTest('deepseek');
@@ -78,11 +78,11 @@ final class ConversationContinuityTest extends TestCase
 
         // Messages de test pour simuler une conversation
         $messages = [
-            "Bonjour, comment allez-vous ?",
-            "Pouvez-vous me dire quels sont vos services ?",
-            "Combien ça coûte ?",
-            "Avez-vous des exemples ?",
-            "Comment vous contacter ?"
+            'Bonjour, comment allez-vous ?',
+            'Pouvez-vous me dire quels sont vos services ?',
+            'Combien ça coûte ?',
+            'Avez-vous des exemples ?',
+            'Comment vous contacter ?',
         ];
 
         $conversationContext = [];
@@ -90,15 +90,15 @@ final class ConversationContinuityTest extends TestCase
         foreach ($messages as $index => $userMessage) {
             // Traiter le message via l'orchestrateur
             $response = $orchestrator->processSimulatedMessage(
-                $accountMetadata, 
-                $userMessage, 
+                $accountMetadata,
+                $userMessage,
                 $conversationContext
             );
 
             // Vérifier que la réponse est générée
-            $this->assertNotNull($response, "Message " . ($index + 1) . " doit générer une réponse");
-            $this->assertTrue($response->hasAiResponse, "Message " . ($index + 1) . " doit avoir une réponse IA");
-            $this->assertNotEmpty($response->aiResponse, "Message " . ($index + 1) . " ne doit pas être vide");
+            $this->assertNotNull($response, 'Message '.($index + 1).' doit générer une réponse');
+            $this->assertTrue($response->hasAiResponse, 'Message '.($index + 1).' doit avoir une réponse IA');
+            $this->assertNotEmpty($response->aiResponse, 'Message '.($index + 1).' ne doit pas être vide');
 
             // Ajouter au contexte pour le prochain message
             $conversationContext[] = ['role' => 'user', 'content' => $userMessage];
@@ -107,9 +107,9 @@ final class ConversationContinuityTest extends TestCase
             // Vérifier que le contexte grandit correctement
             $expectedContextSize = ($index + 1) * 2; // 2 messages par échange (user + assistant)
             $this->assertCount(
-                $expectedContextSize, 
-                $conversationContext, 
-                "Le contexte doit contenir " . $expectedContextSize . " messages après " . ($index + 1) . " échanges"
+                $expectedContextSize,
+                $conversationContext,
+                'Le contexte doit contenir '.$expectedContextSize.' messages après '.($index + 1).' échanges'
             );
         }
 
@@ -150,7 +150,7 @@ final class ConversationContinuityTest extends TestCase
         // Test avec contexte vide
         $response = $orchestrator->processSimulatedMessage(
             $accountMetadata,
-            "Premier message sans contexte",
+            'Premier message sans contexte',
             []
         );
 
@@ -189,7 +189,7 @@ final class ConversationContinuityTest extends TestCase
         // Test avec grand contexte
         $response = $orchestrator->processSimulatedMessage(
             $accountMetadata,
-            "Message avec grand contexte",
+            'Message avec grand contexte',
             $largeContext
         );
 
