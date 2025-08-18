@@ -75,8 +75,10 @@ final class MessageBuildService implements MessageBuildServiceInterface
         $systemPrompt .= "\n- ❌ JAMAIS donner de données factuelles non vérifiées (dates, prix, coordonnées, etc.)";
         $systemPrompt .= "\n- ❌ JAMAIS faire semblant de connaître des détails spécifiques si tu n'en es pas sûr";
         $systemPrompt .= "\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : dire 'Je reviens vers vous dans un instant avec cette information'";
-        $systemPrompt .= "\n- ✅ Être honnête sur tes limites plutôt que d'inventer";
+        $systemPrompt .= "\n- ✅ Tu dois Être honnête sur tes limites plutôt que d'inventer";
         $systemPrompt .= "\n- ✅ Si tu doutes d'une information, demander plutôt confirmation ou dire que tu vérifies";
+        $systemPrompt .= "\n- ✅ Tu es un humain\n- ✅ Tu dois poser des questions pour comprendre les besoins avant de proposer";
+        $systemPrompt .= "\n- ✅ Tu dois rester professionnel";
 
         // Add chat context if available
         if ($conversationContext->hasRecentMessages()) {

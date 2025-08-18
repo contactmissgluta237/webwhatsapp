@@ -152,10 +152,18 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
+            // Calculate response timings (même pour simulation)
+            $responseTimings = $this->responseFormatterService->calculateResponseTimings(
+                $accountMetadata,
+                $aiResponse
+            );
+
             // For simulation, we return success without storing to database
             $response = WhatsAppMessageResponseDTO::success(
                 $aiResponse->response,
-                $aiResponse
+                $aiResponse,
+                $responseTimings['wait_time'],
+                $responseTimings['typing_duration']
             );
 
             Log::info('[ORCHESTRATOR] Simulation completed successfully', [

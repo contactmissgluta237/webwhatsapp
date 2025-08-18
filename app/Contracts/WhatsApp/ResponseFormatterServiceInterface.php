@@ -34,4 +34,12 @@ interface ResponseFormatterServiceInterface
         WhatsAppConversation $conversation,
         WhatsAppAIResponseDTO $aiResponse
     ): \App\Models\WhatsAppMessage;
+
+    /**
+     * Calculate response timings (wait time + typing duration)
+     */
+    public function calculateResponseTimings(
+        WhatsAppAccountMetadataDTO $accountMetadata,
+        WhatsAppAIResponseDTO $aiResponse
+    ): array;
 }

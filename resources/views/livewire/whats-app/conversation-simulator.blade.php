@@ -83,12 +83,10 @@
 
 @script
 <script>
-let activeTimeout = null;
+let simulationTimeout = null;
 let typingTimeout = null;
 
-console.log('🎬 ConversationSimulator script chargé');
-
-// Auto-scroll vers le bas
+// Utility functions
 function scrollToBottom() {
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) {
@@ -98,11 +96,10 @@ function scrollToBottom() {
     }
 }
 
-// Nettoyer tous les timeouts
 function clearAllTimeouts() {
-    if (activeTimeout) {
-        clearTimeout(activeTimeout);
-        activeTimeout = null;
+    if (simulationTimeout) {
+        clearTimeout(simulationTimeout);
+        simulationTimeout = null;
     }
     if (typingTimeout) {
         clearTimeout(typingTimeout);
@@ -110,120 +107,48 @@ function clearAllTimeouts() {
     }
 }
 
-// Événements Livewire
-$wire.on('message-added', () => {
-    console.log('📝 Message ajouté - scroll automatique');
-    scrollToBottom();
-});
+// Livewire event handlers
+$wire.on('message-added', scrollToBottom);
 
-$wire.on('conversation-cleared', () => {
-    console.log('🧹 Conversation vidée');
-    clearAllTimeouts();
-});
+$wire.on('conversation-cleared', clearAllTimeouts);
 
-// Programmer la réponse IA avec délai
 $wire.on('schedule-ai-response', (eventData) => {
-    console.log('⏰ Event schedule-ai-response reçu (sans délai préfix):', eventData);
-    
-    // Extraire les données selon le format
-    let userMessage, conversationContext;
-    
-    if (Array.isArray(eventData) && eventData.length > 0) {
-        // Format tableau: [{ userMessage: "...", conversationContext: [...] }]
-        const data = eventData[0];
-        userMessage = data.userMessage;
-        conversationContext = data.conversationContext || [];
-    } else if (eventData.userMessage) {
-        // Format objet direct: { userMessage: "...", conversationContext: [...] }
-        userMessage = eventData.userMessage;
-        conversationContext = eventData.conversationContext || [];
-    } else {
-        console.error('❌ Format d\'event inattendu:', eventData);
-        return;
-    }
+    const data = Array.isArray(eventData) ? eventData[0] : eventData;
+    const { userMessage, conversationContext = [] } = data;
     
     if (!userMessage) {
-        console.error('❌ userMessage manquant:', eventData);
+        console.error('❌ Missing userMessage');
         return;
     }
     
-    // Nettoyer timeouts précédents
     clearAllTimeouts();
     
-    console.log(`📝 Traitement immédiat du message: "${userMessage}" avec ${conversationContext.length} messages de contexte`);
-    
-    // Traitement immédiat - l'orchestrateur calculera les timings
-    $wire.call('processAiResponse', userMessage, conversationContext).then(() => {
-        console.log('✅ processAiResponse appelé - timings gérés par le backend');
-    }).catch(error => {
-        console.error('❌ Erreur processAiResponse:', error);
-    });
+    // Short delay for UI update then generate response
+    setTimeout(() => {
+        $wire.call('generateAiResponse', userMessage, conversationContext);
+    }, 100);
 });
 
-// Nouveau: Gérer la simulation de timing avec les données du backend
 $wire.on('simulate-response-timing', (eventData) => {
-    console.log('⏰ Event simulate-response-timing reçu:', eventData);
+    const data = Array.isArray(eventData) ? eventData[0] : eventData;
+    const { waitTimeSeconds, typingDurationSeconds, responseMessage } = data;
     
-    // Extraire les données selon le format
-    let waitTimeMs, typingDurationMs, responseMessage;
-    
-    if (Array.isArray(eventData) && eventData.length > 0) {
-        const data = eventData[0];
-        waitTimeMs = data.waitTimeMs;
-        typingDurationMs = data.typingDurationMs;
-        responseMessage = data.responseMessage;
-    } else if (eventData.waitTimeMs !== undefined) {
-        waitTimeMs = eventData.waitTimeMs;
-        typingDurationMs = eventData.typingDurationMs;
-        responseMessage = eventData.responseMessage;
-    } else {
-        console.error('❌ Format de timing inattendu:', eventData);
-        return;
-    }
-    
-    console.log(`⏰ Timings UI (divisés par 10): attente=${waitTimeMs}ms, typing=${typingDurationMs}ms`);
-    
-    // Nettoyer timeouts précédents
     clearAllTimeouts();
     
-    // ÉTAPE 1: Attendre le délai de réponse (wait_time)
-    activeTimeout = setTimeout(() => {
-        console.log('💭 Délai de réponse écoulé - Démarrage du typing');
+    // Phase 1: Wait then start typing
+    simulationTimeout = setTimeout(() => {
+        $wire.call('startTyping');
         
-        // Démarrer le typing indicator
-        $wire.call('startTyping').then(() => {
-            console.log('✅ Typing indicator démarré');
-        }).catch(error => {
-            console.error('❌ Erreur startTyping:', error);
-        });
-        
-        // ÉTAPE 2: Typing pendant la durée calculée
+        // Phase 2: Type then show response
         typingTimeout = setTimeout(() => {
-            console.log('🤖 Fin du typing - Affichage de la réponse');
-            
-            // Arrêter le typing et afficher la réponse
-            $wire.call('addAiResponse', responseMessage).then(() => {
-                console.log('✅ Réponse IA affichée après simulation timing');
-            }).catch(error => {
-                console.error('❌ Erreur addAiResponse:', error);
-            });
-            
-        }, typingDurationMs);
+            $wire.call('addAiResponse', responseMessage);
+        }, typingDurationSeconds * 1000);
         
-    }, waitTimeMs);
-    
-    console.log('✅ Simulation timing programmée');
+    }, waitTimeSeconds * 1000);
 });
 
-// Scroll automatique après mise à jour
-document.addEventListener('livewire:updated', () => {
-    scrollToBottom();
-});
-
-// Nettoyer les timeouts
-document.addEventListener('livewire:navigating', () => {
-    console.log('🧹 Nettoyage des timeouts');
-    clearAllTimeouts();
-});
+// Auto-scroll and cleanup
+document.addEventListener('livewire:updated', scrollToBottom);
+document.addEventListener('livewire:navigating', clearAllTimeouts);
 </script>
 @endscript

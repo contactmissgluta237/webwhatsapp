@@ -71,7 +71,7 @@ final class ResponseFormatterService implements ResponseFormatterServiceInterfac
      * Calculate response timings (wait time + typing duration)
      * Does NOT apply delays - just calculates them for NodeJS/Livewire
      */
-    private function calculateResponseTimings(
+    public function calculateResponseTimings(
         WhatsAppAccountMetadataDTO $accountMetadata,
         WhatsAppAIResponseDTO $aiResponse
     ): array {

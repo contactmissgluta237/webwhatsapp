@@ -51,9 +51,12 @@ final class ResponseTime extends Enum
 
     private function getRandomDelayInSeconds(): int
     {
-        // Pour les tests : entre 5 et 10 secondes (plus rapide pour débugger)
-        $possibleDelays = range(10, 30); // en cas réel, entre 1min et 5min
-
+        $config = config('whatsapp.response_delays', [
+            'min' => 45,
+            'max' => 180
+        ]);
+        
+        $possibleDelays = range($config['min'], $config['max']);
         return $possibleDelays[array_rand($possibleDelays)];
     }
 

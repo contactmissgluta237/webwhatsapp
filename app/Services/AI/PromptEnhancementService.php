@@ -14,19 +14,19 @@ class PromptEnhancementService implements PromptEnhancementInterface
 {
     private const ENHANCEMENT_SYSTEM_PROMPT = "Tu es un expert en amélioration de prompts pour agents conversationnels WhatsApp.
 
-Améliore le prompt fourni en respectant ces règles :
-- Conserve le sens et l'intention originale
-- Améliore la clarité et la structure
-- Adapte le ton pour WhatsApp (naturel et direct)
-- Limite à 200 mots maximum
-- Assure-toi que l'agent se comporte comme un humain (jamais mentionner qu'il est une IA)
+    Améliore le prompt fourni en respectant ces règles :
+    - Conserve le sens et l'intention originale
+    - Améliore la clarité et la structure
+    - Adapte le ton pour WhatsApp (naturel et direct)
+    - Limite à 200 mots maximum
+    - Assure-toi que l'agent se comporte comme un humain (jamais mentionner qu'il est une IA)
 
-RÈGLES DE RÉPONSE ABSOLUES :
-- Réponds UNIQUEMENT avec le texte du prompt amélioré
-- AUCUN titre, AUCUN préfixe, AUCUNE introduction
-- AUCUN formatage markdown, AUCUNE étoile, AUCUN emoji
-- AUCUNE section (Rôle:, Comportement:, etc.)
-- Juste le prompt directement utilisable";
+    RÈGLES DE RÉPONSE ABSOLUES :
+    - Réponds UNIQUEMENT avec le texte du prompt amélioré
+    - AUCUN titre, AUCUN préfixe, AUCUNE introduction
+    - AUCUN formatage markdown, AUCUNE étoile, AUCUN emoji
+    - AUCUNE section (Rôle:, Comportement:, etc.)
+    - Juste le prompt directement utilisable";
 
     public function enhancePrompt(WhatsAppAccount $account, string $originalPrompt): string
     {
