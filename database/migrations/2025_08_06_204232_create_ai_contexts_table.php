@@ -18,7 +18,6 @@ return new class () extends Migration {
             // ⚠️ SOLUTION: Supprime le default() pour les colonnes TEXT
             $table->text('fallback_message')->nullable();
 
-            $table->boolean('auto_reply_enabled')->default(true);
             $table->integer('response_delay_seconds')->default(2);
             $table->timestamps();
         });

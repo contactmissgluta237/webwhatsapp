@@ -77,13 +77,13 @@ return [
     'overage' => [
         // Permettre les dépassements payants automatiques
         'enabled' => env('OVERAGE_ENABLED', true),
-        
+
         // Coût par message de dépassement (même tarif que base)
         'cost_per_message_xaf' => env('OVERAGE_COST_XAF', 10),
-        
+
         // Minimum de solde à garder dans le wallet (sécurité)
         'minimum_wallet_balance' => env('MINIMUM_WALLET_BALANCE', 0),
-        
+
         // Maximum de messages de dépassement autorisés par cycle
         'max_overage_messages_per_cycle' => env('MAX_OVERAGE_MESSAGES', 1000),
     ],

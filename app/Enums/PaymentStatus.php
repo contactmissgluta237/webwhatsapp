@@ -11,6 +11,8 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self COMPLETED()
  * @method static self FAILED()
  * @method static self CANCELLED()
+ * @method static self INITIATED()
+ * @method static self PAID()
  */
 class PaymentStatus extends Enum
 {
@@ -21,6 +23,8 @@ class PaymentStatus extends Enum
             'COMPLETED' => 'completed',
             'FAILED' => 'failed',
             'CANCELLED' => 'cancelled',
+            'INITIATED' => 'initiated',
+            'PAID' => 'paid',
         ];
     }
 }

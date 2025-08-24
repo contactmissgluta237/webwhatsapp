@@ -3,9 +3,9 @@
  * Utilise une session pour envoyer des produits à l'autre
  */
 
-const SessionManager = require('./src/managers/SessionManager');
-const ProductMessagingTester = require('./src/test/testProductMessaging');
-const TestData = require('./src/test/testData');
+const SessionManager = require('../src/managers/SessionManager');
+const ProductMessagingTester = require('../src/test/testProductMessaging');
+const TestData = require('../src/test/testData');
 
 async function testProductFlow() {
     try {

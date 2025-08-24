@@ -19,7 +19,6 @@ use Illuminate\Support\Carbon;
  * @property ResponseTone $response_tone
  * @property string|null $greeting_message
  * @property string|null $fallback_message
- * @property bool $auto_reply_enabled
  * @property int $response_delay_seconds
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -42,7 +41,6 @@ final class AiContext extends Model
         'response_tone',
         'greeting_message',
         'fallback_message',
-        'auto_reply_enabled',
         'response_delay_seconds',
     ];
 
@@ -53,7 +51,6 @@ final class AiContext extends Model
      */
     protected $casts = [
         'response_tone' => ResponseTone::class,
-        'auto_reply_enabled' => 'boolean',
         'response_delay_seconds' => 'integer',
     ];
 
@@ -64,15 +61,6 @@ final class AiContext extends Model
     public function whatsappAccount(): BelongsTo
     {
         return $this->belongsTo(WhatsAppAccount::class);
-    }
-
-    // ================================================================================
-    // PUBLIC METHODS
-    // ================================================================================
-
-    public function isAutoReplyEnabled(): bool
-    {
-        return $this->auto_reply_enabled;
     }
 
     public function getFullPrompt(): string

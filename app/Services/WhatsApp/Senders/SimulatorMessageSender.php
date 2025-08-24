@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp\Senders;
 
-use App\DTOs\WhatsApp\EnrichedMessageResponseDTO;
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use Carbon\Carbon;
@@ -23,6 +22,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
     {
         if (! $response->processed || $response->processingError) {
             $this->sendErrorMessage($response->processingError ?? 'Erreur inconnue');
+
             return;
         }
 

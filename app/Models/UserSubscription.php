@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,7 +33,7 @@ use Illuminate\Support\Carbon;
  * == Relationships ==
  * @property-read User $user
  * @property-read Package $package
- * @property-read \Illuminate\Database\Eloquent\Collection|UsageSubscriptionTracker[] $usageTrackers
+ * @property-read \Illuminate\Database\Eloquent\Collection|WhatsAppAccountUsage[] $accountUsages
  */
 class UserSubscription extends Model
 {
@@ -45,6 +46,10 @@ class UserSubscription extends Model
         'ends_at',
         'next_billing_date',
         'status',
+        'messages_limit',
+        'context_limit',
+        'accounts_limit',
+        'products_limit',
         'amount_paid',
         'payment_method',
         'transaction_id',
@@ -76,9 +81,9 @@ class UserSubscription extends Model
         return $this->belongsTo(Package::class);
     }
 
-    public function usageTrackers(): HasMany
+    public function accountUsages(): HasMany
     {
-        return $this->hasMany(UsageSubscriptionTracker::class);
+        return $this->hasMany(WhatsAppAccountUsage::class);
     }
 
     // ================================================================================
@@ -87,7 +92,7 @@ class UserSubscription extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')->where('ends_at', '>', now());
+        return $query->where('status', SubscriptionStatus::ACTIVE()->value)->where('ends_at', '>', now());
     }
 
     public function scopeExpired($query)
@@ -98,8 +103,8 @@ class UserSubscription extends Model
     public function scopeCurrent($query)
     {
         return $query->where('starts_at', '<=', now())
-                    ->where('ends_at', '>', now())
-                    ->where('status', 'active');
+            ->where('ends_at', '>', now())
+            ->where('status', SubscriptionStatus::ACTIVE()->value);
     }
 
     // ================================================================================
@@ -108,8 +113,8 @@ class UserSubscription extends Model
 
     public function isActive(): bool
     {
-        return $this->status === 'active' && 
-               $this->ends_at > now() && 
+        return $this->status === SubscriptionStatus::ACTIVE()->value &&
+               $this->ends_at > now() &&
                $this->starts_at <= now();
     }
 
@@ -120,7 +125,7 @@ class UserSubscription extends Model
 
     public function isCancelled(): bool
     {
-        return $this->status === 'cancelled';
+        return $this->status === SubscriptionStatus::CANCELLED()->value;
     }
 
     public function isSuspended(): bool
@@ -174,9 +179,9 @@ class UserSubscription extends Model
     public function canSubscribeToTrial(): bool
     {
         // Vérifier si l'user a déjà eu un trial (incluant celui-ci)
-        return !$this->user
+        return ! $this->user
             ->subscriptions()
-            ->whereHas('package', fn($q) => $q->where('name', 'trial'))
+            ->whereHas('package', fn ($q) => $q->where('name', 'trial'))
             ->exists();
     }
 
@@ -189,41 +194,53 @@ class UserSubscription extends Model
     // USAGE TRACKING
     // ================================================================================
 
-    public function getCurrentCycleTracker(): ?UsageSubscriptionTracker
+    public function getTotalMessagesUsed(): int
     {
-        return $this->usageTrackers()
-            ->currentCycle()
-            ->first();
+        return $this->accountUsages()->sum('messages_used');
     }
 
-    public function getOrCreateCurrentCycleTracker(): UsageSubscriptionTracker
+    public function getTotalOverageMessagesUsed(): int
     {
-        $cycleStart = $this->starts_at->toDateString();
-        $cycleEnd = $this->starts_at->copy()->addMonth()->toDateString();
-        
-        return UsageSubscriptionTracker::updateOrCreate(
-            [
-                'user_subscription_id' => $this->id,
-                'cycle_start_date' => $cycleStart,
-            ],
-            [
-                'cycle_end_date' => $cycleEnd,
-                'messages_remaining' => $this->package->messages_limit,
-                'last_reset_at' => now(),
-            ]
-        );
-    }
-
-    public function hasRemainingMessages(): bool
-    {
-        $tracker = $this->getCurrentCycleTracker();
-        return $tracker ? $tracker->messages_remaining > 0 : true;
+        return $this->accountUsages()->sum('overage_messages_used');
     }
 
     public function getRemainingMessages(): int
     {
-        $tracker = $this->getCurrentCycleTracker();
-        return $tracker ? $tracker->messages_remaining : $this->package->messages_limit;
+        return max(0, $this->messages_limit - $this->getTotalMessagesUsed());
+    }
+
+    public function hasRemainingMessages(): bool
+    {
+        return $this->getRemainingMessages() > 0;
+    }
+
+    public function canAffordMessage(int $cost = 1): bool
+    {
+        return $this->getRemainingMessages() >= $cost || $this->canAffordOverage($cost);
+    }
+
+    public function canAffordOverage(int $cost = 1): bool
+    {
+        if (! config('pricing.overage.enabled', true)) {
+            return false;
+        }
+
+        $user = $this->user;
+        $wallet = $user->wallet;
+
+        if (! $wallet) {
+            return false;
+        }
+
+        $overageCost = $cost * config('pricing.overage.cost_per_message_xaf', 10);
+        $minimumBalance = config('pricing.overage.minimum_wallet_balance', 0);
+
+        return ($wallet->balance - $overageCost) >= $minimumBalance;
+    }
+
+    public function getUsageForAccount(WhatsAppAccount $account): WhatsAppAccountUsage
+    {
+        return WhatsAppAccountUsage::getOrCreateForAccount($this, $account);
     }
 
     // ================================================================================
@@ -236,21 +253,21 @@ class UserSubscription extends Model
             $this->update([
                 'ends_at' => $newEndDate ?? $this->ends_at->addMonth(),
                 'next_billing_date' => $newEndDate ? $newEndDate->addMonth() : $this->next_billing_date?->addMonth(),
-                'status' => 'active',
+                'status' => SubscriptionStatus::ACTIVE()->value,
             ]);
         }
     }
 
-    public function cancel(string $reason = null): void
+    public function cancel(?string $reason = null): void
     {
         $this->update([
-            'status' => 'cancelled',
+            'status' => SubscriptionStatus::CANCELLED()->value,
             'cancelled_at' => now(),
             'cancellation_reason' => $reason,
         ]);
     }
 
-    public function suspend(string $reason = null): void
+    public function suspend(?string $reason = null): void
     {
         $this->update([
             'status' => 'suspended',
@@ -262,7 +279,7 @@ class UserSubscription extends Model
     {
         if ($this->ends_at > now()) {
             $this->update([
-                'status' => 'active',
+                'status' => SubscriptionStatus::ACTIVE()->value,
                 'cancellation_reason' => null,
             ]);
         }
@@ -275,8 +292,8 @@ class UserSubscription extends Model
     public static function createTrialForUser(User $user): self
     {
         $trialPackage = Package::getTrialPackage();
-        
-        if (!$trialPackage) {
+
+        if (! $trialPackage) {
             throw new \Exception('Trial package not found');
         }
 
@@ -285,7 +302,11 @@ class UserSubscription extends Model
             'package_id' => $trialPackage->id,
             'starts_at' => now(),
             'ends_at' => now()->addDays($trialPackage->duration_days ?? 7),
-            'status' => 'active',
+            'status' => SubscriptionStatus::ACTIVE()->value,
+            'messages_limit' => $trialPackage->messages_limit,
+            'context_limit' => $trialPackage->context_limit,
+            'accounts_limit' => $trialPackage->accounts_limit,
+            'products_limit' => $trialPackage->products_limit,
             'activated_at' => now(),
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\PaymentStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,15 @@ class MyCoolPayWebhookRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', 'string', Rule::in(['success', 'failed', 'cancelled', 'pending', 'initiated', 'paid', 'error'])],
+            'status' => ['required', 'string', Rule::in([
+                PaymentStatus::COMPLETED()->value, // 'success' maps to 'completed'
+                PaymentStatus::FAILED()->value,
+                PaymentStatus::CANCELLED()->value,
+                PaymentStatus::PENDING()->value,
+                PaymentStatus::INITIATED()->value,
+                PaymentStatus::PAID()->value,
+                'error', // Keep 'error' as is - no mapping in PaymentStatus
+            ])],
             'transaction_ref' => ['required', 'string'],
             'app_transaction_ref' => ['required', 'string'],
             'transaction_amount' => ['required', 'numeric', 'min:0'],

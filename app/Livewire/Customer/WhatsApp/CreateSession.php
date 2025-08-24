@@ -250,6 +250,6 @@ final class CreateSession extends Component
 
     public function render()
     {
-        return view('livewire.customer.whatsapp.create-session');
+        return view('livewire.customer.whats-app.create-session');
     }
 }

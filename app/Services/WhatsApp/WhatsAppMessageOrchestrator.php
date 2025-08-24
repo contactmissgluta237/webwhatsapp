@@ -18,13 +18,13 @@ use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
-final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorInterface
+final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorInterface
 {
     public function __construct(
-        private readonly MessageBuildServiceInterface $messageBuildService,
-        private readonly AIProviderServiceInterface $aiProviderService,
-        private readonly AIResponseParserHelper $aiResponseParser,
-        private readonly ResponseTimingHelper $responseTimingHelper,
+        private MessageBuildServiceInterface $messageBuildService,
+        private AIProviderServiceInterface $aiProviderService,
+        private AIResponseParserHelper $aiResponseParser,
+        private ResponseTimingHelper $responseTimingHelper,
     ) {}
 
     public function processMessage(
@@ -65,14 +65,14 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
                 $messageRequest->from
             );
 
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             Log::error('[ORCHESTRATOR] Error processing message', [
                 'session_id' => $account->session_id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
             ]);
 
-            return WhatsAppMessageResponseDTO::error("Erreur traitement message: {$e->getMessage()}");
+            return WhatsAppMessageResponseDTO::error('Erreur traitement message: '.$exception->getMessage());
         }
     }
 
@@ -113,7 +113,7 @@ final class WhatsAppMessageOrchestrator implements WhatsAppMessageOrchestratorIn
      */
     private function enrichProductsData(array $productIds): array
     {
-        if (empty($productIds)) {
+        if ($productIds === []) {
             return [];
         }
 

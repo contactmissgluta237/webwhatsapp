@@ -108,13 +108,13 @@
                     <h4 class="mb-0">{{ __('Configuration de votre agent') }}</h4>
                 </div>
 
-                @livewire('whats-app.components.session-name-input')
+                @livewire('customer.whats-app.components.session-name-input')
             </div>
         </div>
     </div>
 
     {{-- Section QR Code (affiché quand généré) --}}
-            @livewire('customer.whatsapp.create-session')
+            @livewire('customer.whats-app.create-session')
 @endsection
 
 @push('scripts')

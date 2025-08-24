@@ -358,8 +358,8 @@ class User extends Authenticatable implements HasMedia
 
     public function hasTrialAvailable(): bool
     {
-        return !$this->subscriptions()
-            ->whereHas('package', fn($q) => $q->where('name', 'trial'))
+        return ! $this->subscriptions()
+            ->whereHas('package', fn ($q) => $q->where('name', 'trial'))
             ->exists();
     }
 
@@ -371,18 +371,22 @@ class User extends Authenticatable implements HasMedia
     public function getRemainingMessages(): int
     {
         $subscription = $this->activeSubscription;
+
         return $subscription ? $subscription->getRemainingMessages() : 0;
     }
 
     public function hasRemainingMessages(): bool
     {
         $subscription = $this->activeSubscription;
+
         return $subscription ? $subscription->hasRemainingMessages() : false;
     }
 
-    public function getCurrentUsageTracker(): ?UsageSubscriptionTracker
+    public function getCurrentUsageTracker(): ?WhatsAppAccountUsage
     {
-        return $this->activeSubscription?->getCurrentCycleTracker();
+        // Cette méthode pourrait être obsolète avec la nouvelle architecture
+        // Retourner null car on track maintenant par compte WhatsApp
+        return null;
     }
 
     // ================================================================================

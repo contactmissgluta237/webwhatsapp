@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Package;
-use App\Models\UsageSubscriptionTracker;
 use App\Models\User;
 use App\Models\UserSubscription;
+use App\Models\WhatsAppAccount;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -25,10 +25,11 @@ class PackageSubscriptionCycleTest extends TestCase
     }
 
     #[Test]
-    public function it_creates_tracker_with_correct_cycle_dates_based_on_subscription_start()
+    public function it_creates_account_usage_when_subscription_starts()
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
+        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Abonnement qui commence le 15 janvier
         Carbon::setTestNow('2025-01-15 10:00:00');
@@ -39,20 +40,27 @@ class PackageSubscriptionCycleTest extends TestCase
             'starts_at' => now(),
             'ends_at' => now()->addMonth(),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
 
-        $tracker = $subscription->getOrCreateCurrentCycleTracker();
+        $accountUsage = $subscription->getUsageForAccount($account);
 
-        // Le cycle doit commencer le 15 janvier et finir le 15 février
-        $this->assertEquals('2025-01-15', $tracker->cycle_start_date->format('Y-m-d'));
-        $this->assertEquals('2025-02-15', $tracker->cycle_end_date->format('Y-m-d'));
+        // L'usage doit être initialisé à zéro
+        $this->assertEquals(0, $accountUsage->messages_used);
+        $this->assertEquals(0, $accountUsage->overage_messages_used);
+        $this->assertEquals($subscription->id, $accountUsage->user_subscription_id);
+        $this->assertEquals($account->id, $accountUsage->whats_app_account_id);
     }
 
     #[Test]
-    public function it_finds_current_cycle_tracker_correctly()
+    public function it_tracks_usage_correctly_for_account()
     {
         $user = User::factory()->create();
         $package = Package::findByName('starter');
+        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Abonnement qui commence le 10 janvier
         $subscription = UserSubscription::create([
@@ -61,24 +69,29 @@ class PackageSubscriptionCycleTest extends TestCase
             'starts_at' => Carbon::parse('2025-01-10'),
             'ends_at' => Carbon::parse('2025-02-10'),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
 
-        // Créer tracker pour le cycle janvier
-        $tracker = $subscription->getOrCreateCurrentCycleTracker();
+        // Créer usage pour ce compte
+        $accountUsage = $subscription->getUsageForAccount($account);
 
-        // Test : on est le 25 janvier (dans le cycle)
+        // Test : on est le 25 janvier
         Carbon::setTestNow('2025-01-25 15:30:00');
 
-        $currentTracker = $subscription->getCurrentCycleTracker();
-        $this->assertNotNull($currentTracker);
-        $this->assertEquals($tracker->id, $currentTracker->id);
+        $currentUsage = $subscription->getUsageForAccount($account);
+        $this->assertNotNull($currentUsage);
+        $this->assertEquals($accountUsage->id, $currentUsage->id);
     }
 
     #[Test]
-    public function it_does_not_find_current_cycle_tracker_when_outside_cycle()
+    public function it_tracks_subscription_expiration_correctly()
     {
         $user = User::factory()->create();
         $package = Package::findByName('starter');
+        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Abonnement qui commence le 10 janvier
         $subscription = UserSubscription::create([
@@ -87,23 +100,28 @@ class PackageSubscriptionCycleTest extends TestCase
             'starts_at' => Carbon::parse('2025-01-10'),
             'ends_at' => Carbon::parse('2025-02-10'),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
 
-        // Créer tracker pour le cycle janvier (10 jan - 10 fév)
-        $subscription->getOrCreateCurrentCycleTracker();
+        // Créer usage pour ce compte (10 jan - 10 fév)
+        $subscription->getUsageForAccount($account);
 
-        // Test : on est le 15 février (après le cycle)
+        // Test : on est le 15 février (après l'expiration)
         Carbon::setTestNow('2025-02-15 10:00:00');
 
-        $currentTracker = $subscription->getCurrentCycleTracker();
-        $this->assertNull($currentTracker);
+        $this->assertTrue($subscription->isExpired());
+        $this->assertFalse($subscription->isActive());
     }
 
     #[Test]
-    public function it_can_reset_expired_cycles_and_create_new_ones()
+    public function it_can_renew_subscription_and_maintain_usage_tracking()
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
+        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Abonnement qui commence le 5 janvier
         $subscription = UserSubscription::create([
@@ -112,44 +130,44 @@ class PackageSubscriptionCycleTest extends TestCase
             'starts_at' => Carbon::parse('2025-01-05'),
             'ends_at' => Carbon::parse('2025-02-05'),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
 
-        // Créer tracker pour le premier cycle (5 jan - 5 fév)
-        $firstTracker = $subscription->getOrCreateCurrentCycleTracker();
-        $firstTracker->incrementUsage(50); // Utiliser quelques messages
+        // Créer usage et utiliser quelques messages
+        $accountUsage = $subscription->getUsageForAccount($account);
+        $accountUsage->incrementUsage(50);
 
-        // Simuler qu'on est le 10 février (cycle expiré le 5 février)
+        // Simuler qu'on est le 10 février (après expiration le 5 février)
         Carbon::setTestNow('2025-02-10 10:00:00');
 
-        // Vérifier qu'il y a bien un tracker expiré
-        $expiredTrackers = UsageSubscriptionTracker::where('cycle_end_date', '<=', now()->toDateString())->get();
-        $this->assertCount(1, $expiredTrackers);
+        // Vérifier que la subscription est expirée
+        $this->assertTrue($subscription->isExpired());
 
-        // Reset les cycles expirés (doit créer un nouveau cycle 5 fév - 5 mars)
-        $resetCount = UsageSubscriptionTracker::resetExpiredCycles();
+        // Renouveler la subscription
+        $subscription->renew(Carbon::parse('2025-03-05'));
 
-        $this->assertEquals(1, $resetCount);
+        $subscription->refresh();
+        $this->assertTrue($subscription->isActive());
+        $this->assertEquals('2025-03-05', $subscription->ends_at->format('Y-m-d'));
 
-        // Debug: voir tous les trackers créés
-        $allTrackers = UsageSubscriptionTracker::where('user_subscription_id', $subscription->id)->get();
-        $this->assertTrue($allTrackers->count() >= 2, 'Should have at least 2 trackers after reset');
+        // L'usage précédent est conservé
+        $this->assertEquals(50, $accountUsage->messages_used);
 
-        // Vérifier qu'un nouveau tracker a été créé avec la bonne date de début
-        $newTracker = UsageSubscriptionTracker::where('user_subscription_id', $subscription->id)
-            ->whereDate('cycle_start_date', '2025-02-05')
-            ->first();
-
-        $this->assertNotNull($newTracker, 'New tracker should exist with cycle_start_date = 2025-02-05');
-        $this->assertEquals('2025-03-05', $newTracker->cycle_end_date->format('Y-m-d'));
-        $this->assertEquals(0, $newTracker->messages_used);
-        $this->assertEquals($package->messages_limit, $newTracker->messages_remaining);
+        // Peut continuer à utiliser le même account usage
+        $sameAccountUsage = $subscription->getUsageForAccount($account);
+        $this->assertEquals($accountUsage->id, $sameAccountUsage->id);
     }
 
     #[Test]
-    public function it_calculates_daily_average_correctly_for_cycle()
+    public function it_calculates_usage_analytics_correctly_for_subscription()
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
+        $account1 = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
+        $account2 = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
 
         // Abonnement qui commence le 1er janvier
         $subscription = UserSubscription::create([
@@ -158,21 +176,30 @@ class PackageSubscriptionCycleTest extends TestCase
             'starts_at' => Carbon::parse('2025-01-01'),
             'ends_at' => Carbon::parse('2025-02-01'),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
 
-        $tracker = $subscription->getOrCreateCurrentCycleTracker();
-        $tracker->update(['messages_used' => 100]); // 100 messages utilisés
+        // Usage réparti sur plusieurs comptes
+        $usage1 = $subscription->getUsageForAccount($account1);
+        $usage2 = $subscription->getUsageForAccount($account2);
 
-        // Test : on est le 10 janvier (10 jours écoulés incluant le 1er et 10, 100 messages)
+        $usage1->update(['messages_used' => 60, 'overage_messages_used' => 10]);
+        $usage2->update(['messages_used' => 40, 'overage_messages_used' => 5]);
+
+        // Test : on est le 10 janvier
         Carbon::setTestNow('2025-01-10 12:00:00');
 
-        $dailyAverage = $tracker->getDailyAverage();
-        $this->assertEquals(100 / 10, $dailyAverage, '', 0.01);
+        // Vérification des totaux
+        $this->assertEquals(100, $subscription->getTotalMessagesUsed());
+        $this->assertEquals(15, $subscription->getTotalOverageMessagesUsed());
+        $this->assertEquals($package->messages_limit - 100, $subscription->getRemainingMessages());
 
-        // Test de projection pour tout le cycle (31 jours)
-        $projected = $tracker->getProjectedUsage();
-        $expected = ceil((100 / 10) * 31);
-        $this->assertEquals($expected, $projected);
+        // Analytics par compte
+        $this->assertEquals(70, $usage1->getTotalMessages()); // 60 + 10
+        $this->assertEquals(45, $usage2->getTotalMessages()); // 40 + 5
     }
 
     protected function tearDown(): void

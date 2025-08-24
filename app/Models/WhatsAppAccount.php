@@ -135,6 +135,11 @@ final class WhatsAppAccount extends Model implements HasMedia
         );
     }
 
+    public function getAiModel()
+    {
+        return $this->ai_model_id ? AiModel::find($this->ai_model_id) : null;
+    }
+
     // MEDIA COLLECTIONS
     // ================================================================================
 

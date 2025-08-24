@@ -25,12 +25,14 @@ class RegisterForm extends Component
     public $country_id = null;
     public $phone_number_only = '';
     public $full_phone_number = '';
+    public $locale = 'fr';
 
     protected $listeners = ['phoneUpdated'];
 
     public function mount()
     {
         $this->country_id = 1;
+        $this->locale = config('app.locale', 'fr');
 
         $this->referral_code = request()->get('referral_code', '');
         $this->referral_code_readonly = ! empty($this->referral_code);
@@ -76,9 +78,14 @@ class RegisterForm extends Component
                 'country_id' => $this->country_id,
                 'referral_code' => $this->referral_code ?: null,
                 'terms' => $this->terms,
+                'locale' => $this->locale,
             ]);
 
             $customer = $customerService->create($dto);
+
+            // Set session and application locale for new user
+            session()->put('locale', $this->locale);
+            app()->setLocale($this->locale);
 
             return $this->handleSuccessfulRegistration($customer->user);
         } catch (\Exception $e) {
@@ -106,7 +113,7 @@ class RegisterForm extends Component
 
     private function handleSuccessfulRegistration($user)
     {
-        session()->flash('status', 'Votre compte a été créé. Veuillez vérifier votre email pour le code de confirmation.');
+        session()->flash('status', __('Your account has been created. Please check your email for the confirmation code.'));
 
         return redirect()->route('account.activate', [
             'identifier' => $user->email,
@@ -115,7 +122,7 @@ class RegisterForm extends Component
 
     private function handleRegistrationException(\Exception $e): void
     {
-        $this->error = 'Une erreur est survenue lors de la création du compte. Veuillez réessayer.';
+        $this->error = __('An error occurred while creating the account. Please try again.');
         $this->password = '';
         $this->password_confirmation = '';
     }

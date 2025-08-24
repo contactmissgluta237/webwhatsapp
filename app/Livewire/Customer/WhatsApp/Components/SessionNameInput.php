@@ -90,6 +90,6 @@ final class SessionNameInput extends Component
 
     public function render()
     {
-        return view('livewire.customer.whatsapp.components.session-name-input');
+        return view('livewire.customer.whats-app.components.session-name-input');
     }
 }

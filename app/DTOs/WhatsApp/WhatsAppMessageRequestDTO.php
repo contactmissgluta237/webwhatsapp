@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\DTOs\WhatsApp;
 
 use App\DTOs\BaseDTO;
+use App\Enums\WhatsAppSuffix;
 
 final class WhatsAppMessageRequestDTO extends BaseDTO
 {
@@ -40,7 +41,7 @@ final class WhatsAppMessageRequestDTO extends BaseDTO
 
     public function getContactPhone(): string
     {
-        return str_replace(['@c.us', '@g.us'], '', $this->from);
+        return WhatsAppSuffix::cleanNumber($this->from);
     }
 
     public function isFromGroup(): bool

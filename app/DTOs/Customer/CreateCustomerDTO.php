@@ -16,6 +16,7 @@ class CreateCustomerDTO extends BaseDTO
         public ?int $country_id = null,
         public ?string $referral_code = null,
         public bool $terms = false,
+        public string $locale = 'fr',
     ) {}
 
     public function toArray(): array

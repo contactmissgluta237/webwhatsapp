@@ -9,15 +9,17 @@ use Illuminate\Support\Collection;
 
 class MessageCostHelper
 {
+    /**
+     * @param  Collection<UserProduct>  $products
+     */
     public static function calculateMessageCost(Collection $products): int
     {
         $baseCost = 1; // 1 message de base
         $mediaCost = 0;
 
         foreach ($products as $product) {
-            if (method_exists($product, 'getMediaCollection')) {
-                /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
-                $mediaCollection = $product->getMediaCollection('medias');
+            if (method_exists($product, 'getMedia')) {
+                $mediaCollection = $product->getMedia('medias');
                 $mediaCost += $mediaCollection->count();
             }
         }
@@ -28,6 +30,7 @@ class MessageCostHelper
     public static function calculateEstimatedCostInXAF(int $messageCost): float
     {
         $costPerMessage = config('pricing.message_base_cost_xaf', 10);
+
         return $messageCost * $costPerMessage;
     }
 
@@ -44,35 +47,30 @@ class MessageCostHelper
     public static function canProcessMessage(\App\Models\User $user, int $messageCost): bool
     {
         $subscription = $user->activeSubscription;
-        
-        if (!$subscription) {
+
+        if (! $subscription) {
             return false;
         }
 
-        $tracker = $subscription->getCurrentCycleTracker();
-        
-        if (!$tracker) {
-            $tracker = $subscription->getOrCreateCurrentCycleTracker();
-        }
-
-        return $tracker->canProcessMessage($messageCost);
+        return $subscription->canAffordMessage($messageCost);
     }
 
     public static function getMediaCount(UserProduct $product): int
     {
-        /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
-        $mediaCollection = $product->getMediaCollection('medias');
+        $mediaCollection = $product->getMedia('medias');
+
         return $mediaCollection->count();
     }
 
     public static function getProductsMediaCount(Collection $products): int
     {
         return $products->sum(function ($product) {
-            if (method_exists($product, 'getMediaCollection')) {
-                /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
-                $mediaCollection = $product->getMediaCollection('medias');
+            if (method_exists($product, 'getMedia')) {
+                $mediaCollection = $product->getMedia('medias');
+
                 return $mediaCollection->count();
             }
+
             return 0;
         });
     }

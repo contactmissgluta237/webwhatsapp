@@ -4,8 +4,8 @@
  */
 
 const { MessageMedia } = require("whatsapp-web.js");
-const TestData = require('./src/test/testData');
-const ProductMessagingConfig = require('./src/config/productMessagingConfig');
+const TestData = require('../src/test/testData');
+const ProductMessagingConfig = require('../src/config/productMessagingConfig');
 
 // Mock simple pour tester MessageMedia.fromUrl
 async function testMediaDownload() {

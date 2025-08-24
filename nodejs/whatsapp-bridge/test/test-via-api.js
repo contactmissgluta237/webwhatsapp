@@ -4,7 +4,7 @@
  */
 
 const axios = require('axios');
-const TestData = require('./src/test/testData');
+const TestData = require('../src/test/testData');
 
 const API_BASE = 'http://localhost:3000';
 

@@ -50,6 +50,16 @@ Route::middleware(['auth', 'role:admin'])
             Route::get('/', App\Http\Controllers\Admin\Settings\IndexController::class)->name('index');
         });
 
+        // Subscriptions management routes
+        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+            Route::get('/', App\Http\Controllers\Admin\Subscriptions\IndexController::class)->name('index');
+        });
+
+        // Packages management routes
+        Route::prefix('packages')->name('packages.')->group(function () {
+            Route::get('/', App\Http\Controllers\Admin\Packages\IndexController::class)->name('index');
+        });
+
         // Ticket management routes
         Route::prefix('tickets')->name('tickets.')->group(function () {
             Route::get('/', App\Http\Controllers\Admin\Ticket\IndexController::class)->name('index');

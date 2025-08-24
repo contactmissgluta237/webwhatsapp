@@ -24,7 +24,15 @@
     </ul>
 </li>
 
-{{-- Produits --}}
+{{-- 3. Packages --}}
+<li class="nav-item {{ request()->routeIs('customer.packages.*') ? 'active' : '' }}">
+    <a href="{{ route('customer.packages.index') }}">
+        <i class="la la-gift"></i>
+        <span class="menu-title" data-i18n="Packages">{{ __('Packages') }}</span>
+    </a>
+</li>
+
+{{-- 4. Produits --}}
 <li class="nav-item has-sub {{ request()->is('customer/products*') ? 'open' : '' }}">
     <a href="#">
         <i class="la la-cubes"></i>
@@ -40,7 +48,7 @@
     </ul>
 </li>
 
-{{-- 3. Mes Filleuls --}}
+{{-- 5. Mes Filleuls --}}
 <li class="nav-item {{ request()->routeIs('customer.referrals.*') ? 'active' : '' }}">
     <a href="{{ route('customer.referrals.index') }}">
         <i class="la la-group"></i>
@@ -48,7 +56,7 @@
     </a>
 </li>
 
-{{-- 4. Transactions --}}
+{{-- 6. Transactions --}}
 <li class="nav-item has-sub {{ request()->is('customer/transactions*') ? 'open' : '' }}">
     <a href="#">
         <i class="la la-money"></i>
@@ -67,7 +75,7 @@
     </ul>
 </li>
 
-{{-- 5. Support et Aide --}}
+{{-- 7. Support et Aide --}}
 <li class="nav-item has-sub {{ request()->routeIs('customer.tickets.*') ? 'open' : '' }}">
     <a href="#">
         <i class="la la-life-ring"></i>
@@ -83,7 +91,7 @@
     </ul>
 </li>
 
-{{-- 6. Profil --}}
+{{-- 8. Profil --}}
 <li class="nav-item {{ request()->routeIs('customer.profile.*') ? 'active' : '' }}">
     <a href="{{ route('customer.profile.show') }}">
         <i class="la la-user"></i>

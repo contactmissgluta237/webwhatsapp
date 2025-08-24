@@ -56,6 +56,18 @@
 </li>
 
 <li class="navigation-header">
+    <span data-i18n="Subscriptions">Souscriptions</span>
+    <i class="la la-ellipsis-h" data-toggle="tooltip" data-placement="right" title="Subscriptions"></i>
+</li>
+<li class="nav-item has-sub {{ request()->routeIs('admin.packages.*') || request()->routeIs('admin.subscriptions.*') ? 'open' : '' }}">
+    <a href="#"><i class="la la-gift"></i><span class="menu-title" data-i18n="Subscriptions">Souscriptions</span></a>
+    <ul class="menu-content">
+        <li class="{{ request()->routeIs('admin.packages.index') ? 'active' : '' }}"><a class="menu-item" href="{{ route('admin.packages.index') }}">Packages</a></li>
+        <li class="{{ request()->routeIs('admin.subscriptions.index') ? 'active' : '' }}"><a class="menu-item" href="{{ route('admin.subscriptions.index') }}">Toutes les souscriptions</a></li>
+    </ul>
+</li>
+
+<li class="navigation-header">
     <span data-i18n="Support">{{ __('admin-menu.Support') }}</span>
     <i class="la la-ellipsis-h" data-toggle="tooltip" data-placement="right" title="Support"></i>
 </li>

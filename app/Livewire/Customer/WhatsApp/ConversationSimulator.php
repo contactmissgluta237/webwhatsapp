@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Customer\WhatsApp;
 
 use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
+use App\Enums\SimulatorMessageType;
 use App\Models\WhatsAppAccount;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -58,7 +59,7 @@ final class ConversationSimulator extends Component
         Log::info('🔔 Event config-updated reçu');
         $this->account->refresh();
         $this->loadCurrentConfiguration();
-        $this->addMessage('system', '⚙️ Configuration mise à jour. Nouvelle conversation avec les paramètres actuels.');
+        $this->addMessage(SimulatorMessageType::SYSTEM()->value, '⚙️ Configuration mise à jour. Nouvelle conversation avec les paramètres actuels.');
     }
 
     #[On('config-changed-live')]
@@ -123,7 +124,7 @@ final class ConversationSimulator extends Component
         // Vérifier la limite de messages
         if (count($this->simulationMessages) >= $this->maxMessages * 2) {
             Log::warning('⚠️ Limite de messages atteinte');
-            $this->addMessage('system', '⚠️ Limite de conversation atteinte (10 échanges maximum)');
+            $this->addMessage(SimulatorMessageType::SYSTEM()->value, '⚠️ Limite de conversation atteinte (10 échanges maximum)');
 
             return;
         }
@@ -137,7 +138,7 @@ final class ConversationSimulator extends Component
             $conversationContext = array_slice($this->simulationMessages, -10);
 
             // Ajouter le message utilisateur
-            $this->addMessage('user', $userMessage);
+            $this->addMessage(SimulatorMessageType::USER()->value, $userMessage);
             $this->dispatch('message-added');
 
             $this->dispatch('schedule-ai-response', [
@@ -154,7 +155,7 @@ final class ConversationSimulator extends Component
                 'line' => $e->getLine(),
             ]);
 
-            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
+            $this->addMessage(SimulatorMessageType::ASSISTANT()->value, '❌ Erreur de simulation : '.$e->getMessage());
         }
     }
 
@@ -183,7 +184,7 @@ final class ConversationSimulator extends Component
 
         if (! $userMessage) {
             Log::error('❌ userMessage est null dans processAiResponse');
-            $this->addMessage('ai', '❌ Erreur : message utilisateur manquant');
+            $this->addMessage(SimulatorMessageType::ASSISTANT()->value, '❌ Erreur : message utilisateur manquant');
             $this->showTyping = false;
             $this->isProcessing = false;
 
@@ -199,7 +200,7 @@ final class ConversationSimulator extends Component
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
             ]);
-            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
+            $this->addMessage(SimulatorMessageType::ASSISTANT()->value, '❌ Erreur de simulation : '.$e->getMessage());
         } finally {
             $this->showTyping = false;
             $this->isProcessing = false;
@@ -315,7 +316,7 @@ final class ConversationSimulator extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->addMessage('ai', '❌ Erreur de simulation : '.$e->getMessage());
+            $this->addMessage(SimulatorMessageType::ASSISTANT()->value, '❌ Erreur de simulation : '.$e->getMessage());
             throw $e;
         }
     }
@@ -325,7 +326,7 @@ final class ConversationSimulator extends Component
      */
     public function addAiResponse(string $responseMessage): void
     {
-        $this->addMessage('ai', $responseMessage);
+        $this->addMessage(SimulatorMessageType::ASSISTANT()->value, $responseMessage);
         $this->dispatch('message-added');
         $this->showTyping = false;
         $this->isProcessing = false;
@@ -356,7 +357,7 @@ final class ConversationSimulator extends Component
 
         foreach ($products as $product) {
             $productMessage = $this->formatProductMessage($product);
-            $this->addMessage('product', $productMessage);
+            $this->addMessage('product', $productMessage);  // Note: 'product' n'est pas dans l'enum - garde tel quel
 
             Log::info('[SIMULATOR] 📦 Produit ajouté au simulateur', [
                 'product_id' => $product->id,

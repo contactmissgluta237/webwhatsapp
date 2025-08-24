@@ -11,7 +11,7 @@ class ForgotPasswordForm extends Component
 {
     public $email = '';
     public $phoneNumber = '';
-    public LoginChannel $resetMethod;
+    public $resetMethod = 'email';
     public $message = null;
     public $error = null;
     public $loading = false;
@@ -31,7 +31,7 @@ class ForgotPasswordForm extends Component
 
     public function mount()
     {
-        $this->resetMethod = LoginChannel::EMAIL();
+        $this->resetMethod = LoginChannel::EMAIL()->value;
         $this->country_id = 1; // Cameroun par défaut
     }
 
@@ -47,13 +47,13 @@ class ForgotPasswordForm extends Component
 
     public function setResetMethod(string $method)
     {
-        $this->resetMethod = LoginChannel::make($method);
+        $this->resetMethod = $method;
         $this->reset(['email', 'phoneNumber', 'error', 'message']);
     }
 
     protected function rules()
     {
-        return ForgotPasswordFormRequest::getRulesForMethod($this->resetMethod->value);
+        return ForgotPasswordFormRequest::getRulesForMethod($this->resetMethod);
     }
 
     protected function messages()
@@ -67,10 +67,11 @@ class ForgotPasswordForm extends Component
         $this->startLoading();
 
         try {
-            $identifier = ($this->resetMethod->equals(LoginChannel::EMAIL())) ? $this->email : $this->phoneNumber;
-            $this->otpService->sendOtp($identifier, $this->resetMethod, 'password_reset');
+            $resetMethodEnum = LoginChannel::make($this->resetMethod);
+            $identifier = ($resetMethodEnum->equals(LoginChannel::EMAIL())) ? $this->email : $this->phoneNumber;
+            $this->otpService->sendOtp($identifier, $resetMethodEnum, 'password_reset');
 
-            if ($this->resetMethod->equals(LoginChannel::EMAIL())) {
+            if ($resetMethodEnum->equals(LoginChannel::EMAIL())) {
                 session()->flash('status', 'Un code de réinitialisation a été envoyé à votre adresse email.');
 
                 return redirect()->route('password.verify.otp', [

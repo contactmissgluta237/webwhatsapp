@@ -35,6 +35,11 @@ Route::middleware(['auth', 'role:customer'])
             Route::delete('/{product}', App\Http\Controllers\Customer\Products\DeleteController::class)->name('delete');
         });
 
+        Route::prefix('packages')->name('packages.')->group(function () {
+            Route::get('/', App\Http\Controllers\Customer\Packages\IndexController::class)->name('index');
+            Route::post('/{package}/subscribe', App\Http\Controllers\Customer\Packages\SubscribeController::class)->name('subscribe');
+        });
+
         Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
             Route::get('/', App\Http\Controllers\Customer\WhatsApp\Account\IndexController::class)->name('index');
             Route::get('/create', App\Http\Controllers\Customer\WhatsApp\Account\CreateController::class)->name('create');

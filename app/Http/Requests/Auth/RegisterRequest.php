@@ -33,6 +33,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::min(6)],
             'terms' => 'accepted',
             'referral_code' => 'nullable|string|exists:users,affiliation_code',
+            'locale' => 'required|string|in:en,fr',
         ];
     }
 
@@ -59,6 +60,8 @@ class RegisterRequest extends FormRequest
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             'terms.accepted' => 'Vous devez accepter les conditions d\'utilisation.',
             'referral_code.exists' => 'Ce code de parrainage n\'existe pas.',
+            'locale.required' => 'La langue est requise.',
+            'locale.in' => 'Veuillez sélectionner une langue valide.',
         ];
     }
 }

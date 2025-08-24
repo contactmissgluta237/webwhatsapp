@@ -1,92 +1,106 @@
-<div>
-    <div class="bg-white rounded-2xl shadow-xl p-8">
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-900">Nouveau mot de passe</h2>
-            <p class="mt-2 text-sm text-gray-600">
-                Choisissez un nouveau mot de passe sécurisé pour votre compte.
-            </p>
+<div class="auth-card p-4">
+    <div class="text-center mb-4">
+        <h2 class="auth-header h3">Nouveau mot de passe</h2>
+        <p class="text-muted small">
+            Choisissez un nouveau mot de passe sécurisé pour votre compte.
+        </p>
+    </div>
+
+    @if($error)
+        <div class="alert alert-danger mb-3">
+            {{ $error }}
         </div>
+    @endif
 
-        @if($error)
-            <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {{ $error }}
-            </div>
-        @endif
-
-        <form wire:submit.prevent="resetPassword" class="space-y-6">
-            <div>
-                <label for="identifier" class="block text-sm font-medium text-gray-700 mb-2">
-                    {{ $this->getIdentifierLabel() }}
-                </label>
-                <input
-                    wire:model="identifier"
-                    type="{{ $this->getIdentifierInputType() }}"
-                    id="identifier"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 @error('identifier') border-red-500 @enderror"
-                    readonly
-                >
-                @error('identifier')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Le champ token est maintenant caché car il a déjà été vérifié -->
-            <input type="hidden" wire:model="token">
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                    Nouveau mot de passe
-                </label>
-                <input 
-                    wire:model.live="password" 
-                    type="password" 
-                    id="password"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('password') border-red-500 @enderror"
-                    placeholder="••••••••"
-                    {{ $loading ? 'disabled' : '' }}
-                >
-                @error('password')
-                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmer le mot de passe
-                </label>
-                <input 
-                    wire:model.live="password_confirmation" 
-                    type="password" 
-                    id="password_confirmation"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="••••••••"
-                    {{ $loading ? 'disabled' : '' }}
-                >
-            </div>
-
-            <button 
-                type="submit" 
-                class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-medium transition-colors duration-200 {{ $loading ? 'opacity-50 cursor-not-allowed' : '' }}"
-                {{ $loading ? 'disabled' : '' }}
+    <form wire:submit.prevent="resetPassword">
+        <div class="mb-3">
+            <label for="identifier" class="form-label">{{ $this->getIdentifierLabel() }}</label>
+            <input
+                wire:model="identifier"
+                type="{{ $this->getIdentifierInputType() }}"
+                id="identifier"
+                class="form-control bg-light @error('identifier') is-invalid @enderror"
+                readonly
             >
-                @if($loading)
-                    <span class="flex items-center justify-center">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Réinitialisation...
-                    </span>
-                @else
-                    Réinitialiser le mot de passe
-                @endif
-            </button>
-        </form>
-
-        <div class="mt-6 text-center">
-            <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-500 font-medium text-sm">
-                ← Retour à la connexion
-            </a>
+            @error('identifier')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
+
+        <!-- Le champ token est maintenant caché car il a déjà été vérifié -->
+        <input type="hidden" wire:model="token">
+
+        <div class="mb-3">
+            <label for="password" class="form-label small fw-semibold">
+                <i class="fas fa-lock me-1"></i>{{ __('New Password') }}
+            </label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                <input type="password" id="password" wire:model.live="password" 
+                       class="form-control @error('password') is-invalid @enderror"
+                       placeholder="••••••••" {{ $loading ? 'disabled' : '' }}>
+                <button class="btn password-toggle" type="button" onclick="togglePasswordField('password', 'toggleIcon1')">
+                    <i class="fas fa-eye" id="toggleIcon1"></i>
+                </button>
+            </div>
+            @error('password')
+                <div class="invalid-feedback d-block small">
+                    <i class="fas fa-exclamation-circle me-1"></i>{{ $message }}
+                </div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="password_confirmation" class="form-label small fw-semibold">
+                <i class="fas fa-lock me-1"></i>{{ __('Confirm Password') }}
+            </label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                <input type="password" id="password_confirmation" wire:model.live="password_confirmation" 
+                       class="form-control" placeholder="••••••••" {{ $loading ? 'disabled' : '' }}>
+                <button class="btn password-toggle" type="button" onclick="togglePasswordField('password_confirmation', 'toggleIcon2')">
+                    <i class="fas fa-eye" id="toggleIcon2"></i>
+                </button>
+            </div>
+        </div>
+
+        <button 
+            type="submit" 
+            class="btn btn-auth text-white w-100 {{ $loading ? 'disabled' : '' }}"
+            {{ $loading ? 'disabled' : '' }}
+        >
+            @if($loading)
+                <span class="d-flex align-items-center justify-content-center">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Réinitialisation...
+                </span>
+            @else
+                Réinitialiser le mot de passe
+            @endif
+        </button>
+    </form>
+
+    <div class="text-center mt-3">
+        <a href="{{ route('login') }}" class="btn btn-link auth-link text-decoration-none">
+            <i class="fas fa-arrow-left me-1"></i> {{ __('Back to login') }}
+        </a>
     </div>
 </div>
+
+<script>
+// Toggle password visibility
+function togglePasswordField(fieldId, iconId) {
+    const passwordInput = document.getElementById(fieldId);
+    const toggleIcon = document.getElementById(iconId);
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+    }
+}
+</script>

@@ -6,7 +6,8 @@ use App\Models\Package;
 use App\Models\User;
 use App\Models\UserProduct;
 use App\Models\UserSubscription;
-use App\Models\UsageSubscriptionTracker;
+use App\Models\WhatsAppAccount;
+use App\Models\WhatsAppAccountUsage;
 use App\Services\WhatsApp\Helpers\MessageCostHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -19,7 +20,7 @@ class PackageSubscriptionSystemTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed les packages de base
         $this->seed(\Database\Seeders\PackagesSeeder::class);
     }
@@ -28,25 +29,25 @@ class PackageSubscriptionSystemTest extends TestCase
     public function it_can_create_packages_with_correct_attributes()
     {
         $packages = Package::all();
-        
+
         $this->assertCount(4, $packages);
-        
+
         $trial = Package::findByName('trial');
         $this->assertTrue($trial->isTrial());
         $this->assertTrue($trial->one_time_only);
         $this->assertEquals(7, $trial->duration_days);
         $this->assertEquals(0, $trial->price);
-        
+
         $starter = Package::findByName('starter');
         $this->assertTrue($starter->isStarter());
         $this->assertFalse($starter->allowsProducts());
         $this->assertEquals(2000, $starter->price);
-        
+
         $business = Package::findByName('business');
         $this->assertTrue($business->isBusiness());
         $this->assertTrue($business->allowsProducts());
         $this->assertEquals(5, $business->products_limit);
-        
+
         $pro = Package::findByName('pro');
         $this->assertTrue($pro->isPro());
         $this->assertTrue($pro->hasWeeklyReports());
@@ -58,7 +59,7 @@ class PackageSubscriptionSystemTest extends TestCase
     {
         $user = User::factory()->create();
         $package = Package::findByName('starter');
-        
+
         $subscription = UserSubscription::create([
             'user_id' => $user->id,
             'package_id' => $package->id,
@@ -66,7 +67,7 @@ class PackageSubscriptionSystemTest extends TestCase
             'ends_at' => now()->addMonth(),
             'status' => 'active',
         ]);
-        
+
         $this->assertInstanceOf(UserSubscription::class, $subscription);
         $this->assertTrue($subscription->isActive());
         $this->assertFalse($subscription->isExpired());
@@ -79,7 +80,7 @@ class PackageSubscriptionSystemTest extends TestCase
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
-        
+
         // Créer un abonnement actif
         $subscription = UserSubscription::create([
             'user_id' => $user->id,
@@ -87,41 +88,50 @@ class PackageSubscriptionSystemTest extends TestCase
             'starts_at' => now(),
             'ends_at' => now()->addMonth(),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
-        
+
         $user->refresh();
-        
+
         $this->assertTrue($user->hasActiveSubscription());
         $this->assertEquals($subscription->id, $user->activeSubscription->id);
         $this->assertEquals($package->id, $user->getCurrentPackage()->id);
     }
 
     /** @test */
-    public function it_can_create_and_manage_usage_trackers()
+    public function it_can_create_and_manage_account_usage()
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
-        
+        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
+
         $subscription = UserSubscription::create([
             'user_id' => $user->id,
             'package_id' => $package->id,
             'starts_at' => now(),
             'ends_at' => now()->addMonth(),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
-        
-        $tracker = $subscription->getOrCreateCurrentCycleTracker();
-        
-        $this->assertInstanceOf(UsageSubscriptionTracker::class, $tracker);
-        $this->assertEquals($package->messages_limit, $tracker->messages_remaining);
-        $this->assertEquals(0, $tracker->messages_used);
-        
+
+        $accountUsage = $subscription->getUsageForAccount($account);
+
+        $this->assertInstanceOf(WhatsAppAccountUsage::class, $accountUsage);
+        $this->assertEquals($package->messages_limit, $subscription->getRemainingMessages());
+        $this->assertEquals(0, $accountUsage->messages_used);
+
         // Test d'increment de l'usage
-        $tracker->incrementUsage(5);
-        
-        $this->assertEquals(5, $tracker->messages_used);
-        $this->assertEquals($package->messages_limit - 5, $tracker->messages_remaining);
-        $this->assertTrue($tracker->hasRemainingMessages());
+        $accountUsage->incrementUsage(5);
+
+        $this->assertEquals(5, $accountUsage->messages_used);
+        $this->assertEquals($package->messages_limit - 5, $subscription->getRemainingMessages());
+        $this->assertTrue($subscription->hasRemainingMessages());
     }
 
     /** @test */
@@ -133,19 +143,19 @@ class PackageSubscriptionSystemTest extends TestCase
             $this->createMockUserProduct(3), // 3 médias
             $this->createMockUserProduct(1), // 1 média
         ]);
-        
+
         $cost = MessageCostHelper::calculateMessageCost($products);
-        
+
         // 1 message de base + 6 médias = 7 total
         $this->assertEquals(7, $cost);
-        
+
         $detailedCost = MessageCostHelper::calculateDetailedCost($products);
-        
+
         $this->assertEquals(1, $detailedCost['base_messages']);
         $this->assertEquals(6, $detailedCost['media_messages']);
         $this->assertEquals(7, $detailedCost['total_cost']);
         $this->assertEquals(3, $detailedCost['products_count']);
-        
+
         $expectedXAF = 7 * config('pricing.message_base_cost_xaf', 10);
         $this->assertEquals($expectedXAF, $detailedCost['estimated_xaf']);
     }
@@ -155,7 +165,7 @@ class PackageSubscriptionSystemTest extends TestCase
     {
         $user = User::factory()->create();
         $trialPackage = Package::findByName('trial');
-        
+
         // Créer un abonnement trial
         $subscription = UserSubscription::create([
             'user_id' => $user->id,
@@ -163,13 +173,17 @@ class PackageSubscriptionSystemTest extends TestCase
             'starts_at' => now(),
             'ends_at' => now()->addDays(7),
             'status' => 'active',
+            'messages_limit' => $trialPackage->messages_limit,
+            'context_limit' => $trialPackage->context_limit,
+            'accounts_limit' => $trialPackage->accounts_limit,
+            'products_limit' => $trialPackage->products_limit,
         ]);
-        
+
         $this->assertTrue($subscription->isTrialSubscription());
-        
+
         // L'utilisateur ne peut plus avoir un autre trial
         $this->assertFalse($subscription->canSubscribeToTrial());
-        
+
         // Test avec un nouvel abonnement non-trial
         $starterPackage = Package::findByName('starter');
         $starterSubscription = UserSubscription::create([
@@ -178,8 +192,12 @@ class PackageSubscriptionSystemTest extends TestCase
             'starts_at' => now(),
             'ends_at' => now()->addMonth(),
             'status' => 'active',
+            'messages_limit' => $starterPackage->messages_limit,
+            'context_limit' => $starterPackage->context_limit,
+            'accounts_limit' => $starterPackage->accounts_limit,
+            'products_limit' => $starterPackage->products_limit,
         ]);
-        
+
         // Même avec un abonnement starter, l'utilisateur ne peut plus jamais avoir de trial
         // car il a déjà utilisé son trial une seule fois autorisé
         $this->assertFalse($starterSubscription->canSubscribeToTrial());
@@ -192,12 +210,12 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertFalse($trial->allowsProducts());
         $this->assertFalse($trial->allowsMultipleAccounts());
         $this->assertFalse($trial->hasWeeklyReports());
-        
+
         $business = Package::findByName('business');
         $this->assertTrue($business->allowsProducts());
         $this->assertTrue($business->allowsMultipleAccounts());
         $this->assertFalse($business->hasWeeklyReports());
-        
+
         $pro = Package::findByName('pro');
         $this->assertTrue($pro->allowsProducts());
         $this->assertTrue($pro->allowsMultipleAccounts());
@@ -206,33 +224,43 @@ class PackageSubscriptionSystemTest extends TestCase
     }
 
     /** @test */
-    public function it_can_reset_usage_for_new_cycle()
+    public function it_can_track_usage_across_multiple_accounts()
     {
         $user = User::factory()->create();
         $package = Package::findByName('business');
-        
+        $account1 = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
+        $account2 = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
+
         $subscription = UserSubscription::create([
             'user_id' => $user->id,
             'package_id' => $package->id,
             'starts_at' => now(),
             'ends_at' => now()->addMonth(),
             'status' => 'active',
+            'messages_limit' => $package->messages_limit,
+            'context_limit' => $package->context_limit,
+            'accounts_limit' => $package->accounts_limit,
+            'products_limit' => $package->products_limit,
         ]);
-        
-        $tracker = $subscription->getOrCreateCurrentCycleTracker();
-        
-        // Utiliser quelques messages
-        $tracker->incrementUsage(100);
-        
-        $this->assertEquals(100, $tracker->messages_used);
-        $this->assertEquals($package->messages_limit - 100, $tracker->messages_remaining);
-        
-        // Reset pour le nouveau cycle
-        $tracker->resetForNewCycle();
-        
-        $this->assertEquals(0, $tracker->messages_used);
-        $this->assertEquals($package->messages_limit, $tracker->messages_remaining);
-        $this->assertNotNull($tracker->last_reset_at);
+
+        $usage1 = $subscription->getUsageForAccount($account1);
+        $usage2 = $subscription->getUsageForAccount($account2);
+
+        // Utiliser quelques messages sur chaque compte
+        $usage1->incrementUsage(60);
+        $usage2->incrementUsage(40);
+
+        $this->assertEquals(60, $usage1->messages_used);
+        $this->assertEquals(40, $usage2->messages_used);
+
+        // Vérification des totaux au niveau subscription
+        $this->assertEquals(100, $subscription->getTotalMessagesUsed());
+        $this->assertEquals($package->messages_limit - 100, $subscription->getRemainingMessages());
+
+        // Chaque usage est distinct
+        $this->assertNotEquals($usage1->id, $usage2->id);
+        $this->assertEquals($account1->id, $usage1->whats_app_account_id);
+        $this->assertEquals($account2->id, $usage2->whats_app_account_id);
     }
 
     /**
@@ -240,29 +268,31 @@ class PackageSubscriptionSystemTest extends TestCase
      */
     private function createMockUserProduct(int $mediaCount): object
     {
-        $product = new class {
+        $product = new class
+        {
             public $mediaCount;
-            
-            public function getMediaCollection(string $collection) 
+
+            public function getMediaCollection(string $collection)
             {
-                return new class($this->mediaCount) {
+                return new class($this->mediaCount)
+                {
                     public $count;
-                    
-                    public function __construct($count) 
+
+                    public function __construct($count)
                     {
                         $this->count = $count;
                     }
-                    
-                    public function count() 
+
+                    public function count()
                     {
                         return $this->count;
                     }
                 };
             }
         };
-        
+
         $product->mediaCount = $mediaCount;
-        
+
         return $product;
     }
 }

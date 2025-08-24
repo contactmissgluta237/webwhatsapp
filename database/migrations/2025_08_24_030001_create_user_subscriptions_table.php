@@ -21,6 +21,12 @@ return new class extends Migration
             // État de l'abonnement
             $table->enum('status', ['active', 'expired', 'cancelled', 'suspended'])->default('active');
             
+            // Limites du package (copiées depuis le package lors de l'abonnement)
+            $table->integer('messages_limit')->default(0);
+            $table->integer('context_limit')->default(0);
+            $table->integer('accounts_limit')->default(1);
+            $table->integer('products_limit')->default(0);
+            
             // Métadonnées de paiement
             $table->decimal('amount_paid', 10, 2)->nullable();
             $table->string('payment_method')->nullable();

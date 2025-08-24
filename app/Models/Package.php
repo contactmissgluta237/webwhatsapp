@@ -40,7 +40,7 @@ class Package extends Model
 
     protected $fillable = [
         'name',
-        'display_name', 
+        'display_name',
         'description',
         'price',
         'currency',
@@ -160,7 +160,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format($this->price, 0, ',', ' ') . ' ' . $this->currency;
+        return number_format($this->price, 0, ',', ' ').' '.$this->currency;
     }
 
     public function getDisplayFeatures(): array
@@ -168,11 +168,11 @@ class Package extends Model
         $displayFeatures = [];
 
         if ($this->allowsProducts()) {
-            $displayFeatures[] = $this->products_limit . ' produit' . ($this->products_limit > 1 ? 's' : '');
+            $displayFeatures[] = $this->products_limit.' produit'.($this->products_limit > 1 ? 's' : '');
         }
 
         if ($this->allowsMultipleAccounts()) {
-            $displayFeatures[] = $this->accounts_limit . ' compte' . ($this->accounts_limit > 1 ? 's' : '') . ' WhatsApp';
+            $displayFeatures[] = $this->accounts_limit.' compte'.($this->accounts_limit > 1 ? 's' : '').' WhatsApp';
         }
 
         if ($this->hasWeeklyReports()) {

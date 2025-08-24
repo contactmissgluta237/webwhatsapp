@@ -47,11 +47,11 @@ class PackagesSeeder extends Seeder
             'sort_order' => 2,
         ]);
 
-        // Package BUSINESS (5000 XAF/mois)
+        // Package PRO (5000 XAF/mois) - Interverti avec ancien business
         Package::create([
-            'name' => 'business',
-            'display_name' => 'Business',
-            'description' => 'Idéal pour les entreprises avec gestion de produits et comptes multiples.',
+            'name' => 'pro',
+            'display_name' => 'Pro',
+            'description' => 'Idéal pour les professionnels avec gestion de produits et comptes multiples.',
             'price' => 5000,
             'currency' => 'XAF',
             'messages_limit' => 600,
@@ -66,11 +66,11 @@ class PackagesSeeder extends Seeder
             'sort_order' => 3,
         ]);
 
-        // Package PRO (10000 XAF/mois)
+        // Package BUSINESS (10000 XAF/mois) - Interverti avec ancien pro
         Package::create([
-            'name' => 'pro',
-            'display_name' => 'Pro',
-            'description' => 'Pour les professionnels exigeants avec rapports hebdomadaires et support prioritaire.',
+            'name' => 'business',
+            'display_name' => 'Business',
+            'description' => 'Pour les entreprises exigeantes avec rapports hebdomadaires et support prioritaire.',
             'price' => 10000,
             'currency' => 'XAF',
             'messages_limit' => 1300,
