@@ -152,7 +152,7 @@ class UserSubscription extends Model
 
     public function getDurationInDays(): int
     {
-        return $this->starts_at->diffInDays($this->ends_at);
+        return (int) $this->starts_at->diffInDays($this->ends_at);
     }
 
     public function getUsagePercentage(): float
@@ -191,10 +191,8 @@ class UserSubscription extends Model
 
     public function getCurrentCycleTracker(): ?UsageSubscriptionTracker
     {
-        $cycleStart = $this->starts_at->toDateString();
-        
         return $this->usageTrackers()
-            ->where('cycle_start_date', $cycleStart)
+            ->currentCycle()
             ->first();
     }
 
@@ -203,7 +201,7 @@ class UserSubscription extends Model
         $cycleStart = $this->starts_at->toDateString();
         $cycleEnd = $this->starts_at->copy()->addMonth()->toDateString();
         
-        return UsageSubscriptionTracker::firstOrCreate(
+        return UsageSubscriptionTracker::updateOrCreate(
             [
                 'user_subscription_id' => $this->id,
                 'cycle_start_date' => $cycleStart,

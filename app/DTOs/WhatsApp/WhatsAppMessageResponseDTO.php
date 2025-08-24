@@ -106,4 +106,27 @@ final class WhatsAppMessageResponseDTO extends BaseDTO
     {
         return $this->processingError !== null;
     }
+
+    public function hasValidWhatsAppData(): bool
+    {
+        return $this->processed && $this->hasAiResponse && !$this->hasError();
+    }
+
+    public function hasProducts(): bool
+    {
+        return !empty($this->products);
+    }
+
+    /**
+     * @return int[]
+     */
+    public function getProductIds(): array
+    {
+        return array_map(fn(ProductDataDTO $product) => $product->id, $this->products);
+    }
+
+    public function getProductsCount(): int
+    {
+        return count($this->products);
+    }
 }

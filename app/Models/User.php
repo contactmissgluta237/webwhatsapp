@@ -54,6 +54,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection|ExternalTransaction[] $approvedExternalTransactions
  * @property-read Collection|InternalTransaction[] $createdInternalTransactions
  * @property-read Collection|InternalTransaction[] $receivedInternalTransactions
+ * @property-read Collection|UserSubscription[] $subscriptions
+ * @property-read UserSubscription|null $activeSubscription
+ * @property-read Collection|UserProduct[] $userProducts
+ * @property-read Collection|WhatsAppAccount[] $whatsappAccounts
  *
  * @method MorphMany|PushSubscription active()
  */

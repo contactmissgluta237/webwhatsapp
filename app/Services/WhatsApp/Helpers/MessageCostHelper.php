@@ -16,7 +16,9 @@ class MessageCostHelper
 
         foreach ($products as $product) {
             if (method_exists($product, 'getMediaCollection')) {
-                $mediaCost += $product->getMediaCollection('images')->count();
+                /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
+                $mediaCollection = $product->getMediaCollection('medias');
+                $mediaCost += $mediaCollection->count();
             }
         }
 
@@ -58,14 +60,18 @@ class MessageCostHelper
 
     public static function getMediaCount(UserProduct $product): int
     {
-        return $product->getMediaCollection('images')->count();
+        /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
+        $mediaCollection = $product->getMediaCollection('medias');
+        return $mediaCollection->count();
     }
 
     public static function getProductsMediaCount(Collection $products): int
     {
         return $products->sum(function ($product) {
             if (method_exists($product, 'getMediaCollection')) {
-                return $product->getMediaCollection('images')->count();
+                /** @var \Spatie\MediaLibrary\MediaCollections\MediaCollection $mediaCollection */
+                $mediaCollection = $product->getMediaCollection('medias');
+                return $mediaCollection->count();
             }
             return 0;
         });
