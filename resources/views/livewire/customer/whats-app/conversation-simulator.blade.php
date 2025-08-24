@@ -24,15 +24,37 @@
             @else
                 @foreach($simulationMessages as $message)
                     <div class="message message-{{ $message['type'] }}">
-                        <div class="message-content">
+                        <div class="message-content {{ !empty($message['media_urls']) ? 'message-content-with-media' : '' }}">
+                            {{-- Afficher les médias d'abord --}}
+                            @if(!empty($message['media_urls']))
+                                <div class="message-media">
+                                    @foreach($message['media_urls'] as $mediaUrl)
+                                        <div class="media-item">
+                                            <img src="{{ $mediaUrl }}" 
+                                                 alt="Product image" 
+                                                 class="product-image"
+                                                 loading="lazy"
+                                                 onclick="showImageModal('{{ $mediaUrl }}')">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                            
+                            {{-- Puis le contenu texte --}}
                             @if($message['type'] === 'system')
-                                <em>{!! nl2br(e($message['content'])) !!}</em>
+                                <div class="message-text">
+                                    <em>{!! nl2br(e($message['content'])) !!}</em>
+                                </div>
                             @elseif($message['type'] === 'product')
                                 <div class="product-message">
-                                    {!! nl2br(e($message['content'])) !!}
+                                    <div class="message-text">
+                                        {!! nl2br(e($message['content'])) !!}
+                                    </div>
                                 </div>
                             @else
-                                {!! nl2br(e($message['content'])) !!}
+                                <div class="message-text">
+                                    {!! nl2br(e($message['content'])) !!}
+                                </div>
                             @endif
                         </div>
                         <div class="message-time">{{ $message['time'] }}</div>
@@ -83,6 +105,14 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal pour agrandir les images -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <div class="modal-content">
+            <span class="close" onclick="closeImageModal()">&times;</span>
+            <img id="modalImage" class="modal-image" alt="Image agrandie">
+        </div>
+    </div>
 </div>
 
 @script
@@ -91,6 +121,28 @@ let activeTimeout = null;
 let typingTimeout = null;
 
 console.log('🎬 ConversationSimulator script chargé');
+
+// Fonctions pour le modal d'images
+window.showImageModal = function(imageUrl) {
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = imageUrl;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+};
+
+window.closeImageModal = function() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+};
+
+// Fermer le modal avec la touche Escape
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    }
+});
 
 // Auto-scroll vers le bas
 function scrollToBottom() {
@@ -205,11 +257,18 @@ $wire.on('simulate-response-timing', (eventData) => {
         typingTimeout = setTimeout(() => {
             console.log('🤖 Fin du typing - Affichage de la réponse');
             
-            // Arrêter le typing et afficher la réponse
-            $wire.call('addAiResponse', responseMessage).then(() => {
-                console.log('✅ Réponse IA affichée après simulation timing');
+            // Arrêter le typing explicitement
+            $wire.call('stopTyping').then(() => {
+                console.log('✅ Typing indicator arrêté');
+                
+                // Puis afficher la réponse
+                $wire.call('addAiResponse', responseMessage).then(() => {
+                    console.log('✅ Réponse IA affichée après simulation timing');
+                }).catch(error => {
+                    console.error('❌ Erreur addAiResponse:', error);
+                });
             }).catch(error => {
-                console.error('❌ Erreur addAiResponse:', error);
+                console.error('❌ Erreur stopTyping:', error);
             });
             
         }, typingDurationMs);
@@ -219,40 +278,40 @@ $wire.on('simulate-response-timing', (eventData) => {
     console.log('✅ Simulation timing programmée');
 });
 
-// Nouveau: Gérer l'envoi de produits avec délai
-$wire.on('simulate-products-sending', (eventData) => {
-    console.log('📦 Event simulate-products-sending reçu:', eventData);
+// Nouveau: Gérer l'affichage de produits avec délai
+$wire.on('simulate-products-display', (eventData) => {
+    console.log('📦 Event simulate-products-display reçu:', eventData);
     
     // Extraire les données selon le format
-    let productIds, delayAfterMessage;
+    let products, delayAfterMessage;
     
     if (Array.isArray(eventData) && eventData.length > 0) {
         const data = eventData[0];
-        productIds = data.productIds;
+        products = data.products;
         delayAfterMessage = data.delayAfterMessage || 2000;
-    } else if (eventData.productIds) {
-        productIds = eventData.productIds;
+    } else if (eventData.products) {
+        products = eventData.products;
         delayAfterMessage = eventData.delayAfterMessage || 2000;
     } else {
         console.error('❌ Format de produits inattendu:', eventData);
         return;
     }
     
-    console.log(`📦 Envoi de ${productIds.length} produits dans ${delayAfterMessage}ms`);
+    console.log(`📦 Affichage de ${products.length} produits dans ${delayAfterMessage}ms`);
     
-    // Programmer l'envoi des produits après le délai
+    // Programmer l'affichage des produits après le délai
     setTimeout(() => {
-        console.log('📦 Envoi des produits maintenant');
+        console.log('📦 Affichage des produits maintenant');
         
-        $wire.call('simulateProductsSending', productIds).then(() => {
-            console.log('✅ Produits envoyés avec succès');
+        $wire.call('displayFormattedProducts', products).then(() => {
+            console.log('✅ Produits affichés avec succès');
         }).catch(error => {
-            console.error('❌ Erreur simulateProductsSending:', error);
+            console.error('❌ Erreur displayFormattedProducts:', error);
         });
         
     }, delayAfterMessage);
     
-    console.log('✅ Envoi de produits programmé');
+    console.log('✅ Affichage de produits programmé');
 });
 
 // Scroll automatique après mise à jour

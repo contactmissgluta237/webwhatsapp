@@ -214,10 +214,28 @@ final class ConversationSimulator extends Component
             'content' => $content,
             'time' => Carbon::now()->format('H:i'),
             'timestamp' => time(),
+            'media_urls' => [],
         ];
 
         Log::info('✅ Message ajouté', [
             'type' => $type,
+            'total_messages' => count($this->simulationMessages),
+        ]);
+    }
+
+    private function addMessageWithMedia(string $type, string $content, array $mediaUrls = []): void
+    {
+        $this->simulationMessages[] = [
+            'type' => $type,
+            'content' => $content,
+            'time' => Carbon::now()->format('H:i'),
+            'timestamp' => time(),
+            'media_urls' => $mediaUrls,
+        ];
+
+        Log::info('✅ Message avec médias ajouté', [
+            'type' => $type,
+            'media_count' => count($mediaUrls),
             'total_messages' => count($this->simulationMessages),
         ]);
     }
@@ -259,48 +277,19 @@ final class ConversationSimulator extends Component
             );
 
             if ($response->hasAiResponse) {
-                // Récupérer les timings calculés par l'orchestrateur et les diviser par 10 pour UI
-                $waitTimeMs = ceil(($response->waitTimeSeconds * 1000) / 10); // Diviser par 10, arrondir par excès
-                $typingDurationMs = ceil(($response->typingDurationSeconds * 1000) / 10); // Diviser par 10, arrondir par excès
-
-                Log::info('[SIMULATOR] ⏰ Timings calculés par l\'orchestrateur', [
-                    'original_wait_seconds' => $response->waitTimeSeconds,
-                    'original_typing_seconds' => $response->typingDurationSeconds,
-                    'ui_wait_ms' => $waitTimeMs,
-                    'ui_typing_ms' => $typingDurationMs,
-                    'response_length' => strlen($response->aiResponse),
-                ]);
-
-                // L'orchestrateur retourne déjà le message parsé dans aiResponse
-                $displayMessage = $response->aiResponse;
-
                 Log::info('[SIMULATOR] 📊 Réponse de l\'orchestrateur', [
-                    'message_length' => strlen($displayMessage),
+                    'message_length' => strlen($response->aiResponse ?? ''),
                     'has_products' => ! empty($response->products),
                     'product_count' => count($response->products),
+                    'wait_time_seconds' => $response->waitTimeSeconds,
+                    'typing_duration_seconds' => $response->typingDurationSeconds,
                 ]);
 
-                // Si l'orchestrateur a enrichi des produits, on les programme aussi
-                if (! empty($response->products)) {
-                    Log::info('[SIMULATOR] 📦 Produits enrichis détectés', [
-                        'product_count' => count($response->products),
-                    ]);
+                // Utiliser le SimulatorMessageSender pour gérer l'affichage
+                $sender = new \App\Services\WhatsApp\Senders\SimulatorMessageSender($this);
+                $sender->sendResponse($response);
 
-                    // On programme l'envoi des produits après le message texte
-                    $this->dispatch('simulate-products-sending', [
-                        'products' => $response->products,
-                        'delayAfterMessage' => 2000, // 2 secondes après le message
-                    ]);
-                }
-
-                // Programmer la réponse avec les timings accélérés pour l'UI
-                $this->dispatch('simulate-response-timing', [
-                    'waitTimeMs' => $waitTimeMs,
-                    'typingDurationMs' => $typingDurationMs,
-                    'responseMessage' => $displayMessage,
-                ]);
-
-                Log::info('[SIMULATOR] ✅ Timings programmés pour la simulation UI');
+                Log::info('[SIMULATOR] ✅ Réponse envoyée via SimulatorMessageSender');
 
             } else {
                 throw new \Exception('Aucune réponse générée par l\'orchestrateur');
@@ -335,13 +324,42 @@ final class ConversationSimulator extends Component
     }
 
     /**
-     * Méthode pour simuler l'envoi de produits
+     * Affiche les produits formatés dans le simulateur
+     */
+    public function displayFormattedProducts(array $products): void
+    {
+        Log::info('[SIMULATOR] 📦 Début affichage produits formatés', [
+            'product_count' => count($products),
+        ]);
+
+        foreach ($products as $index => $product) {
+            if (isset($product['message'])) {
+                // Ajouter le message avec les médias
+                $mediaUrls = $product['media_urls'] ?? [];
+                $this->addMessageWithMedia('product', $product['message'], $mediaUrls);
+
+                Log::info('[SIMULATOR] 📦 Produit formaté ajouté au simulateur', [
+                    'product_index' => $index + 1,
+                    'message_length' => strlen($product['message']),
+                    'media_count' => count($mediaUrls),
+                    'media_urls' => $mediaUrls,
+                ]);
+            }
+        }
+
+        $this->dispatch('message-added');
+        Log::info('[SIMULATOR] ✅ Affichage de produits formatés terminé');
+    }
+
+    /**
+     * @deprecated Use displayFormattedProducts instead
+     * Méthode pour simuler l'envoi de produits (legacy)
      */
     public function simulateProductsSending(array $productIds): void
     {
-        Log::info('[SIMULATOR] 📦 Début simulation envoi produits', [
+        Log::info('[SIMULATOR] 📦 [DEPRECATED] Début simulation envoi produits', [
             'product_ids' => $productIds,
-            'count' => count($productIds),
+            'product_count' => count($productIds),
         ]);
 
         // Récupérer les produits depuis la base de données
@@ -357,7 +375,7 @@ final class ConversationSimulator extends Component
 
         foreach ($products as $product) {
             $productMessage = $this->formatProductMessage($product);
-            $this->addMessage('product', $productMessage);  // Note: 'product' n'est pas dans l'enum - garde tel quel
+            $this->addMessage('product', $productMessage);
 
             Log::info('[SIMULATOR] 📦 Produit ajouté au simulateur', [
                 'product_id' => $product->id,
@@ -367,6 +385,7 @@ final class ConversationSimulator extends Component
         }
 
         $this->dispatch('message-added');
+        Log::info('[SIMULATOR] ✅ Envoi de produits terminé');
     }
 
     /**

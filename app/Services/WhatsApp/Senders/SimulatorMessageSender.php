@@ -22,18 +22,22 @@ final class SimulatorMessageSender extends AbstractMessageSender
     {
         if (! $response->processed || $response->processingError) {
             $this->sendErrorMessage($response->processingError ?? 'Erreur inconnue');
+            return;
+        }
 
+        if (! $response->hasAiResponse || ! $response->aiResponse) {
+            $this->sendErrorMessage('Aucune réponse AI générée');
             return;
         }
 
         Log::info('[SIMULATOR_SENDER] Envoi réponse dans simulateur', [
-            'message_length' => strlen($response->aiResponse ?? ''),
+            'message_length' => strlen($response->aiResponse),
             'products_count' => count($response->products),
             'wait_time' => $response->waitTimeSeconds,
             'typing_duration' => $response->typingDurationSeconds,
         ]);
 
-        // Programmer l'affichage avec timing réaliste
+        // Programmer l'affichage avec timing réaliste (divisé par 10 pour simulation)
         $this->scheduleMessagesDisplay($response);
     }
 
@@ -50,7 +54,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
         $this->livewireComponent->dispatch('simulate-response-timing', [
             'waitTimeMs' => $waitTimeMs,
             'typingDurationMs' => $typingDurationMs,
-            'responseMessage' => $response->aiResponse ?? '',
+            'responseMessage' => $response->aiResponse,
         ]);
 
         // Si il y a des produits, programmer leur envoi après le message principal
@@ -69,10 +73,20 @@ final class SimulatorMessageSender extends AbstractMessageSender
             'delay_ms' => $delayMs,
         ]);
 
-        // Émettre événement pour l'affichage des produits
+        // Préparer les produits formatés pour le simulateur
+        $formattedProducts = [];
+        foreach ($products as $product) {
+            /** @var ProductDataDTO $product */
+            $formattedProducts[] = [
+                'message' => $product->formattedProductMessage,
+                'media_urls' => $product->mediaUrls,
+            ];
+        }
+
+        // Émettre événement pour l'affichage des produits après délai
         $this->livewireComponent->dispatch('simulate-products-display', [
-            'products' => $this->formatProductsForDisplay($products),
-            'delayMs' => $delayMs,
+            'products' => $formattedProducts,
+            'delayAfterMessage' => $delayMs,
         ]);
     }
 
@@ -81,16 +95,13 @@ final class SimulatorMessageSender extends AbstractMessageSender
      */
     private function formatProductsForDisplay(array $products): array
     {
-        return array_map(function (ProductDataDTO $product) {
+        return array_map(function (ProductDataDTO $product, $index) {
             return [
-                'id' => $product->id,
-                'title' => $product->title,
-                'description' => $product->description,
-                'price' => $product->price,
-                'media_links' => $product->mediaLinks,
-                'formatted_message' => $this->formatSingleProductMessage($product),
+                'id' => $index + 1, // Utiliser l'index comme ID
+                'formatted_message' => $product->formattedProductMessage,
+                'media_links' => $product->mediaUrls,
             ];
-        }, $products);
+        }, $products, array_keys($products));
     }
 
     /**
@@ -98,18 +109,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
      */
     private function formatSingleProductMessage(ProductDataDTO $product): string
     {
-        $message = "🛍️ *{$product->title}*\n\n";
-        $message .= "📝 {$product->description}\n\n";
-        $message .= "💰 *Prix: {$product->price}*\n";
-
-        if (! empty($product->mediaLinks)) {
-            $message .= "\n📸 Médias disponibles:\n";
-            foreach ($product->mediaLinks as $index => $link) {
-                $message .= '• Média '.($index + 1).": {$link}\n";
-            }
-        }
-
-        return $message;
+        return $product->formattedProductMessage;
     }
 
     /**
@@ -154,8 +154,8 @@ final class SimulatorMessageSender extends AbstractMessageSender
         $this->addMessage('product', $formattedMessage);
 
         Log::info('[SIMULATOR_SENDER] Message produit ajouté', [
-            'product_id' => $product->id,
-            'product_title' => $product->title,
+            'formatted_message_length' => strlen($formattedMessage),
+            'media_count' => count($product->mediaUrls),
         ]);
     }
 
