@@ -34,7 +34,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title mb-3">{{ __('Solde Actuel du Portefeuille') }} : <span class="text-whatsapp">{{ number_format($walletBalance, 0, ',', ' ') }} FCFA</span></h5>
+                <h5 class="card-title mb-3">{{ __('Solde Actuel du Portefeuille') }} : <span class="text-whatsapp"><x-user-currency :amount="$walletBalance" /></span></h5>
                 @livewire('customer.external-transaction-data-table')
             </div>
         </div>

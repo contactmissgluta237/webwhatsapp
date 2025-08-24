@@ -1,6 +1,6 @@
 @props(['user'])
 
-<div class="card">
+<div class="card shadow-none border-gray-light">
     <div class="card-header">
         <h4 class="card-title">
             <i class="ft-bell mr-2"></i>
@@ -81,15 +81,15 @@
 
         <!-- Actions principales -->
         <div class="row">
-            <div class="col-md-8">
-                <div id="push-profile-actions">
-                    <button id="profile-enable-push" class="btn btn-whatsapp mr-2" onclick="profileEnablePush()"
+            <div class="col-12">
+                <div id="push-profile-actions" class="d-flex flex-wrap gap-2 justify-content-center">
+                    <button id="profile-enable-push" class="btn btn-whatsapp" onclick="profileEnablePush()"
                         style="display: none;">
                         <i class="ft-bell mr-1"></i>
                         Activer les notifications
                     </button>
 
-                    <button id="profile-disable-push" class="btn btn-outline-danger mr-2" onclick="profileDisablePush()"
+                    <button id="profile-disable-push" class="btn btn-outline-danger" onclick="profileDisablePush()"
                         style="display: none;">
                         <i class="ft-bell-off mr-1"></i>
                         Désactiver les notifications
@@ -100,13 +100,12 @@
                         <i class="ft-send mr-1"></i>
                         Tester
                     </button>
+                    
+                    <button class="btn btn-outline-info" onclick="showPushDiagnostic()" title="Diagnostic avancé">
+                        <i class="ft-tool mr-1"></i>
+                        Diagnostic
+                    </button>
                 </div>
-            </div>
-            <div class="col-md-4 text-right">
-                <button class="btn btn-link btn-sm" onclick="showPushDiagnostic()" title="Diagnostic avancé">
-                    <i class="ft-tool mr-1"></i>
-                    Diagnostic
-                </button>
             </div>
         </div>
 

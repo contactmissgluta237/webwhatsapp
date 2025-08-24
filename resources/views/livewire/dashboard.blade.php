@@ -25,12 +25,14 @@
     </div>
 
     <!-- Push Notifications Settings -->
-    <div class="row">
+    <div class="row" id="push-notification-row" style="display: none;">
         <div class="col-12">
             <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title">🔔 Notifications Push</h4>
-                    <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">🔔 Notifications Push</h4>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="closePushNotificationCard()" title="Fermer">
+                        <i class="la la-times"></i>
+                    </button>
                 </div>
                 <div class="card-content">
                     <div class="card-body">
@@ -106,4 +108,94 @@
 @push('scripts')
     <script src="{{ asset('assets/vendor/slick/slick.min.js') }}"></script>
     <script src="{{ asset('assets/js/ticket.js') }}"></script>
+    <script>
+        // Push Notification Card Management
+        function closePushNotificationCard() {
+            const notificationRow = document.getElementById('push-notification-row');
+            notificationRow.style.display = 'none';
+            
+            // Store in localStorage that user has closed the notification
+            localStorage.setItem('pushNotificationCardClosed', 'true');
+        }
+
+        function shouldShowPushNotificationCard() {
+            // Don't show if user has manually closed it
+            if (localStorage.getItem('pushNotificationCardClosed') === 'true') {
+                return false;
+            }
+            
+            // Don't show if push notifications are already enabled
+            return !isPushNotificationEnabled();
+        }
+
+        function isPushNotificationEnabled() {
+            // Check if push notifications are currently enabled
+            if (window.pushManager && typeof window.pushManager.getSubscriptionStatus === 'function') {
+                return new Promise(async (resolve) => {
+                    try {
+                        const isSubscribed = await window.pushManager.getSubscriptionStatus();
+                        resolve(isSubscribed);
+                    } catch (error) {
+                        resolve(false);
+                    }
+                });
+            }
+            return false;
+        }
+
+        // Initialize push notification card visibility
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationRow = document.getElementById('push-notification-row');
+            
+            // Wait a bit for push manager to be initialized
+            setTimeout(async () => {
+                try {
+                    const shouldShow = await shouldShowPushNotificationCard();
+                    
+                    // If push manager is available, check current status
+                    if (window.pushManager && typeof window.pushManager.getSubscriptionStatus === 'function') {
+                        const isEnabled = await window.pushManager.getSubscriptionStatus();
+                        
+                        if (isEnabled) {
+                            // Hide if notifications are already enabled
+                            notificationRow.style.display = 'none';
+                        } else if (!localStorage.getItem('pushNotificationCardClosed')) {
+                            // Show only if not manually closed and notifications not enabled
+                            notificationRow.style.display = 'block';
+                        }
+                    } else {
+                        // Fallback: show if not manually closed
+                        if (!localStorage.getItem('pushNotificationCardClosed')) {
+                            notificationRow.style.display = 'block';
+                        }
+                    }
+                } catch (error) {
+                    // Fallback: show if not manually closed
+                    if (!localStorage.getItem('pushNotificationCardClosed')) {
+                        notificationRow.style.display = 'block';
+                    }
+                }
+            }, 1000);
+        });
+
+        // Override the updateButtonsVisibility function from push-notification-button.blade.php
+        // to also hide the entire card when notifications are enabled
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for the original script to load
+            setTimeout(() => {
+                if (typeof updateButtonsVisibility === 'function') {
+                    const originalUpdateButtonsVisibility = updateButtonsVisibility;
+                    
+                    window.updateButtonsVisibility = function(isSubscribed) {
+                        originalUpdateButtonsVisibility(isSubscribed);
+                        
+                        // Hide the entire notification card when notifications are enabled
+                        if (isSubscribed) {
+                            document.getElementById('push-notification-row').style.display = 'none';
+                        }
+                    };
+                }
+            }, 1500);
+        });
+    </script>
 @endpush

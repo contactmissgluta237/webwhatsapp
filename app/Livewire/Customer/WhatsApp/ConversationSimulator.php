@@ -396,7 +396,7 @@ final class ConversationSimulator extends Component
         return sprintf(
             "📱 *%s*\n💰 Prix: %s FCFA\n📝 %s",
             $product->title,
-            number_format($product->price, 0, ',', ' '),
+            number_format((float) $product->price, 0, ',', ' '),
             $product->description ?? 'Aucune description disponible'
         );
     }

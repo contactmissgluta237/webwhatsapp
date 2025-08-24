@@ -7,7 +7,7 @@
                     <div class="card-body">
                         <div class="media d-flex">
                             <div class="media-body text-left">
-                                <h3 class="info">{{ number_format($walletBalance, 0, ',', ' ') }} FCFA</h3>
+                                <h3 class="info"><x-user-currency :amount="$walletBalance" /></h3>
                                 <h6>Solde Portefeuille</h6>
                             </div>
                             <div>
@@ -22,18 +22,18 @@
             </div>
         </div>
 
-        {{-- Total Recharges --}}
+        {{-- Package Actuel --}}
         <div class="col-xl-3 col-lg-6 col-12">
             <div class="card pull-up">
                 <div class="card-content">
                     <div class="card-body">
                         <div class="media d-flex">
                             <div class="media-body text-left">
-                                <h3 class="success">{{ number_format($totalRecharges, 0, ',', ' ') }} FCFA</h3>
-                                <h6>Total Recharges</h6>
+                                <h3 class="success">{{ $activePackageName ?? 'Aucun package' }}</h3>
+                                <h6>Package Actuel</h6>
                             </div>
                             <div>
-                                <i class="la la-arrow-up success font-large-2 float-right"></i>
+                                <i class="la la-box success font-large-2 float-right"></i>
                             </div>
                         </div>
                         <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
@@ -44,44 +44,48 @@
             </div>
         </div>
 
-        {{-- Total Retraits --}}
+        {{-- Date d'Expiration --}}
         <div class="col-xl-3 col-lg-6 col-12">
             <div class="card pull-up">
                 <div class="card-content">
                     <div class="card-body">
                         <div class="media d-flex">
                             <div class="media-body text-left">
-                                <h3 class="danger">{{ number_format($totalWithdrawals, 0, ',', ' ') }} FCFA</h3>
-                                <h6>Total Retraits</h6>
+                                <h3 class="info">{{ $packageExpirationDate ?? 'N/A' }}</h3>
+                                <h6>Date d'Expiration</h6>
                             </div>
                             <div>
-                                <i class="la la-arrow-down danger font-large-2 float-right"></i>
+                                <i class="la la-calendar info font-large-2 float-right"></i>
                             </div>
                         </div>
                         <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
-                            <div class="progress-bar bg-gradient-x-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-gradient-x-info" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Transactions en Attente --}}
+        {{-- Messages --}}
         <div class="col-xl-3 col-lg-6 col-12">
             <div class="card pull-up">
                 <div class="card-content">
                     <div class="card-body">
                         <div class="media d-flex">
                             <div class="media-body text-left">
-                                <h3 class="warning">{{ number_format($pendingTransactions) }}</h3>
-                                <h6>Transactions en Attente</h6>
+                                @php
+                                    $usagePercentage = $messagesLimit > 0 ? ($messagesUsed / $messagesLimit) * 100 : 0;
+                                    $isLowMessages = $usagePercentage > 80;
+                                @endphp
+                                <h3 class="{{ $isLowMessages ? 'danger' : 'warning' }}">{{ number_format($messagesUsed) }}/{{ number_format($messagesLimit) }}</h3>
+                                <h6>Messages Utilisés</h6>
                             </div>
                             <div>
-                                <i class="la la-clock-o warning font-large-2 float-right"></i>
+                                <i class="la la-comments {{ $isLowMessages ? 'danger' : 'warning' }} font-large-2 float-right"></i>
                             </div>
                         </div>
                         <div class="progress progress-sm mt-1 mb-0 box-shadow-2">
-                            <div class="progress-bar bg-gradient-x-warning" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar {{ $isLowMessages ? 'bg-gradient-x-danger' : 'bg-gradient-x-warning' }}" role="progressbar" style="width: {{ min(100, $usagePercentage) }}%" aria-valuenow="{{ $usagePercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>

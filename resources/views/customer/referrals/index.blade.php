@@ -40,7 +40,7 @@
                             <div class="text-center p-3">
                                 <i class="ti ti-coins fs-1 text-success mb-2"></i>
                                 <h6 class="text-muted">{{ __('Earnings this month') }}</h6>
-                                <h4 class="fw-bold text-success">{{ number_format(0, 0, ',', ' ') }} FCFA</h4>
+                                <h4 class="fw-bold text-success"><x-user-currency :amount="0" /></h4>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -67,7 +67,7 @@
 <div class="row">
     <div class="col-12">
         <x-session-alerts />
-        <div class="card">
+        <div class="card border-gray-light shadow-none">
             <div class="card-body">
                 @if(auth()->user()->referrals()->count() > 0)
                     @livewire('customer.referral-data-table')
@@ -102,6 +102,8 @@
         </div>
     </div>
 </div>
+
+    </div> <!-- End content-body -->
 
 @if(auth()->user()->referrals()->count() == 0)
 @push('scripts')

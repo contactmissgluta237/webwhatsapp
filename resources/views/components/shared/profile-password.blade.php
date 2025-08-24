@@ -1,6 +1,6 @@
 @props(['current_password', 'password', 'password_confirmation'])
 
-<div class="card">
+<div class="card shadow-none border-gray-light">
     <div class="card-body">
         <h5 class="card-title d-flex align-items-center gap-2 mb-4">
             <i class="ti ti-lock"></i>
@@ -37,7 +37,7 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
+            <button type="submit" class="btn btn-whatsapp w-100" wire:loading.attr="disabled">
                 <span wire:loading.remove">Changer le mot de passe</span>
                 <span wire:loading>{{ __('profile.changing') }}</span>
             </button>

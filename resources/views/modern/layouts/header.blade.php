@@ -46,7 +46,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
                             @if(auth()->check() && auth()->user()->isCustomer())
-                                <a class="dropdown-item" href="#"><i class="la la-wallet"></i> Solde: {{ number_format(auth()->user()->wallet?->balance ?? 0, 0, ',', ' ') }} FCFA</a>
+                                <a class="dropdown-item" href="#"><i class="la la-wallet"></i> Solde: <x-user-currency :amount="auth()->user()->wallet?->balance ?? 0" /></a>
                                 <div class="dropdown-divider"></div>
                             @endif
                             @if(auth()->check())

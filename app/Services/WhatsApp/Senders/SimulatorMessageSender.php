@@ -22,11 +22,13 @@ final class SimulatorMessageSender extends AbstractMessageSender
     {
         if (! $response->processed || $response->processingError) {
             $this->sendErrorMessage($response->processingError ?? 'Erreur inconnue');
+
             return;
         }
 
         if (! $response->hasAiResponse || ! $response->aiResponse) {
             $this->sendErrorMessage('Aucune réponse AI générée');
+
             return;
         }
 

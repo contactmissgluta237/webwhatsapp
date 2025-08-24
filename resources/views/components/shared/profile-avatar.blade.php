@@ -1,6 +1,6 @@
 @props(['avatar', 'current_avatar_url'])
 
-<div class="card mb-4">
+<div class="card mb-4 shadow-none border-gray-light">
     <div class="card-body text-center">
         <h5 class="card-title d-flex align-items-center justify-content-center gap-2 mb-4">
             <i class="ti ti-camera"></i>
@@ -44,47 +44,50 @@
         </div>
         
         <form wire:submit.prevent="updateAvatar" enctype="multipart/form-data">
-            <div class="mb-3">
-                <input type="file" 
-                       class="form-control @error('avatar') is-invalid @enderror" 
-                       wire:model="avatar" 
-                       accept="image/*">
-                @error('avatar')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+            <div class="row align-items-end mb-3">
+                <div class="col-md-8">
+                    <input type="file" 
+                           class="form-control @error('avatar') is-invalid @enderror" 
+                           wire:model="avatar" 
+                           accept="image/*">
+                    @error('avatar')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" 
+                            class="btn btn-whatsapp w-100"
+                            wire:loading.attr="disabled"
+                            @if(!$avatar) disabled @endif>
+                        <span wire:loading.remove wire:target="updateAvatar">
+                            <i class="ti ti-upload me-1"></i>
+                            Mettre à jour
+                        </span>
+                        <span wire:loading wire:target="updateAvatar">
+                            <i class="ti ti-loader-2 me-1"></i>
+                            Upload...
+                        </span>
+                    </button>
+                </div>
             </div>
             
-            <div class="d-flex gap-2 justify-content-center">
-                <button type="submit" 
-                        class="btn btn-success"
-                        wire:loading.attr="disabled"
-                        @if(!$avatar) disabled @endif>
-                    <span wire:loading.remove wire:target="updateAvatar">
-                        <i class="ti ti-upload me-1"></i>
-                        Mettre à jour
-                    </span>
-                    <span wire:loading wire:target="updateAvatar">
-                        <i class="ti ti-loader-2 me-1"></i>
-                        Upload...
-                    </span>
-                </button>
-                
-                @if(auth()->user()->hasAvatar())
+            @if(auth()->user()->hasAvatar())
+                <div class="text-center">
                     <button type="button" 
                             class="btn btn-outline-danger"
                             wire:click="removeAvatar"
                             wire:loading.attr="disabled">
                         <span wire:loading.remove wire:target="removeAvatar">
                             <i class="ti ti-trash me-1"></i>
-                            Supprimer
+                            Supprimer la photo
                         </span>
                         <span wire:loading wire:target="removeAvatar">
                             <i class="ti ti-loader-2 me-1"></i>
                             Suppression...
                         </span>
                     </button>
-                @endif
-            </div>
+                </div>
+            @endif
         </form>
         
         <div class="mt-3">

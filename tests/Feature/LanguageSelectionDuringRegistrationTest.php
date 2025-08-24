@@ -18,18 +18,18 @@ class LanguageSelectionDuringRegistrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create roles
         Role::create(['name' => 'customer', 'guard_name' => 'web']);
         Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        
+
         // Create a default country for testing
         Country::factory()->create([
             'id' => 1,
             'name' => 'Cameroon',
             'code' => 'CM',
             'phone_code' => '+237',
-            'flag_emoji' => '🇨🇲'
+            'flag_emoji' => '🇨🇲',
         ]);
     }
 
@@ -104,9 +104,9 @@ class LanguageSelectionDuringRegistrationTest extends TestCase
     public function test_referral_code_and_language_are_on_same_row(): void
     {
         $response = $this->get('/register');
-        
+
         $content = $response->getContent();
-        
+
         // Check that both fields are within the same row div
         $this->assertStringContainsString('<div class="row mb-3">', $content);
         $this->assertStringContainsString('referral_code', $content);
@@ -136,7 +136,7 @@ class LanguageSelectionDuringRegistrationTest extends TestCase
         // Now test updating locale in profile (simulating profile update)
         $customer->user->update(['locale' => 'en']);
         $customer->user->refresh();
-        
+
         $this->assertEquals('en', $customer->user->locale);
     }
 }

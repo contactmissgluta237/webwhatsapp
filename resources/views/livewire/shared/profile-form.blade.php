@@ -44,21 +44,32 @@
                 :is_customer="$this->isCustomer()" />
 
             <!-- Préférences linguistiques -->
-            <div class="card mt-4">
+            <div class="card mt-4 shadow-none border-gray-light">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">{{ __('profile.language_preferences') }}</h5>
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-globe me-1"></i>{{ __('profile.language_preferences') }}
+                    </h5>
                 </div>
                 <div class="card-body">
                     <form wire:submit.prevent="updateLocale">
-                        <div class="mb-3">
-                            <label for="locale" class="form-label">{{ __('profile.select_preferred_language') }}</label>
-                            <select class="form-select" id="locale" wire:model="locale">
-                                <option value="en">English</option>
-                                <option value="fr">Français</option>
-                            </select>
-                            @error('locale') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        <div class="row align-items-end">
+                            <div class="col-md-6">
+                                <label for="locale" class="form-label small fw-semibold">
+                                    <i class="fas fa-flag me-1"></i>{{ __('profile.select_preferred_language') }}
+                                </label>
+                                <select class="form-select @error('locale') is-invalid @enderror" id="locale" wire:model="locale">
+                                    <option value="en">🇺🇸 English</option>
+                                    <option value="fr">🇫🇷 Français</option>
+                                </select>
+                                @error('locale') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-whatsapp w-100" wire:loading.attr="disabled">
+                                    <span wire:loading.remove>{{ __('profile.update') }}</span>
+                                    <span wire:loading>Mise à jour...</span>
+                                </button>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-whatsapp">{{ __('profile.update') }}</button>
                     </form>
                 </div>
             </div>

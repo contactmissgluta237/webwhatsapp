@@ -4,6 +4,7 @@ namespace App\Livewire\Customer;
 
 use App\DTOs\Transaction\CreateCustomerWithdrawalDTO;
 use App\Enums\PaymentMethod;
+use App\Services\CurrencyService;
 use App\Services\Transaction\ExternalTransactionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -165,6 +166,21 @@ class CreateCustomerWithdrawalForm extends Component
         $this->amount = '';
         $this->payment_method = '';
         $this->resetPaymentData();
+    }
+
+    public function getUserCurrency()
+    {
+        $currencyService = app(CurrencyService::class);
+
+        return $currencyService->getUserCurrency(Auth::user());
+    }
+
+    public function formatPrice($amount)
+    {
+        $currencyService = app(CurrencyService::class);
+        $currency = $this->getUserCurrency();
+
+        return $currencyService->formatPrice($amount, $currency);
     }
 
     public function render()

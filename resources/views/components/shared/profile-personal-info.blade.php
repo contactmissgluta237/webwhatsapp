@@ -1,6 +1,6 @@
 @props(['first_name', 'last_name', 'email', 'phone_number', 'is_customer'])
 
-<div class="card mb-4">
+<div class="card mb-4 shadow-none border-gray-light">
     <div class="card-body">
         <h5 class="card-title d-flex align-items-center gap-2 mb-4">
             <i class="ti ti-user-circle"></i>
@@ -72,7 +72,7 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn btn-success" wire:loading.attr="disabled">
+            <button type="submit" class="btn btn-whatsapp w-100" wire:loading.attr="disabled">
                 <span wire:loading.remove>Mettre à jour le profil</span>
                 <span wire:loading>Mise à jour...</span>
             </button>

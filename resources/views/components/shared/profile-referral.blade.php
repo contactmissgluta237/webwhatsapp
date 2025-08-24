@@ -1,6 +1,6 @@
 @props(['affiliation_code', 'referrals_count', 'is_customer'])
 
-<div class="card">
+<div class="card shadow-none border-gray-light">
     <div class="card-body">
         <h5 class="card-title d-flex align-items-center gap-2 mb-4">
             <i class="ti ti-share"></i>
@@ -31,7 +31,7 @@
                 <div class="input-group">
                     <input type="text" class="form-control text-center fw-bold fs-5" 
                            value="{{ $affiliation_code }}" readonly>
-                    <button class="btn btn-outline-primary" type="button" 
+                    <button class="btn btn-whatsapp" type="button" 
                             onclick="navigator.clipboard.writeText('{{ $affiliation_code }}'); 
                                     this.innerHTML='<i class=\'ti ti-check\'></i>'; 
                                     setTimeout(() => this.innerHTML='<i class=\'ti ti-copy\'></i>', 2000)">
@@ -45,7 +45,7 @@
                 <div class="input-group">
                     <input type="text" class="form-control" 
                            value="{{ route('register') }}?referral_code={{ $affiliation_code }}" readonly>
-                    <button class="btn btn-outline-primary" type="button" 
+                    <button class="btn btn-whatsapp" type="button" 
                             onclick="let link = '{{ route('register') }}?referral_code={{ $affiliation_code }}'; 
                                     navigator.clipboard.writeText(link);
                                     this.innerHTML='<i class=\'ti ti-check\'></i>'; 
@@ -57,7 +57,7 @@
 
             @if($is_customer)
                 <div class="d-grid">
-                    <a href="{{ route('customer.referrals.index') }}" class="btn btn-success">
+                    <a href="{{ route('customer.referrals.index') }}" class="btn btn-whatsapp">
                         <i class="ti ti-users-group me-2"></i>
                         {{ __('profile.view_my_referrals') }}
                     </a>

@@ -138,3 +138,38 @@ tr.bg-light.rappasoft-striped-row:nth-of-type(odd) {
 .bg-whatsapp-light {
     background-color: #E6F5F3 !important; /* Light WhatsApp background */
 }
+
+/* Border utilities */
+.border-gray-light {
+    border: 1px solid #e6e6e6 !important; /* Fine light gray border */
+}
+
+.shadow-none {
+    box-shadow: none !important; /* Remove all shadows */
+}
+
+/* Recharge page enhancements */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.amount-option:hover,
+.payment-option:hover {
+    transform: translateY(-2px);
+    transition: all 0.2s ease;
+    border-color: #075E54 !important;
+}
+
+.border-whatsapp {
+    border-color: #075E54 !important;
+    border-width: 2px !important;
+}
+
+.bg-light-whatsapp {
+    background-color: rgba(7, 94, 84, 0.1) !important;
+}
+
+/* Gradient for balance card - WhatsApp Green gradient */
+.bg-gradient-whatsapp {
+    background: linear-gradient(135deg, #075E54 0%, #128C7E 100%) !important;
+}
