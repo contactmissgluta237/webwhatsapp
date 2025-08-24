@@ -21,7 +21,7 @@ final class DeepSeekService implements AiServiceInterface
     public function generate(AiRequestDTO $request, AiModel $model): AiResponseDTO
     {
         $this->validateConfiguration($model);
-        $messages = $this->prepareMessages($request->systemPrompt, $request->userMessage, $request->context);
+        $messages = $this->prepareMessages($request->systemPrompt, $request->userMessage);
 
         Log::info('🔄 Appel API DeepSeek', [
             'endpoint' => $model->endpoint_url ?? 'https://api.deepseek.com',
@@ -29,7 +29,6 @@ final class DeepSeekService implements AiServiceInterface
             'message_count' => count($messages),
             'system_prompt_length' => strlen($request->systemPrompt),
             'user_message_length' => strlen($request->userMessage),
-            'context_count' => count($request->context),
             'request_config_type' => gettype($request->config),
             'request_config_content' => $request->config,
             'model_config_type' => gettype($model->model_config),
@@ -227,7 +226,7 @@ final class DeepSeekService implements AiServiceInterface
         ];
     }
 
-    private function prepareMessages(string $systemPrompt, string $userMessage, array $context): array
+    private function prepareMessages(string $systemPrompt, string $userMessage): array
     {
         $messages = [];
 

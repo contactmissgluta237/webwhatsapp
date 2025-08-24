@@ -12,6 +12,8 @@ class RepositoryServiceProvider extends ServiceProvider implements DeferrablePro
      */
     public array $bindings = [
         \App\Repositories\Contracts\TokenRepositoryInterface::class => \App\Repositories\Eloquent\TokenRepositoryEloquent::class,
+        \App\Repositories\WhatsAppAccountRepositoryInterface::class => \App\Repositories\EloquentWhatsAppAccountRepository::class,
+        \App\Repositories\WhatsAppMessageRepositoryInterface::class => \App\Repositories\EloquentWhatsAppMessageRepository::class,
     ];
 
     /**

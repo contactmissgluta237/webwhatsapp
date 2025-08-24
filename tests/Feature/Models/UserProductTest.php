@@ -20,12 +20,12 @@ final class UserProductTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create customer role if it doesn't exist
-        if (!Role::where('name', 'customer')->exists()) {
+        if (! Role::where('name', 'customer')->exists()) {
             Role::create(['name' => 'customer']);
         }
-        
+
         $this->user = User::factory()->create();
         $this->user->assignRole('customer');
     }
@@ -61,12 +61,12 @@ final class UserProductTest extends TestCase
         $whatsappAccount = WhatsAppAccount::factory()->create([
             'user_id' => $this->user->id,
         ]);
-        
+
         $product = UserProduct::factory()->withUser($this->user)->create();
 
-        $whatsappAccount->linkedProducts()->attach($product->id);
+        $whatsappAccount->userProducts()->attach($product->id);
 
-        $this->assertTrue($whatsappAccount->linkedProducts->contains($product));
+        $this->assertTrue($whatsappAccount->userProducts->contains($product));
         $this->assertTrue($product->whatsappAccounts->contains($whatsappAccount));
     }
 
@@ -108,17 +108,17 @@ final class UserProductTest extends TestCase
             ->create();
 
         foreach ($products as $product) {
-            $whatsappAccount->linkedProducts()->attach($product->id);
+            $whatsappAccount->userProducts()->attach($product->id);
         }
 
-        $this->assertEquals(10, $whatsappAccount->linkedProducts()->count());
+        $this->assertEquals(10, $whatsappAccount->userProducts()->count());
 
         // Try to add an 11th product - should be handled at application level
         $eleventhProduct = UserProduct::factory()->withUser($this->user)->create();
-        
+
         // In a real application, this would be prevented by the Livewire component
         // Here we just verify the relationship allows it technically
-        $whatsappAccount->linkedProducts()->attach($eleventhProduct->id);
-        $this->assertEquals(11, $whatsappAccount->linkedProducts()->count());
+        $whatsappAccount->userProducts()->attach($eleventhProduct->id);
+        $this->assertEquals(11, $whatsappAccount->userProducts()->count());
     }
 }

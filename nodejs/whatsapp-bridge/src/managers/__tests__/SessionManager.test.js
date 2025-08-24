@@ -44,7 +44,7 @@ describe("SessionManager", () => {
 
         // Mock des services
         mockWebhookService = {
-            notifySessionConnected: jest.fn().mockResolvedValue(undefined),
+            notifySessionStatusUpdate: jest.fn().mockResolvedValue(undefined),
         };
         LaravelWebhookService.mockImplementation(() => mockWebhookService);
 
@@ -235,7 +235,7 @@ describe("SessionManager", () => {
             expect(sessionData.qrCode).toBeNull();
             expect(sessionData.phoneNumber).toBe("1234567890");
             expect(
-                mockWebhookService.notifySessionConnected,
+                mockWebhookService.notifySessionStatusUpdate,
             ).toHaveBeenCalledWith(sessionId, "1234567890", sessionData);
         });
 
@@ -692,7 +692,7 @@ describe("SessionManager", () => {
 
     describe("Gestion des erreurs et cas limites", () => {
         it("gère les erreurs lors de la notification webhook", async () => {
-            mockWebhookService.notifySessionConnected.mockRejectedValue(
+            mockWebhookService.notifySessionStatusUpdate.mockRejectedValue(
                 new Error("Webhook failed"),
             );
 

@@ -19,7 +19,9 @@ class MediaService implements MediaServiceInterface
         foreach ($files as $file) {
             $processedFile = $this->processFile($file);
             if ($processedFile) {
-                $mediaItems[] = $model->addMedia($processedFile)->toMediaCollection($collection);
+                $mediaItems[] = $model->addMedia($processedFile)
+                    ->usingName($processedFile->getClientOriginalName())
+                    ->toMediaCollection($collection);
             }
         }
 
@@ -84,7 +86,7 @@ class MediaService implements MediaServiceInterface
 
     public function getAllImagesForModel(HasMedia $model): array
     {
-        return $model->getMedia('images')->map(function (Media $media) {
+        return $model->getMedia('medias')->map(function (Media $media) {
             return new ImageDataDTO(
                 url: $media->getUrl(),
                 thumb: $media->getUrl('thumb'),
@@ -103,9 +105,15 @@ class MediaService implements MediaServiceInterface
         return true;
     }
 
-    public function handleMainWithMultipleStrategy(HasMedia $model, ?UploadedFile $mainImage, array $images): void
+    public function handleMainWithMultipleStrategy(HasMedia $model, ?UploadedFile $mainImage, array $images, string $collectionName = 'images'): void
     {
-        // Implementation for main with multiple strategy
+        if ($mainImage) {
+            $this->syncMedia($model, $mainImage, 'main_image');
+        }
+
+        if (! empty($images)) {
+            $this->attachMedia($model, $images, $collectionName);
+        }
     }
 
     public function handleMainImageStrategy(HasMedia $model, UploadedFile $mainImage): void
@@ -113,21 +121,25 @@ class MediaService implements MediaServiceInterface
         // Implementation for main image strategy
     }
 
-    public function handleMultipleImagesOnlyStrategy(HasMedia $model, array $images): void
+    public function handleMultipleImagesOnlyStrategy(HasMedia $model, array $images, string $collectionName = 'images'): void
     {
-        // Implementation for multiple images only strategy
+        if (! empty($images)) {
+            $this->attachMedia($model, $images, $collectionName);
+        }
     }
 
-    public function handleSingleImageStrategy(HasMedia $model, UploadedFile $image): void
+    public function handleSingleImageStrategy(HasMedia $model, UploadedFile $image, string $collectionName = 'images'): void
     {
-        // Implementation for single image strategy
+        $this->syncMedia($model, $image, $collectionName);
     }
 
     public function syncMedia(HasMedia $model, ?UploadedFile $file, string $collection = 'default'): void
     {
         if ($file) {
             $model->clearMediaCollection($collection);
-            $model->addMedia($file)->toMediaCollection($collection);
+            $model->addMedia($file)
+                ->usingName($file->getClientOriginalName())
+                ->toMediaCollection($collection);
         } else {
             $model->clearMediaCollection($collection);
         }

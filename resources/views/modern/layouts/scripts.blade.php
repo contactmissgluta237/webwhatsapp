@@ -18,3 +18,28 @@
 <!-- BEGIN: Toastr JS-->
 <script src="{{ asset('assets/vendors/js/extensions/toastr.min.js') }}"></script>
 <!-- END: Toastr JS-->
+
+<!-- Global Flash Messages and Utilities -->
+<script>
+$(document).ready(function() {
+    // Affichage automatique des messages flash avec toastr
+    @if(session('success'))
+        toastr.success('{{ session('success') }}');
+    @endif
+    @if(session('error'))
+        toastr.error('{{ session('error') }}');
+    @endif
+    @if(session('warning'))
+        toastr.warning('{{ session('warning') }}');
+    @endif
+    @if(session('info'))
+        toastr.info('{{ session('info') }}');
+    @endif
+
+    // Initialize tooltips globalement
+    $('[data-toggle="tooltip"]').tooltip();
+    
+    // Initialize popovers globalement
+    $('[data-toggle="popover"]').popover();
+});
+</script>

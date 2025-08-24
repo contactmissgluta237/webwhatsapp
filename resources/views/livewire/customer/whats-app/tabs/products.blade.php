@@ -1,0 +1,1 @@
+@livewire('customer.whats-app.components.ai-products-configuration', ['account' => $account])

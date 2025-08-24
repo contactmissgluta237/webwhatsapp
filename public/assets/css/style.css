@@ -125,3 +125,16 @@ select.form-select:focus {
     border-top-color: #075E54 !important; /* Only top border in WhatsApp green */
     box-shadow: none !important; /* Remove any potential box-shadow */
 }
+
+tr.bg-light.rappasoft-striped-row:nth-of-type(odd) {
+    background-color: #f9f9f9 !important; /* Light gray background */
+}
+
+.text-whatsapp {
+    color: #075E54 !important;
+    font-weight: bold !important;
+}
+
+.bg-whatsapp-light {
+    background-color: #E6F5F3 !important; /* Light WhatsApp background */
+}

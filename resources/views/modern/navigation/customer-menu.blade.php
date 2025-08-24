@@ -9,17 +9,33 @@
 </li>
 
 {{-- 2. Agents WhatsApp --}}
-<li class="nav-item has-sub {{ request()->is('whatsapp*') ? 'open' : '' }}">
+<li class="nav-item has-sub {{ request()->is('customer/whatsapp*') ? 'open' : '' }}">
     <a href="#">
         <i class="la la-whatsapp"></i>
         <span class="menu-title" data-i18n="Agents Whatsapp">{{ __('Agents Whatsapp') }}</span>
     </a>
     <ul class="menu-content">
-        <li class="{{ request()->routeIs('whatsapp.index') ? 'active' : '' }}">
-            <a class="menu-item" href="{{ route('whatsapp.index') }}">{{ __('Liste des agents') }}</a>
+        <li class="{{ request()->routeIs('customer.whatsapp.index') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.whatsapp.index') }}">{{ __('Liste des agents') }}</a>
         </li>
-        <li class="{{ request()->routeIs('whatsapp.create') ? 'active' : '' }}">
-            <a class="menu-item" href="{{ route('whatsapp.create') }}">{{ __('Ajouter un agent') }}</a>
+        <li class="{{ request()->routeIs('customer.whatsapp.create') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.whatsapp.create') }}">{{ __('Ajouter un agent') }}</a>
+        </li>
+    </ul>
+</li>
+
+{{-- Produits --}}
+<li class="nav-item has-sub {{ request()->is('customer/products*') ? 'open' : '' }}">
+    <a href="#">
+        <i class="la la-cubes"></i>
+        <span class="menu-title" data-i18n="Produits">{{ __('Produits') }}</span>
+    </a>
+    <ul class="menu-content">
+        <li class="{{ request()->routeIs('customer.products.index') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.products.index') }}">{{ __('Liste') }}</a>
+        </li>
+        <li class="{{ request()->routeIs('customer.products.create') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.products.create') }}">{{ __('Nouveau') }}</a>
         </li>
     </ul>
 </li>

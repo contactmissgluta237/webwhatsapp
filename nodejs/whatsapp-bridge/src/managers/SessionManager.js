@@ -67,6 +67,8 @@ class SessionManager {
             createdAt: new Date(),
         };
 
+        this.webhookService.notifySessionStatusUpdate(sessionId, "initializing", null, sessionData);
+
         this.setupClientHandlers(
             client,
             sessionId,
@@ -88,6 +90,7 @@ class SessionManager {
                         userId
                     });
                     sessionData.status = "error";
+                    this.webhookService.notifySessionStatusUpdate(sessionId, "error", null, sessionData);
                     try {
                         await this.forceDestroy(sessionId);
                     } catch (_) {}
@@ -121,6 +124,7 @@ class SessionManager {
         client.on("qr", (qr) => {
             sessionData.qrCode = qr;
             sessionData.status = "qr_code_ready";
+            this.webhookService.notifySessionStatusUpdate(sessionId, "qr_code_ready", null, sessionData);
             logger.session(sessionId, "QR generated", {
                 qrLength: qr.length,
                 userId: sessionData.userId
@@ -146,8 +150,9 @@ class SessionManager {
                     phoneNumber: phoneNumber.substring(0, 5) + "...",
                     userId: sessionData.userId
                 });
-                await this.webhookService.notifySessionConnected(
+                await this.webhookService.notifySessionStatusUpdate(
                     sessionId,
+                    "connected",
                     phoneNumber,
                     sessionData,
                 );
@@ -252,6 +257,7 @@ class SessionManager {
 
         client.on("disconnected", () => {
             sessionData.status = "disconnected";
+            this.webhookService.notifySessionStatusUpdate(sessionId, "disconnected", null, sessionData);
             logger.session(sessionId, "Session disconnected", {
                 userId: sessionData.userId
             });
@@ -384,6 +390,7 @@ class SessionManager {
                         createdAt: new Date(savedData.createdAt),
                         restoredAt: new Date(),
                     };
+                    this.webhookService.notifySessionStatusUpdate(sessionId, "reconnecting", null, sessionData);
 
                     // Configurer les gestionnaires d'événements
                     this.setupClientHandlers(client, sessionId, sessionData, 

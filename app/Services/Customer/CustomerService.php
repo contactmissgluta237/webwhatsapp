@@ -58,4 +58,9 @@ class CustomerService extends BaseService
     {
         return Customer::class;
     }
+
+    protected function getMediaCollectionName(): string
+    {
+        return 'images';
+    }
 }

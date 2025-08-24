@@ -50,20 +50,4 @@ return [
         'public_key' => env('MYCOOLPAY_PUBLIC_KEY'),
         'private_key' => env('MYCOOLPAY_PRIVATE_KEY'),
     ],
-
-    'whatsapp_bridge' => [
-        'url' => 'http://'.env('WHATSAPP_BRIDGE_HOST', 'localhost').':'.env('WHATSAPP_BRIDGE_PORT', '3000'),
-        'docker_url' => 'http://'.env('WHATSAPP_BRIDGE_DOCKER_HOST', 'whatsapp-bridge').':'.env('WHATSAPP_BRIDGE_DOCKER_PORT', '3000'),
-        'api_token' => env('WHATSAPP_API_TOKEN'),
-    ],
-
-    'nodejs' => [
-        'base_url' => env('NODEJS_BASE_URL', 'http://localhost:3000'),
-    ],
-
-    'ollama' => [
-        'url' => env('OLLAMA_URL', 'http://localhost:11434'),
-        'default_model' => env('OLLAMA_DEFAULT_MODEL', 'llama2:7b-chat'),
-    ],
-
 ];

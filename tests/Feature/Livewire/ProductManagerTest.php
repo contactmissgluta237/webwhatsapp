@@ -21,12 +21,12 @@ final class ProductManagerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create customer role if it doesn't exist
-        if (!Role::where('name', 'customer')->exists()) {
+        if (! Role::where('name', 'customer')->exists()) {
             Role::create(['name' => 'customer']);
         }
-        
+
         $this->user = User::factory()->create();
         $this->user->assignRole('customer');
     }

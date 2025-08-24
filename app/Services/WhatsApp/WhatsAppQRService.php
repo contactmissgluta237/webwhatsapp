@@ -22,8 +22,8 @@ class WhatsAppQRService
 
     public function __construct()
     {
-        $this->bridgeUrl = $this->getBridgeUrl();
-        $this->apiToken = config('services.whatsapp_bridge.api_token');
+        $this->bridgeUrl = config('whatsapp.node_js.base_url');
+        $this->apiToken = config('whatsapp.node_js.api_token');
     }
 
     /**
@@ -84,50 +84,6 @@ class WhatsAppQRService
     // =====================================================
     // MÉTHODES PRIVÉES
     // =====================================================
-
-    /**
-     * Détecter l'URL du bridge selon l'environnement
-     */
-    private function getBridgeUrl(): string
-    {
-        $isDocker = $this->isRunningInDocker();
-
-        $url = $isDocker
-            ? config('services.whatsapp_bridge.docker_url', 'http://whatsapp-bridge:3000')
-            : config('services.whatsapp_bridge.url', 'http://localhost:3000');
-
-        Log::info($isDocker ? '🐳 QRService: Using Docker URL' : '🖥️  QRService: Using host URL', [
-            'url' => $url,
-        ]);
-
-        return $url;
-    }
-
-    /**
-     * Détecter si on est dans Docker
-     */
-    private function isRunningInDocker(): bool
-    {
-        // Check .dockerenv file (plus fiable)
-        if (file_exists('/.dockerenv')) {
-            return true;
-        }
-
-        // Check variables d'environnement Docker
-        if (getenv('DOCKER_CONTAINER') || getenv('CONTAINER_NAME')) {
-            return true;
-        }
-
-        // Check cgroup pour docker/containerd
-        if (file_exists('/proc/1/cgroup')) {
-            $cgroup = @file_get_contents('/proc/1/cgroup');
-            if ($cgroup && (str_contains($cgroup, 'docker') || str_contains($cgroup, 'containerd'))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Créer un ID de session unique pour SaaS (évite les conflits Puppeteer)

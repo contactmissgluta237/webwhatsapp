@@ -6,235 +6,159 @@ namespace App\Services\WhatsApp;
 
 use App\Contracts\WhatsApp\MessageBuildServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
-use App\DTOs\WhatsApp\ConversationContextDTO;
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\Models\UserProduct;
+use App\Models\WhatsAppAccount;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 final class MessageBuildService implements MessageBuildServiceInterface
 {
+    private const MAX_PRODUCTS_PER_REQUEST = 10;
+    private const CURRENCY_SUFFIX = ' XAF';
+
     /**
      * Build a complete AI request with system prompt, user message and context
      */
     public function buildAiRequest(
-        WhatsAppAccountMetadataDTO $accountMetadata,
-        ConversationContextDTO $conversationContext,
+        WhatsAppAccount $account,
+        string $conversationHistory,
         string $userMessage
     ): AiRequestDTO {
         Log::debug('[MESSAGE_BUILD] Building AI request', [
-            'session_id' => $accountMetadata->sessionId,
-            'conversation_id' => $conversationContext->conversationId,
+            'account_id' => $account->id,
             'message_length' => strlen($userMessage),
-            'has_context' => $conversationContext->hasRecentMessages(),
+            'history_length' => strlen($conversationHistory),
         ]);
 
-        $systemPrompt = $this->buildSystemPrompt($accountMetadata, $conversationContext);
-        $messageContext = $this->prepareMessageContext($conversationContext);
+        $systemPrompt = $this->buildSystemPrompt($account, $conversationHistory);
 
-        $aiRequest = new AiRequestDTO(
+        return new AiRequestDTO(
             systemPrompt: $systemPrompt,
             userMessage: $userMessage,
-            config: $this->buildAiConfig($accountMetadata),
-            context: $messageContext
+            account: $account,
         );
-
-        Log::info('[MESSAGE_BUILD] AI request built successfully', [
-            'system_prompt_length' => strlen($systemPrompt),
-            'context_messages' => count($messageContext),
-            'ai_model_id' => $accountMetadata->aiModelId,
-        ]);
-
-        return $aiRequest;
     }
 
     /**
      * Build system prompt with contextual information
      */
-    public function buildSystemPrompt(
-        WhatsAppAccountMetadataDTO $accountMetadata,
-        ConversationContextDTO $conversationContext
-    ): string {
-        $basePrompt = $accountMetadata->getEffectivePrompt();
-
-        $systemPrompt = $basePrompt;
-
-        // Add contextual information if available
-        if ($conversationContext->contextualInformation) {
-            $systemPrompt .= "\n\nInformations contextuelles importantes :\n";
-            $systemPrompt .= $conversationContext->contextualInformation;
-        }
-
-        // Add conversation guidelines
-        $systemPrompt .= "\n\nDirectives de conversation :";
-        $systemPrompt .= "\n- Réponds en français de manière naturelle et conversationnelle";
-        $systemPrompt .= "\n- Reste concis et pertinent";
-        $systemPrompt .= "\n- Utilise un ton professionnel mais chaleureux";
-
-        // RÈGLES ANTI-HALLUCINATION STRICTES - GÉNÉRALES
-        $systemPrompt .= "\n\n⚠️ RÈGLES CRITIQUES - INTERDICTION ABSOLUE D'INVENTER :";
-        $systemPrompt .= "\n- ❌ JAMAIS inventer d'informations que tu ne connais pas avec certitude";
-        $systemPrompt .= "\n- ❌ JAMAIS donner de données factuelles non vérifiées (dates, prix, coordonnées, etc.)";
-        $systemPrompt .= "\n- ❌ JAMAIS faire semblant de connaître des détails spécifiques si tu n'en es pas sûr";
-        $systemPrompt .= "\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : dire 'Je reviens vers vous dans un instant avec cette information'";
-        $systemPrompt .= "\n- ✅ Être honnête sur tes limites plutôt que d'inventer";
-        $systemPrompt .= "\n- ✅ Si tu doutes d'une information, demander plutôt confirmation ou dire que tu vérifies";
-
-        // Add chat context if available
-        if ($conversationContext->hasRecentMessages()) {
-            $systemPrompt .= "\n\nContexte de la conversation précédente :\n";
-            $systemPrompt .= $conversationContext->getFormattedHistory();
-        }
-
-        Log::debug('[MESSAGE_BUILD] System prompt built', [
-            'prompt_length' => strlen($systemPrompt),
-            'has_contextual_info' => ! empty($conversationContext->contextualInformation),
-            'has_conversation_history' => $conversationContext->hasRecentMessages(),
-        ]);
-
-        return $systemPrompt;
-    }
-
-    /**
-     * Prepare message context for AI processing
-     */
-    public function prepareMessageContext(ConversationContextDTO $conversationContext): array
+    private function buildSystemPrompt(WhatsAppAccount $account, string $conversationHistory): string
     {
-        $context = [
-            'conversation_id' => $conversationContext->conversationId,
-            'chat_id' => $conversationContext->chatId,
-            'contact_phone' => $conversationContext->contactPhone,
-            'is_group' => $conversationContext->isGroup,
-            'has_history' => $conversationContext->hasRecentMessages(),
+        $components = [
+            $this->getBasePrompt($account),
+            $this->getConversationGuidelines(),
+            $this->getAntiHallucinationRules(),
+            $this->getConversationHistory($conversationHistory),
+            $this->getProductsContext($account),
+            $this->getJsonResponseInstructions(),
         ];
 
-        // Add recent messages for AI context
-        if ($conversationContext->hasRecentMessages()) {
-            $context['recent_messages'] = $conversationContext->recentMessages;
-            $context['message_count'] = count($conversationContext->recentMessages);
+        return implode('', array_filter($components));
+    }
+
+    private function getBasePrompt(WhatsAppAccount $account): string
+    {
+        return $account->agent_prompt ?? 'Tu es un assistant commercial professionnel.';
+    }
+
+    private function getConversationGuidelines(): string
+    {
+        return "\n\nDirectives de conversation :"
+            . "\n- Réponds en français de manière naturelle et conversationnelle"
+            . "\n- Reste concis et pertinent"
+            . "\n- Utilise un ton professionnel mais chaleureux";
+    }
+
+    private function getAntiHallucinationRules(): string
+    {
+        return "\n\n⚠️ RÈGLES CRITIQUES - INTERDICTION ABSOLUE D'INVENTER :"
+            . "\n- ❌ JAMAIS inventer d'informations que tu ne connais pas avec certitude"
+            . "\n- ❌ JAMAIS donner de données factuelles non vérifiées (dates, prix, coordonnées, etc.)"
+            . "\n- ❌ JAMAIS faire semblant de connaître des détails spécifiques si tu n'en es pas sûr"
+            . "\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : dire 'Je reviens vers vous dans un instant avec cette information'"
+            . "\n- ✅ Être honnête sur tes limites plutôt que d'inventer"
+            . "\n- ✅ Si tu doutes d'une information, demander plutôt confirmation ou dire que tu vérifies";
+    }
+
+    private function getConversationHistory(string $conversationHistory): string
+    {
+        return empty($conversationHistory)
+            ? ''
+            : "\n\nContexte de la conversation précédente :\n" . $conversationHistory;
+    }
+
+    private function getProductsContext(WhatsAppAccount $account): string
+    {
+        $products = $this->getActiveProducts($account);
+
+        if ($products->isEmpty()) {
+            return '';
         }
 
-        // Add metadata if available
-        if (! empty($conversationContext->metadata)) {
-            $context['metadata'] = $conversationContext->metadata;
+        return $this->buildProductsContextString($products, $account->id);
+    }
+
+    /**
+     * @return Collection<UserProduct>
+     */
+    private function getActiveProducts(WhatsAppAccount $account): Collection
+    {
+        /** @var Collection<UserProduct> */
+        return $account->userProducts()
+            ->where('is_active', true)
+            ->with('media')
+            ->take(self::MAX_PRODUCTS_PER_REQUEST)
+            ->get();
+    }
+
+    private function buildProductsContextString(Collection $products, int $accountId): string
+    {
+        $productsContext = "\n\n📦 PRODUITS DISPONIBLES À PROPOSER AU CLIENT :\n";
+
+        foreach ($products as $product) {
+            $productsContext .= $this->formatProductLine($product);
         }
 
-        Log::debug('[MESSAGE_BUILD] Message context prepared', [
-            'context_keys' => array_keys($context),
-            'recent_messages_count' => $context['message_count'] ?? 0,
+        $productsContext .= $this->getProductInstructions();
+
+        Log::debug('[MESSAGE_BUILD] Products context added', [
+            'account_id' => $accountId,
+            'products_count' => $products->count(),
+            'context_length' => strlen($productsContext),
         ]);
 
-        return $context;
+        return $productsContext;
     }
 
-    /**
-     * Build AI configuration based on account settings
-     */
-    private function buildAiConfig(WhatsAppAccountMetadataDTO $accountMetadata): array
+    private function formatProductLine(UserProduct $product): string
     {
-        $config = [
-            'model_id' => $accountMetadata->getEffectiveAiModelId(),
-            'response_time' => $accountMetadata->getEffectiveResponseTime(),
-            'session_id' => $accountMetadata->sessionId,
-            'account_id' => $accountMetadata->accountId,
-        ];
+        $price = is_numeric($product->price) ? (float) $product->price : 0.0;
 
-        // Add account-specific settings
-        if (! empty($accountMetadata->settings)) {
-            $config['account_settings'] = $accountMetadata->settings;
-        }
-
-        Log::debug('[MESSAGE_BUILD] AI config built', [
-            'model_id' => $config['model_id'],
-            'response_time' => $config['response_time'],
-            'has_custom_settings' => ! empty($accountMetadata->settings),
-        ]);
-
-        return $config;
+        return sprintf(
+            "• ID: %d | %s | %s | %s\n",
+            $product->id,
+            $product->title,
+            number_format($price, 0, ',', ' ') . self::CURRENCY_SUFFIX,
+            Str::limit($product->description, 80)
+        );
     }
 
-    /**
-     * Validate message content for AI processing
-     */
-    public function validateMessageContent(string $message): bool
+    private function getProductInstructions(): string
     {
-        // Basic validation rules
-        $trimmedMessage = trim($message);
-
-        if (empty($trimmedMessage)) {
-            Log::warning('[MESSAGE_BUILD] Empty message content');
-
-            return false;
-        }
-
-        if (strlen($trimmedMessage) > 4000) {
-            Log::warning('[MESSAGE_BUILD] Message too long', [
-                'length' => strlen($trimmedMessage),
-            ]);
-
-            return false;
-        }
-
-        return true;
+        return "\n🎯 INSTRUCTIONS POUR LES PRODUITS :"
+            . "\n- Si client demande produits/catalogue/prix → action: \"show_products\" + IDs pertinents"
+            . "\n- Maximum " . self::MAX_PRODUCTS_PER_REQUEST . " produits par envoi"
+            . "\n- IMPORTANT: Utiliser UNIQUEMENT les IDs listés ci-dessus";
     }
 
-    /**
-     * Extract message intent for better AI processing
-     */
-    public function extractMessageIntent(string $message): array
+    private function getJsonResponseInstructions(): string
     {
-        $message = strtolower(trim($message));
-        $intent = [
-            'type' => 'general',
-            'confidence' => 0.5,
-            'keywords' => [],
-        ];
-
-        // Question detection
-        if (str_contains($message, '?') ||
-            str_starts_with($message, 'comment') ||
-            str_starts_with($message, 'pourquoi') ||
-            str_starts_with($message, 'quand') ||
-            str_starts_with($message, 'où')) {
-            $intent['type'] = 'question';
-            $intent['confidence'] = 0.8;
-        }
-
-        // Greeting detection
-        if (preg_match('/^(bonjour|salut|hello|bonsoir|hey)/i', $message)) {
-            $intent['type'] = 'greeting';
-            $intent['confidence'] = 0.9;
-        }
-
-        // Request detection
-        if (str_contains($message, 'peux-tu') ||
-            str_contains($message, 'pouvez-vous') ||
-            str_contains($message, 'aide')) {
-            $intent['type'] = 'request';
-            $intent['confidence'] = 0.7;
-        }
-
-        Log::debug('[MESSAGE_BUILD] Message intent extracted', [
-            'intent_type' => $intent['type'],
-            'confidence' => $intent['confidence'],
-            'message_preview' => substr($message, 0, 50),
-        ]);
-
-        return $intent;
-    }
-
-    /**
-     * Format message for optimal AI processing
-     */
-    public function formatMessageForAI(string $message): string
-    {
-        // Basic cleanup
-        $formatted = trim($message);
-
-        // Remove excessive whitespace
-        $formatted = preg_replace('/\s+/', ' ', $formatted);
-
-        // Remove common noise characters
-        $formatted = str_replace(['📱', '💬', '🤖'], '', $formatted);
-
-        return $formatted;
+        return "\n\n⚡ FORMAT DE RÉPONSE OBLIGATOIRE :"
+            . "\n- Tu DOIS TOUJOURS répondre en JSON avec cette structure exacte :"
+            . "\n  {\"message\":\"Votre message texte\", \"action\":\"text|show_products|show_catalog\", \"products\":[1,2,3]}"
+            . "\n- Si question générale → action: \"text\" + products: []"
+            . "\n- Si client demande produits → action: \"show_products\" + IDs des produits"
+            . "\n- INTERDICTION: Pas de texte en dehors du JSON, seulement du JSON valide";
     }
 }

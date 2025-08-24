@@ -13,6 +13,7 @@ use App\Events\TicketCreatedEvent;
 use App\Events\TicketMessageSentEvent;
 use App\Events\TicketStatusChangedEvent;
 use App\Events\UserUpdatedEvent;
+use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Events\WithdrawalRequestedEvent;
 use App\Listeners\AdminWithdrawalNotificationListener;
 use App\Listeners\HandleExternalTransactionWebhookListener;
@@ -27,6 +28,9 @@ use App\Listeners\NotifyCustomerOfTicketReplyListener;
 use App\Listeners\NotifyReferrerListener;
 use App\Listeners\SendApprovalNotificationListener;
 use App\Listeners\SendRechargeNotificationToCustomerListener;
+use App\Listeners\WhatsApp\AnalyticsListener;
+use App\Listeners\WhatsApp\BillingCounterListener;
+use App\Listeners\WhatsApp\StoreMessagesListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -73,6 +77,11 @@ class EventServiceProvider extends ServiceProvider
         ],
         TicketStatusChangedEvent::class => [
             NotifyCustomerOfStatusChangeListener::class,
+        ],
+        MessageProcessedEvent::class => [
+            StoreMessagesListener::class,
+            BillingCounterListener::class,
+            AnalyticsListener::class,
         ],
     ];
 

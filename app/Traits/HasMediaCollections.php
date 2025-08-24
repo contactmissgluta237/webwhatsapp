@@ -24,9 +24,22 @@ trait HasMediaCollections
             if ($collectionName === 'main_image') {
                 $this->addMediaCollection('main_image')
                     ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-            } elseif ($collectionName === 'images') {
-                $this->addMediaCollection('images')
-                    ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+            } elseif ($collectionName === 'medias') {
+                $this->addMediaCollection('medias')
+                    ->acceptsMimeTypes([
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp',
+                        'image/gif',
+                        'image/svg+xml',
+                        'video/mp4',
+                        'video/avi',
+                        'video/quicktime',
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/x-empty', // Pour les tests fake files
+                    ]);
             } elseif ($collectionName === 'avatar') {
                 $this->addMediaCollection('avatar')
                     ->singleFile()
@@ -79,7 +92,7 @@ trait HasMediaCollections
 
     public function getImageCollections(): array
     {
-        return ['images'];
+        return ['medias'];
     }
 
     abstract public function requiresMainImage(): bool;

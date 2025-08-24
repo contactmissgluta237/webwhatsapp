@@ -124,6 +124,24 @@
     font-size: 13px;
 }
 
+.message-product {
+    justify-content: flex-start;
+    margin-right: auto;
+}
+
+.message-product .message-content {
+    background: #fff3e0;
+    color: #e65100;
+    border-left: 4px solid #ff9800;
+    border-bottom-left-radius: 2px;
+    font-weight: 500;
+}
+
+.product-message {
+    font-weight: 500;
+    color: #e65100;
+}
+
 .message-time {
     font-size: 11px;
     color: #667781;

@@ -9,6 +9,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('webhook')->group(function () {
-    Route::post('/incoming-message', App\Http\Controllers\WhatsApp\Webhook\IncomingMessageController::class);
-    Route::post('/session-connected', App\Http\Controllers\WhatsApp\Webhook\SessionConnectedController::class);
+    Route::post('/incoming-message', App\Http\Controllers\Customer\WhatsApp\Webhook\IncomingMessageController::class);
+    Route::post('/session', App\Http\Controllers\Api\WhatsApp\WhatsAppSessionStatusWebhookController::class);
 });

@@ -145,6 +145,11 @@ class TicketService extends BaseService
         return Ticket::class;
     }
 
+    protected function getMediaCollectionName(): string
+    {
+        return 'attachments';
+    }
+
     protected function getMediaFields(): array
     {
         return []; // No generic media fields, attachments are handled specifically

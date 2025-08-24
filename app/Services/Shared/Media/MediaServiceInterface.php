@@ -53,7 +53,7 @@ interface MediaServiceInterface
      *
      * @param  UploadedFile[]  $images
      */
-    public function handleMainWithMultipleStrategy(HasMedia $model, ?UploadedFile $mainImage, array $images): void;
+    public function handleMainWithMultipleStrategy(HasMedia $model, ?UploadedFile $mainImage, array $images, string $collectionName = 'images'): void;
 
     /**
      * Handle media strategy for models with main image only
@@ -65,12 +65,12 @@ interface MediaServiceInterface
      *
      * @param  UploadedFile[]  $images
      */
-    public function handleMultipleImagesOnlyStrategy(HasMedia $model, array $images): void;
+    public function handleMultipleImagesOnlyStrategy(HasMedia $model, array $images, string $collectionName = 'images'): void;
 
     /**
-     * Handle media strategy for models with a single image
+     * Handle media strategy for models with single image
      */
-    public function handleSingleImageStrategy(HasMedia $model, UploadedFile $image): void;
+    public function handleSingleImageStrategy(HasMedia $model, UploadedFile $image, string $collectionName = 'images'): void;
 
     /**
      * Synchronize media for a model.

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
@@ -124,9 +125,14 @@ final class WhatsAppAccount extends Model implements HasMedia
         return $this->belongsTo(AiModel::class);
     }
 
-    public function linkedProducts(): BelongsToMany
+    public function userProducts(): BelongsToMany
     {
-        return $this->belongsToMany(UserProduct::class, 'whatsapp_account_products');
+        return $this->belongsToMany(
+            UserProduct::class,
+            'whatsapp_account_products',
+            'whatsapp_account_id',
+            'user_product_id'
+        );
     }
 
     // MEDIA COLLECTIONS
@@ -221,30 +227,6 @@ final class WhatsAppAccount extends Model implements HasMedia
         return $this->agent_enabled && $this->ai_model_id !== null;
     }
 
-    public function getAiModel(): ?AiModel
-    {
-        return $this->aiModel;
-    }
-
-    public function getEffectiveAiModelId(): ?int
-    {
-        if ($this->ai_model_id) {
-            return $this->ai_model_id;
-        }
-
-        $defaultModel = AiModel::where('is_default', true)->where('is_active', true)->first()
-            ?? AiModel::where('is_active', true)->first();
-
-        return $defaultModel?->id;
-    }
-
-    public function getEffectiveAiModel(): ?AiModel
-    {
-        $modelId = $this->getEffectiveAiModelId();
-
-        return $modelId ? AiModel::find($modelId) : null;
-    }
-
     public function enableAiAgent(int $aiModelId, ?string $prompt = null, ?string $triggerWords = null, ?string $responseTime = null): void
     {
         $this->update([
@@ -275,14 +257,6 @@ final class WhatsAppAccount extends Model implements HasMedia
 Je réponds de manière naturelle et professionnelle, comme un vrai membre de l'équipe.";
     }
 
-    public function updateAiConfiguration(array $config): void
-    {
-        $allowedFields = ['ai_model_id', 'agent_prompt', 'trigger_words', 'response_time'];
-        $filteredConfig = array_intersect_key($config, array_flip($allowedFields));
-
-        $this->update($filteredConfig);
-    }
-
     public function shouldTriggerAiResponse(string $message): bool
     {
         if (! $this->hasAiAgent()) {
@@ -305,5 +279,54 @@ Je réponds de manière naturelle et professionnelle, comme un vrai membre de l'
         }
 
         return false;
+    }
+
+    /**
+     * Update WhatsApp account status from webhook.
+     */
+    public static function updateStatusFromWebhook(string $sessionId, string $newStatus, ?string $phoneNumber = null): bool
+    {
+        /** @var WhatsAppAccount|null $account */
+        $account = self::where('session_id', $sessionId)->first();
+
+        if (! $account) {
+            // Log or handle the case where the session is not found
+            Log::warning('WhatsApp account not found for webhook update', [
+                'session_id' => $sessionId,
+                'new_status' => $newStatus,
+                'phone_number' => $phoneNumber,
+            ]);
+
+            return false;
+        }
+
+        try {
+            $updateData = [
+                'status' => WhatsAppStatus::from($newStatus),
+            ];
+
+            if ($phoneNumber) {
+                $updateData['phone_number'] = $phoneNumber;
+            }
+
+            $account->update($updateData);
+
+            Log::info('WhatsApp account status updated from webhook', [
+                'session_id' => $sessionId,
+                'old_status' => $account->status->value,
+                'new_status' => $newStatus,
+                'phone_number' => $phoneNumber,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to update WhatsApp account status from webhook', [
+                'session_id' => $sessionId,
+                'new_status' => $newStatus,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }

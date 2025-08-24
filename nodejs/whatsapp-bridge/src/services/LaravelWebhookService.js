@@ -1,7 +1,7 @@
 // docker/whatsapp-bridge/src/services/LaravelWebhookService.js
 const axios = require("axios");
 const config = require("../config/config");
-const logger = require("../config/logger");
+const MessageLogger = require("./MessageLogger");
 
 class LaravelWebhookService {
     constructor() {
@@ -36,7 +36,7 @@ class LaravelWebhookService {
             },
         };
 
-        logger.whatsapp("🌐 SENDING TO LARAVEL", {
+        MessageLogger.logWhatsApp("🌐 SENDING TO LARAVEL", {
             sessionId: sessionData.sessionId,
             messageId: message.id._serialized,
             webhookUrl: `${this.webhookBase}/incoming-message`,
@@ -57,27 +57,56 @@ class LaravelWebhookService {
 
             const duration = Date.now() - startTime;
 
-            logger.whatsapp("✅ LARAVEL RESPONSE RECEIVED", {
+            MessageLogger.logWhatsApp("✅ LARAVEL RESPONSE RECEIVED", {
                 sessionId: sessionData.sessionId || sessionData.userId,
                 messageId: message.id._serialized,
                 status: response.status,
                 duration: `${duration}ms`,
+                success: response.data?.success || false,
+                processed: response.data?.processed || false,
                 hasResponseMessage: !!response.data?.response_message,
-                responseLength: response.data?.response_message?.length || 0
+                responseLength: response.data?.response_message?.length || 0,
+                hasProducts: Array.isArray(response.data?.products) && response.data.products.length > 0,
+                productsCount: response.data?.products?.length || 0
             });
 
+            // Log error if Laravel indicates failure
+            if (response.data?.success === false) {
+                MessageLogger.logError("❌ LARAVEL PROCESSING FAILED", {
+                    sessionId: sessionData.sessionId || sessionData.userId,
+                    messageId: message.id._serialized,
+                    error: response.data?.error || "Unknown error",
+                    processed: response.data?.processed || false
+                });
+            }
+
             if (response.data?.response_message) {
-                logger.whatsapp("🤖 AI RESPONSE FROM LARAVEL", {
+                MessageLogger.logWhatsApp("🤖 AI RESPONSE FROM LARAVEL", {
                     sessionId: sessionData.sessionId || sessionData.userId,
                     originalMessageId: message.id._serialized,
                     aiResponse: response.data.response_message.substring(0, 100) + (response.data.response_message.length > 100 ? "..." : ""),
-                    fullResponseLength: response.data.response_message.length
+                    fullResponseLength: response.data.response_message.length,
+                    waitTime: response.data?.wait_time_seconds || 0,
+                    typingDuration: response.data?.typing_duration_seconds || 0
+                });
+            }
+
+            if (response.data?.products && Array.isArray(response.data.products) && response.data.products.length > 0) {
+                MessageLogger.logWhatsApp("🛍️ PRODUCTS INCLUDED IN RESPONSE", {
+                    sessionId: sessionData.sessionId || sessionData.userId,
+                    originalMessageId: message.id._serialized,
+                    productsCount: response.data.products.length,
+                    products: response.data.products.map((product, index) => ({
+                        index: index + 1,
+                        messageLength: product.formattedProductMessage?.length || 0,
+                        mediaCount: Array.isArray(product.mediaUrls) ? product.mediaUrls.length : 0
+                    }))
                 });
             }
 
             return response.data;
         } catch (error) {
-            logger.error("❌ LARAVEL WEBHOOK FAILED", {
+            MessageLogger.logError("❌ LARAVEL WEBHOOK FAILED", {
                 sessionId: sessionData.sessionId || sessionData.userId,
                 messageId: message.id._serialized,
                 error: error.message,
@@ -90,19 +119,20 @@ class LaravelWebhookService {
         }
     }
 
-    async notifySessionConnected(sessionId, phoneNumber, sessionData) {
+    async notifySessionStatusUpdate(sessionId, status, phoneNumber = null, sessionData = {}) {
         const payload = {
             session_id: sessionId,
+            status: status, // Add status to payload
             phone_number: phoneNumber,
             whatsapp_data: {
                 user_id: sessionData.userId,
-                connected_at: new Date().toISOString(),
+                // connected_at: new Date().toISOString(), // This might not be relevant for all statuses
             },
         };
 
         try {
             const response = await axios.post(
-                `${this.webhookBase}/session-connected`,
+                `${this.webhookBase}/session`, // Change URL
                 payload,
                 {
                     headers: this.getHeaders(),
@@ -110,16 +140,21 @@ class LaravelWebhookService {
                 },
             );
 
-            console.log(`[Webhook] Session connection notified`, {
+            MessageLogger.logInfo(`[Webhook] Session status updated: ${status}`, {
                 sessionId,
                 phoneNumber,
+                status: response.status,
             });
 
             return response.data;
         } catch (error) {
-            console.error(
-                "[Webhook] Failed to notify connection:",
-                error.message,
+            MessageLogger.logError(
+                `[Webhook] Failed to notify session status update: ${status}`,
+                {
+                    sessionId,
+                    phoneNumber,
+                    error: error.message,
+                },
             );
             throw error;
         }

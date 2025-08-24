@@ -48,6 +48,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         $request = new AiRequestDTO(
             systemPrompt: self::ENHANCEMENT_SYSTEM_PROMPT,
             userMessage: $userMessage,
+            account: $account,
             config: [
                 'temperature' => 0.3,
                 'max_tokens' => 1000,

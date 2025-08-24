@@ -29,5 +29,14 @@ Route::middleware(['auth', 'role:customer'])
 
         Route::prefix('products')->name('products.')->group(function () {
             Route::get('/', App\Http\Controllers\Customer\Products\IndexController::class)->name('index');
+            Route::get('/create', App\Http\Controllers\Customer\Products\CreateController::class)->name('create');
+            Route::get('/{product}/edit', App\Http\Controllers\Customer\Products\EditController::class)->name('edit');
+            Route::post('/{product}/toggle-status', App\Http\Controllers\Customer\Products\ToggleStatusController::class)->name('toggle-status');
+            Route::delete('/{product}', App\Http\Controllers\Customer\Products\DeleteController::class)->name('delete');
+        });
+
+        Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+            Route::get('/', App\Http\Controllers\Customer\WhatsApp\Account\IndexController::class)->name('index');
+            Route::get('/create', App\Http\Controllers\Customer\WhatsApp\Account\CreateController::class)->name('create');
         });
     });

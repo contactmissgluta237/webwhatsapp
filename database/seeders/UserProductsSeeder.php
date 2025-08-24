@@ -15,7 +15,7 @@ final class UserProductsSeeder extends Seeder
     public function run(): void
     {
         // Ensure customer role exists
-        if (!Role::where('name', 'customer')->exists()) {
+        if (! Role::where('name', 'customer')->exists()) {
             Role::create(['name' => 'customer']);
         }
 
@@ -85,7 +85,7 @@ final class UserProductsSeeder extends Seeder
             $product = UserProduct::factory()
                 ->withUser($customer)
                 ->create($productData);
-            
+
             $createdProducts[] = $product;
         }
 
@@ -93,12 +93,12 @@ final class UserProductsSeeder extends Seeder
         $productsToLink = array_slice($createdProducts, 0, 5);
         foreach ($productsToLink as $product) {
             if ($product->is_active) {
-                $whatsappAccount->linkedProducts()->attach($product->id);
+                $whatsappAccount->userProducts()->attach($product->id);
             }
         }
 
-        $this->command->info('Created demo customer with ' . count($createdProducts) . ' products');
-        $this->command->info('Linked ' . count($productsToLink) . ' active products to WhatsApp agent');
+        $this->command->info('Created demo customer with '.count($createdProducts).' products');
+        $this->command->info('Linked '.count($productsToLink).' active products to WhatsApp agent');
         $this->command->info('Demo customer credentials: demo@customer.com');
     }
 }

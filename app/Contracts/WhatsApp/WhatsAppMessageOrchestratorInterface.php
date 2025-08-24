@@ -4,31 +4,18 @@ declare(strict_types=1);
 
 namespace App\Contracts\WhatsApp;
 
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
+use App\Models\WhatsAppAccount;
 
 interface WhatsAppMessageOrchestratorInterface
 {
     /**
-     * Orchestrate the complete processing of an incoming WhatsApp message
+     * MÉTHODE UNIFIÉE ULTRA-SIMPLE - Juste l'historique string
      */
-    public function processIncomingMessage(
-        WhatsAppAccountMetadataDTO $accountMetadata,
-        WhatsAppMessageRequestDTO $messageRequest
+    public function processMessage(
+        WhatsAppAccount $account,
+        WhatsAppMessageRequestDTO $messageRequest,
+        string $conversationHistory  // Format: "user: message\nsystem: réponse\nuser: message..."
     ): WhatsAppMessageResponseDTO;
-
-    /**
-     * Process a simulated message (from ConversationSimulator)
-     */
-    public function processSimulatedMessage(
-        WhatsAppAccountMetadataDTO $accountMetadata,
-        string $userMessage,
-        ?array $existingContext = null
-    ): WhatsAppMessageResponseDTO;
-
-    /**
-     * Create account metadata from session information
-     */
-    public function createAccountMetadata(string $sessionId, string $sessionName): WhatsAppAccountMetadataDTO;
 }

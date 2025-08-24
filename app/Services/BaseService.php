@@ -7,6 +7,7 @@ use App\Services\Shared\Media\MediaServiceInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\HasMedia;
 
 abstract class BaseService implements HasMediaServiceInterface
@@ -72,27 +73,54 @@ abstract class BaseService implements HasMediaServiceInterface
 
     protected function processMediaWithStrategy(HasMedia $model, array $data): void
     {
+        Log::info('🔍 BaseService::processMediaWithStrategy() START', [
+            'model_id' => $model->id ?? 'new',
+            'data_keys' => array_keys($data),
+            'has_medias' => isset($data['medias']),
+            'medias_count' => isset($data['medias']) ? (is_array($data['medias']) ? count($data['medias']) : 'not-array') : 'not-set',
+            'medias_types' => isset($data['medias']) && is_array($data['medias']) ? array_map('gettype', $data['medias']) : 'not-available',
+        ]);
+
         $strategy = $this->getMediaStrategy();
+        $collectionName = $this->getMediaCollectionName();
+
+        Log::info('🔍 BaseService::processMediaWithStrategy() - Strategy determined', [
+            'strategy' => $strategy,
+            'collection_name' => $collectionName,
+        ]);
+
         match ($strategy) {
             'main_only' => $this->mediaService->handleMainImageStrategy(
                 $model,
                 $this->extractMainImage($data)
             ),
-            'multiple_only' => $this->mediaService->handleMultipleImagesOnlyStrategy(
-                $model,
-                $this->extractImages($data)
-            ),
+            'multiple_only' => $this->processMultipleOnlyStrategy($model, $data, $collectionName),
             'single' => $this->mediaService->handleSingleImageStrategy(
                 $model,
-                $this->extractSingleImageFromData($data)
+                $this->extractSingleImageFromData($data),
+                $collectionName
             ),
             'main_with_multiple' => $this->mediaService->handleMainWithMultipleStrategy(
                 $model,
                 $this->extractMainImage($data),
-                $this->extractImages($data)
+                $this->extractImages($data),
+                $collectionName
             ),
-            default => null
+            default => Log::warning('🔍 BaseService::processMediaWithStrategy() - Unknown strategy', ['strategy' => $strategy])
         };
+    }
+
+    private function processMultipleOnlyStrategy(HasMedia $model, array $data, string $collectionName): void
+    {
+        $images = $this->extractImages($data);
+
+        Log::info('🔍 BaseService::processMultipleOnlyStrategy()', [
+            'images_count' => count($images),
+            'images_types' => array_map('gettype', $images),
+            'first_image_class' => ! empty($images) ? (is_object($images[0]) ? get_class($images[0]) : gettype($images[0])) : 'no-images',
+        ]);
+
+        $this->mediaService->handleMultipleImagesOnlyStrategy($model, $images, $collectionName);
     }
 
     private function extractSingleImageFromData(array $data): ?UploadedFile
@@ -115,6 +143,10 @@ abstract class BaseService implements HasMediaServiceInterface
 
     private function extractImages(array $data): array
     {
+        if (isset($data['medias']) && is_array($data['medias'])) {
+            return $data['medias'];
+        }
+
         return isset($data['images']) && is_array($data['images'])
             ? $data['images']
             : [];
@@ -160,4 +192,6 @@ abstract class BaseService implements HasMediaServiceInterface
      * @return class-string
      */
     abstract protected function getModel(): string;
+
+    abstract protected function getMediaCollectionName(): string;
 }

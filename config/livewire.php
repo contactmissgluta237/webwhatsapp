@@ -19,5 +19,22 @@ return [
             'throttle:60,1',
         ],
         'preserve_file_names' => false,
+        'preview_mimes' => [
+            // MIME types complets
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+            'image/gif',
+            'image/svg+xml',
+            'image/webp',
+            'video/mp4',
+            'video/avi',
+            'video/quicktime',
+            'application/pdf',
+
+            // Extensions simples (fallback)
+            'jpg', 'jpeg', 'png', 'gif', 'svg', 'webp',
+            'mp4', 'avi', 'mov', 'pdf',
+        ],
     ],
 ];

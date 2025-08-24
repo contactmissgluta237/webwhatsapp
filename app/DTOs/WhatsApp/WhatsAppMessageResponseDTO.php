@@ -8,28 +8,45 @@ use App\DTOs\BaseDTO;
 
 final class WhatsAppMessageResponseDTO extends BaseDTO
 {
+    /**
+     * @param  ProductDataDTO[]  $products
+     */
     public function __construct(
         public bool $processed,
         public bool $hasAiResponse,
         public ?string $aiResponse = null,
         public ?string $processingError = null,
         public ?WhatsAppAIResponseDTO $aiDetails = null,
-        public ?array $metadata = [],
         public int $waitTimeSeconds = 0,
-        public int $typingDurationSeconds = 0
+        public int $typingDurationSeconds = 0,
+        public array $products = [],
+        public ?string $sessionId = null,
+        public ?string $phoneNumber = null
     ) {}
 
-    public static function success(string $aiResponse, WhatsAppAIResponseDTO $aiDetails, int $waitTime = 0, int $typingDuration = 0): self
-    {
+    /**
+     * @param  ProductDataDTO[]  $products
+     */
+    public static function success(
+        string $aiResponse,
+        WhatsAppAIResponseDTO $aiDetails,
+        int $waitTime = 0,
+        int $typingDuration = 0,
+        array $products = [],
+        ?string $sessionId = null,
+        ?string $phoneNumber = null
+    ): self {
         return new self(
             processed: true,
             hasAiResponse: true,
             aiResponse: $aiResponse,
             processingError: null,
             aiDetails: $aiDetails,
-            metadata: [],
             waitTimeSeconds: $waitTime,
-            typingDurationSeconds: $typingDuration
+            typingDurationSeconds: $typingDuration,
+            products: $products,
+            sessionId: $sessionId,
+            phoneNumber: $phoneNumber
         );
     }
 
@@ -37,11 +54,7 @@ final class WhatsAppMessageResponseDTO extends BaseDTO
     {
         return new self(
             processed: true,
-            hasAiResponse: false,
-            aiResponse: null,
-            processingError: null,
-            aiDetails: null,
-            metadata: []
+            hasAiResponse: false
         );
     }
 
@@ -50,11 +63,38 @@ final class WhatsAppMessageResponseDTO extends BaseDTO
         return new self(
             processed: false,
             hasAiResponse: false,
-            aiResponse: null,
-            processingError: $error,
-            aiDetails: null,
-            metadata: []
+            processingError: $error
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toWebhookResponse(): array
+    {
+        if ($this->hasError()) {
+            return [
+                'success' => false,
+                'error' => $this->processingError,
+                'processed' => false,
+                'session_id' => $this->sessionId,
+                'phone_number' => $this->phoneNumber,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'processed' => true,
+            'session_id' => $this->sessionId,
+            'phone_number' => $this->phoneNumber,
+            'response_message' => $this->aiResponse,
+            'wait_time_seconds' => $this->waitTimeSeconds,
+            'typing_duration_seconds' => $this->typingDurationSeconds,
+            'products' => array_map(
+                fn (ProductDataDTO $product) => $product->toArray(),
+                $this->products
+            ),
+        ];
     }
 
     public function wasSuccessful(): bool
@@ -65,32 +105,5 @@ final class WhatsAppMessageResponseDTO extends BaseDTO
     public function hasError(): bool
     {
         return $this->processingError !== null;
-    }
-
-    public function toWebhookResponse(): array
-    {
-        if ($this->hasAiResponse) {
-            return [
-                'success' => true,
-                'response_message' => $this->aiResponse,
-                'processed' => true,
-                'wait_time_seconds' => $this->waitTimeSeconds,
-                'typing_duration_seconds' => $this->typingDurationSeconds,
-            ];
-        }
-
-        if ($this->hasError()) {
-            return [
-                'success' => false,
-                'error' => $this->processingError,
-                'processed' => false,
-            ];
-        }
-
-        return [
-            'success' => true,
-            'processed' => true,
-            'response_message' => null,
-        ];
     }
 }

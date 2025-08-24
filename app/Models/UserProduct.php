@@ -59,7 +59,12 @@ final class UserProduct extends Model implements HasMedia
 
     public function whatsappAccounts(): BelongsToMany
     {
-        return $this->belongsToMany(WhatsAppAccount::class, 'whatsapp_account_products');
+        return $this->belongsToMany(
+            WhatsAppAccount::class,
+            'whatsapp_account_products',
+            'user_product_id',
+            'whatsapp_account_id',
+        );
     }
 
     // ================================================================================
@@ -102,21 +107,21 @@ final class UserProduct extends Model implements HasMedia
 
     public function getFormattedPrice(): string
     {
-        return number_format($this->price, 0, ',', ' ') . ' XAF';
+        return number_format((float) $this->price, 0, ',', ' ').' XAF';
     }
 
     public function hasImages(): bool
     {
-        return $this->hasMedia('images');
+        return $this->hasMedia('medias');
     }
 
     public function getMainImageUrl(): ?string
     {
-        return $this->getFirstMediaUrl('images');
+        return $this->getFirstMediaUrl('medias');
     }
 
     public function getAllImageUrls(): array
     {
-        return $this->getMedia('images')->map(fn($media) => $media->getUrl())->toArray();
+        return $this->getMedia('medias')->map(fn ($media) => $media->getUrl())->toArray();
     }
 }

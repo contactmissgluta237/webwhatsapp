@@ -138,30 +138,6 @@ final class OllamaService implements AiServiceInterface
         return ['endpoint_url', 'model_identifier'];
     }
 
-    public function getAvailableModels(AiModel $model): array
-    {
-        try {
-            $response = Http::timeout(10)
-                ->connectTimeout(5)
-                ->get($model->endpoint_url.'/api/tags');
-
-            if (! $response->successful()) {
-                return [];
-            }
-
-            $data = $response->json();
-
-            return $data['models'] ?? [];
-
-        } catch (\Exception $e) {
-            Log::error('❌ Erreur récupération modèles Ollama', [
-                'error' => $e->getMessage(),
-            ]);
-
-            return [];
-        }
-    }
-
     public function getDefaultConfig(): array
     {
         return [
@@ -170,19 +146,6 @@ final class OllamaService implements AiServiceInterface
             'top_p' => 0.9,
             'stream' => false,
         ];
-    }
-
-    public function validateModelExists(AiModel $model): bool
-    {
-        $availableModels = $this->getAvailableModels($model);
-
-        foreach ($availableModels as $availableModel) {
-            if ($availableModel['name'] === $model->model_identifier) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

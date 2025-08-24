@@ -66,7 +66,7 @@ Cette fonctionnalité permet aux utilisateurs de créer et gérer leurs propres 
 
 #### Relations ajoutées:
 - `User::userProducts()` - HasMany
-- `WhatsAppAccount::linkedProducts()` - BelongsToMany
+- `WhatsAppAccount::userProducts()` - BelongsToMany
 - `UserProduct::user()` - BelongsTo
 - `UserProduct::whatsappAccounts()` - BelongsToMany
 
@@ -110,12 +110,12 @@ $product->addMediaFromRequest($imageFile)
 
 ### 2. Lier un produit à un agent IA
 ```php
-$whatsappAccount->linkedProducts()->attach($productId);
+$whatsappAccount->userProducts()->attach($productId);
 ```
 
 ### 3. Récupérer les produits d'un agent
 ```php
-$linkedProducts = $whatsappAccount->linkedProducts()
+$userProducts = $whatsappAccount->userProducts()
     ->where('is_active', true)
     ->get();
 ```

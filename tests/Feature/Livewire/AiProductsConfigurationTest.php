@@ -23,15 +23,15 @@ final class AiProductsConfigurationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create customer role if it doesn't exist
-        if (!Role::where('name', 'customer')->exists()) {
+        if (! Role::where('name', 'customer')->exists()) {
             Role::create(['name' => 'customer']);
         }
-        
+
         $this->user = User::factory()->create();
         $this->user->assignRole('customer');
-        
+
         $this->account = WhatsAppAccount::factory()->create([
             'user_id' => $this->user->id,
         ]);
@@ -61,7 +61,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->assertDispatched('show-toast')
             ->assertDispatched('products-updated');
 
-        $this->assertTrue($this->account->linkedProducts->contains($product));
+        $this->assertTrue($this->account->userProducts->contains($product));
     }
 
     public function test_cannot_add_inactive_product(): void
@@ -77,7 +77,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->call('addProduct', $product->id)
             ->assertDispatched('show-toast');
 
-        $this->assertFalse($this->account->linkedProducts->contains($product));
+        $this->assertFalse($this->account->userProducts->contains($product));
     }
 
     public function test_cannot_add_duplicate_product(): void
@@ -90,7 +90,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->create();
 
         // First, link the product
-        $this->account->linkedProducts()->attach($product->id);
+        $this->account->userProducts()->attach($product->id);
 
         // Try to add it again
         Livewire::test(AiProductsConfiguration::class, ['account' => $this->account])
@@ -98,7 +98,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->assertDispatched('show-toast');
 
         // Should still have only one link
-        $this->assertEquals(1, $this->account->linkedProducts()->count());
+        $this->assertEquals(1, $this->account->userProducts()->count());
     }
 
     public function test_cannot_add_more_than_10_products(): void
@@ -113,7 +113,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->create();
 
         foreach ($products as $product) {
-            $this->account->linkedProducts()->attach($product->id);
+            $this->account->userProducts()->attach($product->id);
         }
 
         // Try to add an 11th product
@@ -126,7 +126,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->call('addProduct', $eleventhProduct->id)
             ->assertDispatched('show-toast');
 
-        $this->assertEquals(10, $this->account->linkedProducts()->count());
+        $this->assertEquals(10, $this->account->userProducts()->count());
     }
 
     public function test_can_remove_product(): void
@@ -138,14 +138,14 @@ final class AiProductsConfigurationTest extends TestCase
             ->active()
             ->create();
 
-        $this->account->linkedProducts()->attach($product->id);
+        $this->account->userProducts()->attach($product->id);
 
         Livewire::test(AiProductsConfiguration::class, ['account' => $this->account])
             ->call('removeProduct', $product->id)
             ->assertDispatched('show-toast')
             ->assertDispatched('products-updated');
 
-        $this->assertFalse($this->account->linkedProducts->contains($product));
+        $this->assertFalse($this->account->userProducts->contains($product));
     }
 
     public function test_search_filters_products(): void
@@ -180,11 +180,11 @@ final class AiProductsConfigurationTest extends TestCase
             ->create();
 
         foreach ($products as $product) {
-            $this->account->linkedProducts()->attach($product->id);
+            $this->account->userProducts()->attach($product->id);
         }
 
         $component = Livewire::test(AiProductsConfiguration::class, ['account' => $this->account]);
-        
+
         $this->assertEquals(7, $component->get('remainingSlots'));
         $this->assertTrue($component->get('canAddMoreProducts'));
     }
@@ -200,7 +200,7 @@ final class AiProductsConfigurationTest extends TestCase
             ->create();
 
         foreach ($products as $product) {
-            $this->account->linkedProducts()->attach($product->id);
+            $this->account->userProducts()->attach($product->id);
         }
 
         Livewire::test(AiProductsConfiguration::class, ['account' => $this->account])

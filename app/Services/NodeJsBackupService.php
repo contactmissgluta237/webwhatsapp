@@ -13,7 +13,7 @@ final class NodeJsBackupService
 
     public function __construct()
     {
-        $this->nodeJsBaseUrl = config('services.nodejs.base_url', 'http://localhost:3000');
+        $this->nodeJsBaseUrl = config('whatsapp.node_js.base_url');
     }
 
     /**

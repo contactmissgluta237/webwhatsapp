@@ -151,6 +151,11 @@ class UserService extends BaseService
         return User::class;
     }
 
+    protected function getMediaCollectionName(): string
+    {
+        return 'avatar';
+    }
+
     private function handleUserMedia(User $user, string|UploadedFile|null $image): void
     {
         if ($image instanceof UploadedFile) {

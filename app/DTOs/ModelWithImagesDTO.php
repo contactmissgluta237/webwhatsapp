@@ -19,7 +19,7 @@ class ModelWithImagesDTO
     {
         $mainImage = ImageDataDTO::fromMedia($model->main_image ?? null);
 
-        $images = $model->getMedia('images')->map(fn ($media) => ImageDataDTO::fromMedia($media))->toArray();
+        $images = $model->getMedia('medias')->map(fn ($media) => ImageDataDTO::fromMedia($media))->toArray();
 
         return new self($model, $mainImage, $images);
     }

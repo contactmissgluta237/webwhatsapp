@@ -104,9 +104,25 @@ class MessageManager {
             logger.incomingMessage("MESSAGE PROCESSED", {
                 sessionId: sessionData.sessionId,
                 messageId: message.id._serialized,
+                success: response?.success || false,
+                processed: response?.processed || false,
                 hasAiResponse: !!response?.response_message,
-                responseLength: response?.response_message?.length || 0
+                responseLength: response?.response_message?.length || 0,
+                hasProducts: Array.isArray(response?.products) && response.products.length > 0,
+                productsCount: response?.products?.length || 0,
+                hasError: !!response?.error
             });
+
+            // Handle Laravel processing errors
+            if (response?.success === false) {
+                logger.error("❌ LARAVEL PROCESSING ERROR", {
+                    sessionId: sessionData.sessionId,
+                    messageId: message.id._serialized,
+                    error: response?.error || "Unknown error from Laravel",
+                    processed: response?.processed || false
+                });
+                return; // Exit early if Laravel couldn't process the message
+            }
 
             if (response?.response_message) {
                 // Extract timing data from Laravel response
@@ -154,6 +170,11 @@ class MessageManager {
                     to: message.from
                 });
             }
+
+            // Handle products if they exist in the response
+            if (response?.products && Array.isArray(response.products) && response.products.length > 0) {
+                await this.handleProductMessages(response.products, message.from, sessionData, message.id._serialized);
+            }
         } catch (error) {
             logger.error("❌ MESSAGE PROCESSING FAILED", {
                 sessionId: sessionData.sessionId,
@@ -162,6 +183,86 @@ class MessageManager {
                 stack: error.stack,
                 from: message.from,
                 messageBody: message.body.substring(0, 100)
+            });
+        }
+    }
+
+    async handleProductMessages(products, to, sessionData, originalMessageId) {
+        logger.incomingMessage("SENDING PRODUCT MESSAGES", {
+            sessionId: sessionData.sessionId,
+            originalMessageId: originalMessageId,
+            productsCount: products.length,
+            to: to
+        });
+
+        const session = this.sessionManager.getSession(sessionData.sessionId);
+        if (!session || !session.client) {
+            logger.error("❌ SESSION NOT FOUND FOR PRODUCT MESSAGES", {
+                sessionId: sessionData.sessionId,
+                originalMessageId: originalMessageId
+            });
+            return;
+        }
+
+        try {
+            for (let i = 0; i < products.length; i++) {
+                const product = products[i];
+                
+                // Send product message
+                if (product.formattedProductMessage) {
+                    await session.client.sendMessage(to, product.formattedProductMessage);
+                    
+                    logger.outgoingMessage("PRODUCT MESSAGE SENT", {
+                        sessionId: sessionData.sessionId,
+                        originalMessageId: originalMessageId,
+                        productIndex: i + 1,
+                        productMessageLength: product.formattedProductMessage.length,
+                        to: to
+                    });
+                }
+
+                // Send product media if available
+                if (product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0) {
+                    for (let j = 0; j < product.mediaUrls.length; j++) {
+                        const mediaUrl = product.mediaUrls[j];
+                        
+                        try {
+                            await session.client.sendMessage(to, mediaUrl);
+                            
+                            logger.outgoingMessage("PRODUCT MEDIA SENT", {
+                                sessionId: sessionData.sessionId,
+                                originalMessageId: originalMessageId,
+                                productIndex: i + 1,
+                                mediaIndex: j + 1,
+                                mediaUrl: mediaUrl.substring(0, 100) + (mediaUrl.length > 100 ? "..." : ""),
+                                to: to
+                            });
+                        } catch (mediaError) {
+                            logger.error("❌ PRODUCT MEDIA SEND FAILED", {
+                                sessionId: sessionData.sessionId,
+                                originalMessageId: originalMessageId,
+                                productIndex: i + 1,
+                                mediaIndex: j + 1,
+                                mediaUrl: mediaUrl,
+                                error: mediaError.message,
+                                to: to
+                            });
+                        }
+                    }
+                }
+
+                // Add small delay between products to avoid spam detection
+                if (i < products.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        } catch (error) {
+            logger.error("❌ PRODUCT MESSAGES HANDLING FAILED", {
+                sessionId: sessionData.sessionId,
+                originalMessageId: originalMessageId,
+                error: error.message,
+                stack: error.stack,
+                to: to
             });
         }
     }
