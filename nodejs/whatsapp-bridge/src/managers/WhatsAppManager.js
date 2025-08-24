@@ -154,6 +154,18 @@ class WhatsAppManager {
     async sendMessageFromLaravel(sessionId, to, messageText) {
         return await this.sendMessage(sessionId, to, messageText);
     }
+
+    async sendMediaMessage(sessionId, to, media) {
+        console.log("🔥 TRACE: WhatsAppManager.sendMediaMessage called", { sessionId, to: to?.substring(0, 10) + "...", mediaType: media?.mimetype });
+        logger.info("🔥 TRACE: WhatsAppManager.sendMediaMessage called", { sessionId, to: to?.substring(0, 10) + "...", mediaType: media?.mimetype });
+        
+        const result = await this.messageManager.sendMediaMessage(sessionId, to, media);
+        
+        console.log("🔥 TRACE: WhatsAppManager.sendMediaMessage result", { success: result?.success });
+        logger.info("🔥 TRACE: WhatsAppManager.sendMediaMessage result", { success: result?.success });
+        
+        return result;
+    }
 }
 
 module.exports = WhatsAppManager;

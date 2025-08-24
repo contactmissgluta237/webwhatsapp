@@ -6,6 +6,7 @@ namespace App\Livewire\Customer;
 
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
+use App\Services\CurrencyService;
 use HarroldWafo\LaravelCustomDatatable\DataTables\BaseDataTable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,13 @@ final class ProductDataTable extends BaseDataTable
     protected $model = UserProduct::class;
     protected const DEFAULT_SORT_FIELD = 'created_at';
     protected const DEFAULT_SORT_DIRECTION = 'desc';
+
+    protected CurrencyService $currencyService;
+
+    public function boot(): void
+    {
+        $this->currencyService = app(CurrencyService::class);
+    }
 
     public function configure(): void
     {
@@ -67,7 +75,7 @@ final class ProductDataTable extends BaseDataTable
 
             Column::make('Prix', 'price')
                 ->sortable()
-                ->format(fn ($value) => number_format((float) $value, 0, ',', ' ').' XAF'),
+                ->format(fn ($value, $row) => $this->currencyService->formatPrice((float) $value, $this->currencyService->getUserCurrency(auth()->user()))),
 
             Column::make('Statut', 'is_active')
                 ->sortable()

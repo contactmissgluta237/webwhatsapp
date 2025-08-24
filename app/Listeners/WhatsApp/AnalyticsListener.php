@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Listener responsible for tracking analytics and metrics
- * 
+ *
  * TODO: This will be implemented when analytics system is ready.
  * Will handle:
  * - Message volume tracking

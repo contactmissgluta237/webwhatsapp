@@ -6,10 +6,11 @@ namespace App\Services\WhatsApp\Senders;
 
 use App\DTOs\WhatsApp\EnrichedMessageResponseDTO;
 use App\DTOs\WhatsApp\ProductDataDTO;
+use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-final class SimulatorMessageSender implements AbstractMessageSender
+final class SimulatorMessageSender extends AbstractMessageSender
 {
     public function __construct(
         private readonly object $livewireComponent
@@ -18,16 +19,15 @@ final class SimulatorMessageSender implements AbstractMessageSender
     /**
      * Envoie la réponse enrichie dans l'interface du simulateur
      */
-    public function sendResponse(EnrichedMessageResponseDTO $response): void
+    public function sendResponse(WhatsAppMessageResponseDTO $response): void
     {
-        if (! $response->success) {
-            $this->sendErrorMessage($response->error ?? 'Erreur inconnue');
-
+        if (! $response->processed || $response->processingError) {
+            $this->sendErrorMessage($response->processingError ?? 'Erreur inconnue');
             return;
         }
 
         Log::info('[SIMULATOR_SENDER] Envoi réponse dans simulateur', [
-            'message_length' => strlen($response->message),
+            'message_length' => strlen($response->aiResponse ?? ''),
             'products_count' => count($response->products),
             'wait_time' => $response->waitTimeSeconds,
             'typing_duration' => $response->typingDurationSeconds,
@@ -40,7 +40,7 @@ final class SimulatorMessageSender implements AbstractMessageSender
     /**
      * Programme l'affichage des messages avec timing réaliste
      */
-    private function scheduleMessagesDisplay(EnrichedMessageResponseDTO $response): void
+    private function scheduleMessagesDisplay(WhatsAppMessageResponseDTO $response): void
     {
         // Convertir les timings backend en millisecondes pour le frontend (divisé par 10 pour la simulation)
         $waitTimeMs = $response->waitTimeSeconds * 100; // Simulation plus rapide
@@ -50,7 +50,7 @@ final class SimulatorMessageSender implements AbstractMessageSender
         $this->livewireComponent->dispatch('simulate-response-timing', [
             'waitTimeMs' => $waitTimeMs,
             'typingDurationMs' => $typingDurationMs,
-            'responseMessage' => $response->message,
+            'responseMessage' => $response->aiResponse ?? '',
         ]);
 
         // Si il y a des produits, programmer leur envoi après le message principal
@@ -157,5 +157,17 @@ final class SimulatorMessageSender implements AbstractMessageSender
             'product_id' => $product->id,
             'product_title' => $product->title,
         ]);
+    }
+
+    /**
+     * Send a single product to a specific recipient (implements abstract method)
+     */
+    protected function sendSingleProduct(
+        ProductDataDTO $product,
+        string $sessionId,
+        string $phoneNumber
+    ): void {
+        // Pour le simulateur, on ajoute simplement le message à l'interface
+        $this->addProductMessage($product);
     }
 }

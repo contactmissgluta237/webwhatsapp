@@ -34,3 +34,4 @@ vendor/composer/tmp-*
 *.mp3
 mkcert*
 /nodejs/whatsapp-bridge/.local-chromium/
+.history/

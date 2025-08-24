@@ -19,11 +19,11 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
     }
 
     /**
-     * Message de test pour demander des produits
+     * Message de test spécifique pour ce flow
      */
     protected function getTestMessage(): string
     {
-        return 'Bonjour, pouvez-vous me montrer vos produits disponibles et leurs prix ?';
+        return 'Bonjour, quel produit à moins de 200 mille pouvez-vous me recommander ?';
     }
 
     /**
@@ -87,7 +87,7 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
 
             // Association via la table pivot
             $this->testAccount->userProducts()->attach($product->id);
-            
+
             // Ajouter 2-3 médias de test pour chaque produit
             $this->addTestMediaToProduct($product, $productData['category']);
 
@@ -119,52 +119,62 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
             throw new Exception('Le champ "products" doit être un tableau');
         }
 
-        // Vérifier qu'il y a des produits dans la réponse
-        if (empty($response['products'])) {
-            throw new Exception('Aucun produit retourné alors que le compte en a '.count($this->testProducts));
-        }
-
-        // Valider que les produits retournés correspondent à ceux créés pour le test
+        // Pour ce test spécifique : on demande des produits à moins de 200k
+        // On s'attend à recevoir EXACTEMENT 1 produit (le casque audio à 180k)
         $returnedProducts = $response['products'];
-        $testProductCount = count($this->testProducts);
-        $returnedProductCount = count($returnedProducts);
+        $expectedProductCount = 1;
+        $actualProductCount = count($returnedProducts);
 
-        if ($returnedProductCount !== $testProductCount) {
-            throw new Exception("Nombre de produits incorrect: {$returnedProductCount} retournés vs {$testProductCount} créés");
+        if ($actualProductCount !== $expectedProductCount) {
+            throw new Exception("ERREUR: L'IA a retourné {$actualProductCount} produit(s), mais on s'attendait à exactement {$expectedProductCount} produit à moins de 200k");
         }
 
-        // Vérifier que chaque produit retourné a la bonne structure
-        foreach ($returnedProducts as $product) {
-            if (!isset($product['formattedProductMessage']) || !isset($product['mediaUrls'])) {
-                throw new Exception("Structure de produit incorrecte: " . json_encode($product));
-            }
-        }        // Vérifier la présence du message de réponse
+        // Vérifier que le produit retourné a la bonne structure
+        $returnedProduct = $returnedProducts[0];
+        if (! isset($returnedProduct['formattedProductMessage']) || ! isset($returnedProduct['mediaUrls'])) {
+            throw new Exception('Structure de produit incorrecte: '.json_encode($returnedProduct));
+        }
+
+        // Vérifier que c'est bien le casque audio (le seul produit à moins de 200k)
+        $expectedProductName = 'Casque Audio Sony WH-1000XM4';
+        $expectedPrice = '180 000';
+        $productMessage = $returnedProduct['formattedProductMessage'];
+
+        if (! str_contains($productMessage, $expectedProductName)) {
+            throw new Exception("ERREUR: Le produit retourné n'est pas le casque audio attendu. Message: ".$productMessage);
+        }
+
+        if (! str_contains($productMessage, $expectedPrice)) {
+            throw new Exception('ERREUR: Le prix du produit retourné ne correspond pas à 180k. Message: '.$productMessage);
+        }
+
+        // Vérifier la présence du message de réponse
         if (! isset($response['response_message']) || empty($response['response_message'])) {
             throw new Exception('Message de réponse manquant');
         }
 
         // Afficher les détails pour analyse
         $this->log('📋 Réponse complète: '.json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        $this->log('📦 Produits retournés: '.count($returnedProducts).' produits avec structure DTO');
+        $this->log('📦 Produit retourné: 1 produit avec structure DTO');
 
-        // Vérifier le format du message (devrait mentionner les produits)
+        // Vérifier le format du message (devrait mentionner la contrainte de prix)
         $message = strtolower($response['response_message']);
-        $hasProductMention = (
-            str_contains($message, 'produit') ||
-            str_contains($message, 'disponible') ||
-            str_contains($message, 'catalogue') ||
-            str_contains($message, 'prix')
+        $hasPriceConstraint = (
+            str_contains($message, '200') ||
+            str_contains($message, 'moins') ||
+            str_contains($message, 'budget') ||
+            str_contains($message, '180')
         );
 
-        if (! $hasProductMention) {
-            $this->log('⚠️ Le message ne semble pas mentionner les produits');
+        if (! $hasPriceConstraint) {
+            $this->log('⚠️ Le message ne semble pas mentionner la contrainte de prix');
         } else {
-            $this->log('✅ Le message mentionne les produits');
+            $this->log('✅ Le message mentionne la contrainte de prix');
         }
 
-        $this->log('✅ Validation produits: {'.count($returnedProducts).'} produits retournés');
-        $this->log('✅ Validation produits: IDs cohérents avec les produits créés');
-        $this->log('✅ Validation produits: Message de réponse présent');
+        $this->log('✅ Validation spécifique: Exactement 1 produit retourné');
+        $this->log('✅ Validation spécifique: Produit correct (Casque Audio 180k)');
+        $this->log('✅ Validation spécifique: L\'IA a bien respecté la contrainte "moins de 200k"');
     }
 
     /**
@@ -195,7 +205,7 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
             $this->log("✅ {$deletedCount} produits supprimés");
         }
     }
-    
+
     /**
      * Ajoute des médias de test à un produit
      */
@@ -203,7 +213,7 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
     {
         // Images de test basées sur la catégorie
         $testImages = $this->getTestImagesForCategory($category);
-        
+
         // Créer 2-3 médias fictifs pour le test
         for ($i = 0; $i < min(3, count($testImages)); $i++) {
             try {
@@ -213,15 +223,15 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
                     ->usingName($testImages[$i]['name'])
                     ->usingFileName($testImages[$i]['filename'])
                     ->toMediaCollection('medias');
-                    
+
                 $this->log("  ✅ Média ajouté: {$media->name}");
             } catch (Exception $e) {
                 // Si l'ajout de média échoue, on continue (pas critique pour le test)
-                $this->log("  ⚠️ Échec ajout média {$i}: " . $e->getMessage());
+                $this->log("  ⚠️ Échec ajout média {$i}: ".$e->getMessage());
             }
         }
     }
-    
+
     /**
      * Retourne des données d'images de test par catégorie
      */
@@ -229,21 +239,21 @@ class TestIncomingFlowWithProducts extends BaseTestIncomingMessage
     {
         // Image de test 1x1 pixel en base64 (transparent PNG)
         $transparentPixel = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
-        
+
         return [
             [
                 'name' => "{$category} - Image principale",
-                'filename' => strtolower($category) . '_main.png',
+                'filename' => strtolower($category).'_main.png',
                 'base64' => $transparentPixel,
             ],
             [
                 'name' => "{$category} - Vue détail",
-                'filename' => strtolower($category) . '_detail.png',
+                'filename' => strtolower($category).'_detail.png',
                 'base64' => $transparentPixel,
             ],
             [
                 'name' => "{$category} - Packaging",
-                'filename' => strtolower($category) . '_package.png',
+                'filename' => strtolower($category).'_package.png',
                 'base64' => $transparentPixel,
             ],
         ];

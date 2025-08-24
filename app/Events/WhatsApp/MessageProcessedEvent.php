@@ -12,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Event dispatched after a WhatsApp message has been successfully processed by AI
- * 
+ *
  * This event contains both the incoming user message and the AI-generated response,
  * allowing listeners to handle storage, billing, analytics, etc.
  */

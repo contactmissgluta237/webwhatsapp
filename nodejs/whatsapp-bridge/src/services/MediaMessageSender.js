@@ -1,4 +1,6 @@
 const MessageLogger = require("./MessageLogger");
+const ProductMessagingConfig = require("../config/productMessagingConfig");
+const { MessageMedia } = require("whatsapp-web.js");
 
 class MediaMessageSender {
     constructor(client) {
@@ -24,31 +26,42 @@ class MediaMessageSender {
             errors: []
         };
 
-        MessageLogger.logInfo("📎 SENDING MEDIA URLS", {
-            ...context,
-            to,
-            mediaCount: mediaUrls.length,
-            mediaUrls: mediaUrls.map(url => url.substring(0, 50) + "...")
-        });
+        if (ProductMessagingConfig.logging.enableDetailedMediaLogs) {
+            MessageLogger.logInfo(`${ProductMessagingConfig.logging.prefixes.media} SENDING MEDIA URLS`, {
+                ...context,
+                to,
+                mediaCount: mediaUrls.length,
+                mediaUrls: mediaUrls.map(url => url.substring(0, ProductMessagingConfig.limits.urlPreviewLength) + "...")
+            });
+        }
 
         for (let i = 0; i < mediaUrls.length; i++) {
             const mediaUrl = mediaUrls[i];
             
             try {
-                await this.client.sendMessage(to, mediaUrl);
+                // Download and send media as actual file instead of URL text
+                const media = await MessageMedia.fromUrl(mediaUrl, {
+                    unsafeMime: true, // Permet de télécharger même si le MIME type n'est pas détectable
+                    timeout: ProductMessagingConfig.media.downloadTimeout
+                });
+                await this.client.sendMessage(to, media);
                 results.sentCount++;
                 
-                MessageLogger.logOutgoingMessage("MEDIA SENT SUCCESSFULLY", {
-                    ...context,
-                    to,
-                    mediaIndex: i + 1,
-                    mediaUrl: mediaUrl.substring(0, 100) + (mediaUrl.length > 100 ? "..." : ""),
-                    totalMedia: mediaUrls.length
-                });
+                if (ProductMessagingConfig.logging.enableDetailedMediaLogs) {
+                    MessageLogger.logOutgoingMessage(`${ProductMessagingConfig.logging.prefixes.success} MEDIA SENT SUCCESSFULLY`, {
+                        ...context,
+                        to,
+                        mediaIndex: i + 1,
+                        mediaUrl: mediaUrl.substring(0, ProductMessagingConfig.limits.urlPreviewLength) + (mediaUrl.length > ProductMessagingConfig.limits.urlPreviewLength ? "..." : ""),
+                        totalMedia: mediaUrls.length,
+                        mediaType: media.mimetype || 'unknown',
+                        mediaSize: media.data ? media.data.length : 0
+                    });
+                }
 
-                // Small delay between media to avoid spam detection
+                // Delay between media using config
                 if (i < mediaUrls.length - 1) {
-                    await this._delay(500);
+                    await this._delay(ProductMessagingConfig.delays.betweenMediaOfSameProduct);
                 }
             } catch (error) {
                 results.failedCount++;
@@ -58,25 +71,57 @@ class MediaMessageSender {
                     error: error.message
                 });
                 
-                MessageLogger.logError("❌ MEDIA SEND FAILED", {
+                MessageLogger.logError(`${ProductMessagingConfig.logging.prefixes.error} MEDIA SEND FAILED`, {
                     ...context,
                     to,
                     mediaIndex: i + 1,
                     mediaUrl,
                     error: error.message,
-                    totalMedia: mediaUrls.length
+                    totalMedia: mediaUrls.length,
+                    errorType: error.name || 'Unknown'
                 });
+
+                // Si le téléchargement du média échoue, essayer d'envoyer l'URL en fallback
+                if (ProductMessagingConfig.errorHandling.continueOnMediaError) {
+                    try {
+                        MessageLogger.logWarning(`${ProductMessagingConfig.logging.prefixes.warning} FALLBACK: SENDING URL AS TEXT`, {
+                            ...context,
+                            to,
+                            mediaIndex: i + 1,
+                            mediaUrl
+                        });
+                        
+                        await this.client.sendMessage(to, `Image: ${mediaUrl}`);
+                        
+                        MessageLogger.logInfo(`${ProductMessagingConfig.logging.prefixes.info} FALLBACK URL SENT`, {
+                            ...context,
+                            to,
+                            mediaIndex: i + 1,
+                            mediaUrl
+                        });
+                    } catch (fallbackError) {
+                        MessageLogger.logError(`${ProductMessagingConfig.logging.prefixes.error} FALLBACK ALSO FAILED`, {
+                            ...context,
+                            to,
+                            mediaIndex: i + 1,
+                            originalError: error.message,
+                            fallbackError: fallbackError.message
+                        });
+                    }
+                }
             }
         }
 
-        MessageLogger.logInfo("📎 MEDIA SENDING COMPLETED", {
-            ...context,
-            to,
-            totalMedia: mediaUrls.length,
-            sentCount: results.sentCount,
-            failedCount: results.failedCount,
-            overallSuccess: results.success
-        });
+        if (ProductMessagingConfig.logging.enableTimingLogs) {
+            MessageLogger.logInfo(`${ProductMessagingConfig.logging.prefixes.media} MEDIA SENDING COMPLETED`, {
+                ...context,
+                to,
+                totalMedia: mediaUrls.length,
+                sentCount: results.sentCount,
+                failedCount: results.failedCount,
+                overallSuccess: results.success
+            });
+        }
 
         return results;
     }

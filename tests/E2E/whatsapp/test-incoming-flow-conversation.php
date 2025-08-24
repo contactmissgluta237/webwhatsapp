@@ -16,7 +16,7 @@ class TestConversationFlow extends BaseTestIncomingMessage
         'cmobien ça peut me coûter ,et en combien de temps ?',
         'puis je avoir vos réalisations ?',
     ];
-    
+
     private int $currentMessageIndex = 0;
     private array $conversationResponses = [];
 
@@ -45,23 +45,23 @@ class TestConversationFlow extends BaseTestIncomingMessage
             // 4. Envoi de tous les messages de la conversation
             foreach ($this->conversationMessages as $index => $message) {
                 $this->currentMessageIndex = $index;
-                $this->log("💬 Message " . ($index + 1) . "/" . count($this->conversationMessages) . ": \"$message\"");
-                
+                $this->log('💬 Message '.($index + 1).'/'.count($this->conversationMessages).": \"$message\"");
+
                 // Utiliser la logique de BaseTestIncomingMessage mais avec le message actuel
                 $this->webhookData['message']['body'] = $message;
-                $this->webhookData['message']['id'] = 'msg_' . uniqid();
-                
+                $this->webhookData['message']['id'] = 'msg_'.uniqid();
+
                 $response = $this->sendWebhookRequest();
                 $this->analyzeResponse($response);
                 $this->conversationResponses[] = $response;
-                
+
                 // Afficher la réponse de l'IA
                 if (isset($response['response_message'])) {
-                    $this->log("🤖 Réponse IA " . ($index + 1) . ": \"" . $response['response_message'] . "\"");
+                    $this->log('🤖 Réponse IA '.($index + 1).': "'.$response['response_message'].'"');
                 }
-                
+
                 $this->performValidationForMessage($index + 1, $message, $response);
-                
+
                 // Petit délai pour simuler une vraie conversation
                 sleep(1);
             }
@@ -130,19 +130,19 @@ class TestConversationFlow extends BaseTestIncomingMessage
     protected function performTestSpecificValidations(array $response): void
     {
         $this->log('📊 Validation de la conversation complète...');
-        
+
         // Vérifier que tous les messages ont reçu une réponse
         if (count($this->conversationResponses) !== count($this->conversationMessages)) {
-            throw new Exception('Nombre de réponses incorrect: ' . count($this->conversationResponses) . ' vs ' . count($this->conversationMessages));
+            throw new Exception('Nombre de réponses incorrect: '.count($this->conversationResponses).' vs '.count($this->conversationMessages));
         }
-        
+
         // Vérifier que chaque réponse montre une compréhension contextuelle
         $this->validateContextualUnderstanding();
-        
+
         $this->log('✅ Validation conversation: Toutes les réponses reçues');
-        $this->log('✅ Validation conversation: Contexte maintenu sur ' . count($this->conversationMessages) . ' messages');
+        $this->log('✅ Validation conversation: Contexte maintenu sur '.count($this->conversationMessages).' messages');
     }
-    
+
     /**
      * Valide que l'IA maintient le contexte à travers la conversation
      */
@@ -152,35 +152,35 @@ class TestConversationFlow extends BaseTestIncomingMessage
         for ($i = 1; $i < count($this->conversationResponses); $i++) {
             $response = $this->conversationResponses[$i];
             $message = strtolower($response['response_message'] ?? '');
-            
+
             // Pour les messages 2-5, vérifier qu'il y a une continuité contextuelle
             switch ($i + 1) {
                 case 2: // Après "Svp pouvez vous créer un site de pari sportif en ligne?"
-                    if (!str_contains($message, 'pari') && !str_contains($message, 'site') && !str_contains($message, 'sport')) {
+                    if (! str_contains($message, 'pari') && ! str_contains($message, 'site') && ! str_contains($message, 'sport')) {
                         $this->log('⚠️ Réponse 2 pourrait manquer de contexte pari sportif');
                     } else {
                         $this->log('✅ Réponse 2: Contexte pari sportif maintenu');
                     }
                     break;
-                    
+
                 case 3: // Après "avez vous déjà intégré mobile money, paypal dans des projets ?"
-                    if (!str_contains($message, 'paiement') && !str_contains($message, 'intégr') && !str_contains($message, 'projet')) {
+                    if (! str_contains($message, 'paiement') && ! str_contains($message, 'intégr') && ! str_contains($message, 'projet')) {
                         $this->log('⚠️ Réponse 3 pourrait manquer de contexte intégrations');
                     } else {
                         $this->log('✅ Réponse 3: Contexte intégrations maintenu');
                     }
                     break;
-                    
+
                 case 4: // Après "combien ça peut me coûter ,et en combien de temps ?"
-                    if (!str_contains($message, 'prix') && !str_contains($message, 'coût') && !str_contains($message, 'temps') && !str_contains($message, 'délai')) {
+                    if (! str_contains($message, 'prix') && ! str_contains($message, 'coût') && ! str_contains($message, 'temps') && ! str_contains($message, 'délai')) {
                         $this->log('⚠️ Réponse 4 pourrait manquer de contexte devis');
                     } else {
                         $this->log('✅ Réponse 4: Contexte devis maintenu');
                     }
                     break;
-                    
+
                 case 5: // Après "puis je avoir vos réalisations ?"
-                    if (!str_contains($message, 'réalisation') && !str_contains($message, 'portfolio') && !str_contains($message, 'projet')) {
+                    if (! str_contains($message, 'réalisation') && ! str_contains($message, 'portfolio') && ! str_contains($message, 'projet')) {
                         $this->log('⚠️ Réponse 5 pourrait manquer de contexte réalisations');
                     } else {
                         $this->log('✅ Réponse 5: Contexte réalisations maintenu');

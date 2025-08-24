@@ -14,8 +14,7 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
         public AIResponseAction $action,
         public array $productIds = [],
         public ?WhatsAppAIResponseDTO $originalResponse = null
-    ) {
-    }
+    ) {}
 
     public static function fromAIResponse(WhatsAppAIResponseDTO $aiResponse): self
     {
@@ -25,7 +24,7 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
             throw new \InvalidArgumentException('Invalid AI response: malformed JSON - '.json_last_error_msg());
         }
 
-        if (!isset($data['message'], $data['action'])) {
+        if (! isset($data['message'], $data['action'])) {
             throw new \InvalidArgumentException('Invalid AI response: "message" and "action" fields required');
         }
 
@@ -44,12 +43,12 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
 
     public function shouldSendProducts(): bool
     {
-        return $this->action->shouldSendProducts() && !empty($this->productIds);
+        return $this->action->shouldSendProducts() && ! empty($this->productIds);
     }
 
     public function hasValidProducts(): bool
     {
-        return !empty($this->productIds) &&
+        return ! empty($this->productIds) &&
                count($this->productIds) <= config('whatsapp.products.max_sent_per_message', 10);
     }
 

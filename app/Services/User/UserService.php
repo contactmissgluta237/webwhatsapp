@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Events\UserDeletedEvent;
 use App\Models\User;
 use App\Services\BaseService;
+use App\Services\CurrencyService;
 use App\Services\Shared\Media\MediaServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ class UserService extends BaseService
 {
     public function __construct(
         protected MediaServiceInterface $mediaService,
+        protected CurrencyService $currencyService,
     ) {
         parent::__construct($mediaService);
     }
@@ -29,7 +31,8 @@ class UserService extends BaseService
         string $password,
         bool $is_active,
         array $roles,
-        ?UploadedFile $image = null
+        ?UploadedFile $image = null,
+        ?int $country_id = null
     ): User {
         return DB::transaction(function () use (
             $first_name,
@@ -39,7 +42,8 @@ class UserService extends BaseService
             $password,
             $is_active,
             $roles,
-            $image
+            $image,
+            $country_id
         ) {
             $user = User::create([
                 'first_name' => $first_name,
@@ -48,8 +52,10 @@ class UserService extends BaseService
                 'phone_number' => $phone_number,
                 'password' => Hash::make($password),
                 'is_active' => $is_active,
+                'country_id' => $country_id,
             ]);
 
+            $this->currencyService->setCurrencyForNewUser($user, $country_id);
             $this->handleUserMedia($user, $image);
             $user->syncRoles($roles);
 

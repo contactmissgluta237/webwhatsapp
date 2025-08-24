@@ -47,7 +47,7 @@ final class IncomingMessageController extends Controller
             );
 
             $webhookResponse = $response->toWebhookResponse();
-            
+
             $this->dispatchEventIfSuccessful($account, $messageRequest, $response);
 
             return response()->json(
@@ -72,12 +72,12 @@ final class IncomingMessageController extends Controller
         WhatsAppMessageResponseDTO $response,
     ): void {
         if ($response->wasSuccessful()) {
-                MessageProcessedEvent::dispatch($account, $messageRequest, $response);
-                
-                Log::info('[WEBHOOK] MessageProcessedEvent dispatched', [
-                    'from_phone' => $messageRequest->from,
-                ]);
-            }
+            MessageProcessedEvent::dispatch($account, $messageRequest, $response);
+
+            Log::info('[WEBHOOK] MessageProcessedEvent dispatched', [
+                'from_phone' => $messageRequest->from,
+            ]);
+        }
     }
 
     /**

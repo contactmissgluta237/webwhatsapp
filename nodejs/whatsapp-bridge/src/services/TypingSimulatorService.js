@@ -12,18 +12,57 @@ class TypingSimulatorService {
             // Nettoyer toute simulation précédente
             this.stopSimulation(simulationKey);
             
+            // IMPORTANT: Marquer le message comme lu AVANT de commencer la simulation
+            const chatId = fromNumber.includes('@') ? fromNumber : `${fromNumber}@c.us`;
+            try {
+                await client.sendSeen(chatId);
+                logger.info("👁️ Message marked as read", {
+                    chatId,
+                    from: fromNumber
+                });
+            } catch (error) {
+                logger.warning("⚠️ Failed to mark message as read", {
+                    chatId,
+                    error: error.message
+                });
+            }
+            
+            // Attendre un délai avant de commencer (si spécifié par Laravel)
+            if (waitTimeSeconds && waitTimeSeconds > 0) {
+                logger.info("⏳ Waiting before starting typing simulation", {
+                    from: fromNumber,
+                    waitTimeSeconds
+                });
+                await new Promise(resolve => setTimeout(resolve, waitTimeSeconds * 1000));
+            }
+            
             logger.info("🔄 Starting typing simulation", {
                 from: fromNumber,
                 responseLength: aiResponse?.length || 0
             });
 
-            // Calculer le délai de frappe basé sur la longueur de la réponse
-            const baseDelay = 2000; // 2 secondes minimum
-            const charDelay = Math.min(aiResponse?.length * 50 || 1000, 8000); // Max 8 secondes
-            const totalDelay = baseDelay + charDelay;
+            // Calculer le délai de frappe
+            let totalDelay;
+            
+            if (typingDurationSeconds && typingDurationSeconds > 0) {
+                // Utiliser la durée fournie par Laravel
+                totalDelay = typingDurationSeconds * 1000;
+                logger.info("⌨️ Using Laravel typing duration", {
+                    typingDurationSeconds,
+                    from: fromNumber
+                });
+            } else {
+                // Calculer automatiquement basé sur la longueur de la réponse
+                const baseDelay = 2000; // 2 secondes minimum
+                const charDelay = Math.min(aiResponse?.length * 50 || 1000, 8000); // Max 8 secondes
+                totalDelay = baseDelay + charDelay;
+                logger.info("⌨️ Using calculated typing duration", {
+                    calculatedSeconds: totalDelay / 1000,
+                    from: fromNumber
+                });
+            }
 
-            // Obtenir le chat avec gestion d'erreur
-            const chatId = fromNumber.includes('@') ? fromNumber : `${fromNumber}@c.us`;
+            // Obtenir le chat avec gestion d'erreur (chatId déjà défini plus haut)
             let chat;
             
             try {

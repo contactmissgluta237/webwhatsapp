@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\WhatsApp;
 
-use App\Services\WhatsApp\ConversationHistoryService;
 use App\Enums\MessageDirection;
 use App\Enums\MessageType;
+use App\Services\WhatsApp\ConversationHistoryService;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +19,7 @@ final class ConversationHistoryServiceTest extends TestCase
     {
         // Cette méthode teste que les constantes sont accessibles via réflection
         $reflection = new \ReflectionClass(ConversationHistoryService::class);
-        
+
         $defaultLimit = $reflection->getConstant('DEFAULT_MESSAGE_LIMIT');
         $maxLimit = $reflection->getConstant('MAX_MESSAGE_LIMIT');
         $contextHours = $reflection->getConstant('CONTEXT_WINDOW_HOURS');
@@ -35,7 +35,7 @@ final class ConversationHistoryServiceTest extends TestCase
      */
     public function test_validate_message_limit_logic(): void
     {
-        $service = new ConversationHistoryService();
+        $service = new ConversationHistoryService;
         $reflection = new \ReflectionClass($service);
         $method = $reflection->getMethod('validateMessageLimit');
         $method->setAccessible(true);
@@ -101,7 +101,7 @@ final class ConversationHistoryServiceTest extends TestCase
     {
         // Arrange - Créer des dates fixes pour tests reproductibles
         $specificDate = Carbon::createFromFormat('Y-m-d H:i:s', '2024-01-15 14:30:45');
-        
+
         // Act & Assert - Tester les formats utilisés dans le service
         $this->assertSame('2024-01-15', $specificDate->format('Y-m-d'));
         $this->assertSame('14:30', $specificDate->format('H:i'));
@@ -117,7 +117,7 @@ final class ConversationHistoryServiceTest extends TestCase
         // Arrange
         $now = Carbon::createFromFormat('Y-m-d H:i:s', '2024-01-15 14:30:00');
         $twentyFourHoursAgo = $now->copy()->subHours(24);
-        
+
         // Act & Assert
         $this->assertTrue($twentyFourHoursAgo->lessThan($now));
         $this->assertSame('2024-01-14 14:30:00', $twentyFourHoursAgo->format('Y-m-d H:i:s'));
@@ -135,7 +135,7 @@ final class ConversationHistoryServiceTest extends TestCase
         $this->assertSame('', trim('   '));
         $this->assertSame('', trim("\n\t  "));
         $this->assertSame('test', trim('  test  '));
-        
+
         // Test de empty() avec différents types
         $this->assertTrue(empty(''));
         $this->assertTrue(empty(trim('   '))); // Correction: trim d'abord puis empty
@@ -153,7 +153,7 @@ final class ConversationHistoryServiceTest extends TestCase
             'user: Bonjour',
             'system: Bonjour ! Comment puis-je vous aider ?',
             'user: Je cherche un téléphone',
-            'system: Voici nos derniers modèles'
+            'system: Voici nos derniers modèles',
         ];
 
         // Test implode (utilisé pour créer l'historique final)
@@ -198,7 +198,7 @@ final class ConversationHistoryServiceTest extends TestCase
             'Message simple',
             'Message avec émojis 🛍️📱',
             'Message avec caractères spéciaux: àéèçù "quotes" & symbols',
-            'Message très long: ' . str_repeat('Lorem ipsum ', 50),
+            'Message très long: '.str_repeat('Lorem ipsum ', 50),
             '123456', // Numérique
         ];
 
@@ -229,10 +229,10 @@ final class ConversationHistoryServiceTest extends TestCase
         $nullConfidence = null;
 
         // Format: (conf: 95%)
-        $formatted = number_format($highConfidence * 100, 0) . '%';
+        $formatted = number_format($highConfidence * 100, 0).'%';
         $this->assertSame('95%', $formatted);
 
-        $formatted = number_format($lowConfidence * 100, 0) . '%';
+        $formatted = number_format($lowConfidence * 100, 0).'%';
         $this->assertSame('12%', $formatted);
 
         // Test de condition de confidence
@@ -253,14 +253,14 @@ final class ConversationHistoryServiceTest extends TestCase
 
         // Test même jour
         $this->assertSame($date1->format('Y-m-d'), $date2->format('Y-m-d'));
-        
+
         // Test jour différent
         $this->assertNotSame($date1->format('Y-m-d'), $date3->format('Y-m-d'));
 
         // Format de séparateur: --- 15/01/2024 ---
-        $separator1 = '--- ' . $date1->format('d/m/Y') . ' ---';
-        $separator3 = '--- ' . $date3->format('d/m/Y') . ' ---';
-        
+        $separator1 = '--- '.$date1->format('d/m/Y').' ---';
+        $separator3 = '--- '.$date3->format('d/m/Y').' ---';
+
         $this->assertSame('--- 15/01/2024 ---', $separator1);
         $this->assertSame('--- 16/01/2024 ---', $separator3);
     }

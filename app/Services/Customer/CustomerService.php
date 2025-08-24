@@ -9,12 +9,14 @@ use App\Models\Customer;
 use App\Models\User;
 use App\Services\Auth\Contracts\AccountActivationServiceInterface;
 use App\Services\BaseService;
+use App\Services\CurrencyService;
 use Illuminate\Support\Facades\DB;
 
 class CustomerService extends BaseService
 {
     public function __construct(
-        private AccountActivationServiceInterface $activationService
+        private AccountActivationServiceInterface $activationService,
+        private CurrencyService $currencyService
     ) {}
 
     public function create(CreateCustomerDTO $dto): Customer
@@ -26,6 +28,8 @@ class CustomerService extends BaseService
 
             $user = User::create($userData);
             $user->assignRole(UserRole::CUSTOMER()->value);
+
+            $this->currencyService->setCurrencyForNewUser($user, $userData['country_id'] ?? null);
 
             $referrerId = null;
             if ($referralCode) {
@@ -42,7 +46,7 @@ class CustomerService extends BaseService
 
             $this->activationService->sendActivationCode($user->email);
 
-            $customer->load(['user', 'referrer.user']);
+            $customer->load(['user']);
             event(new CustomerCreatedEvent($customer));
 
             return $customer;

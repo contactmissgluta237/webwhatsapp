@@ -6,7 +6,6 @@ namespace App\Contracts\WhatsApp;
 
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
-use App\Models\WhatsAppAccount;
 
 interface AIProviderServiceInterface
 {

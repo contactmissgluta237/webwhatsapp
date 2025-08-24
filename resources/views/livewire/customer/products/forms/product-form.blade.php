@@ -16,7 +16,7 @@
 
             <div class="col-md-4">
                 <div class="form-group">
-                    <label for="price" class="form-label">{{ __('Prix (XAF)') }} <span
+                    <label for="price" class="form-label">{{ __('Prix') }} ({{ $this->getCurrencySymbol() }}) <span
                             class="text-danger">*</span></label>
                     <input type="number" class="form-control @error('price') is-invalid @enderror" id="price"
                         wire:model="price" min="0" step="0.01" placeholder="0">

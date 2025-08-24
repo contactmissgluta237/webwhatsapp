@@ -59,10 +59,10 @@ class TestIncomingFlowBasic extends BaseTestIncomingMessage
 
         $this->log('✅ Validation basique: Aucun produit retourné (attendu)');
         $this->log('✅ Validation basique: Message de réponse présent');
-        
+
         // Attendre un peu pour que le stockage en base soit terminé
         sleep(2);
-        
+
         // Vérification du stockage des messages en base de données
         $this->validateMessageStorage();
     }
@@ -73,44 +73,44 @@ class TestIncomingFlowBasic extends BaseTestIncomingMessage
     private function validateMessageStorage(): void
     {
         $this->log('🔍 Vérification stockage en base...');
-        
+
         // Récupérer le compte WhatsApp par session_id
         $account = \App\Models\WhatsAppAccount::where('session_id', $this->webhookData['session_id'])->first();
-        if (!$account) {
-            throw new Exception('Compte WhatsApp non trouvé pour la session: ' . $this->webhookData['session_id']);
+        if (! $account) {
+            throw new Exception('Compte WhatsApp non trouvé pour la session: '.$this->webhookData['session_id']);
         }
-        
+
         $this->log("✅ Compte trouvé (ID: {$account->id})");
-        
+
         // Récupérer les conversations liées à ce compte
         $conversations = $account->conversations()->get();
         $this->log("🔍 Nombre de conversations: {$conversations->count()}");
-        
+
         // Si aucune conversation, vérifier s'il y en a dans toute la base
         if ($conversations->isEmpty()) {
             $allConversations = \App\Models\WhatsAppConversation::all();
             $this->log("🔍 Total conversations en base: {$allConversations->count()}");
-            
+
             if ($allConversations->isNotEmpty()) {
                 foreach ($allConversations as $conv) {
                     $this->log("🔍 Conversation trouvée: compte_id={$conv->whatsapp_account_id}, chat_id={$conv->chat_id}");
                 }
             }
-            
+
             throw new Exception('Aucune conversation trouvée pour ce compte');
         }
-        
+
         $this->log("✅ {$conversations->count()} conversation(s) trouvée(s)");
-        
+
         // Vérifier les messages pour cette session
         $totalMessages = 0;
         $inboundMessages = 0;
         $outboundMessages = 0;
-        
+
         foreach ($conversations as $conversation) {
             $messages = $conversation->messages()->get();
             $totalMessages += $messages->count();
-            
+
             foreach ($messages as $message) {
                 if ($message->isInbound()) {
                     $inboundMessages++;
@@ -127,20 +127,20 @@ class TestIncomingFlowBasic extends BaseTestIncomingMessage
                 }
             }
         }
-        
+
         // Validations finales
         if ($totalMessages === 0) {
             throw new Exception('Aucun message stocké en base de données');
         }
-        
+
         if ($inboundMessages === 0) {
             throw new Exception('Message entrant non stocké');
         }
-        
+
         if ($outboundMessages === 0) {
             throw new Exception('Message sortant non stocké');
         }
-        
+
         $this->log("✅ Stockage validé: {$totalMessages} messages ({$inboundMessages} entrants, {$outboundMessages} sortants)");
     }
 

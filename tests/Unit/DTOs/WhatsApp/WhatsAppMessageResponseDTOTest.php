@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\DTOs\WhatsApp;
 
-use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
-use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\ProductDataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
+use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use PHPUnit\Framework\TestCase;
 
 final class WhatsAppMessageResponseDTOTest extends TestCase
@@ -29,7 +29,7 @@ final class WhatsAppMessageResponseDTOTest extends TestCase
     {
         // Arrange
         $aiDetails = $this->createMockAIResponse('Bonjour ! Je peux vous aider à trouver les meilleurs produits.');
-        
+
         $dto = WhatsAppMessageResponseDTO::success(
             aiResponse: 'Bonjour ! Je peux vous aider à trouver les meilleurs produits. Que recherchez-vous ?',
             aiDetails: $aiDetails,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customer\Products\Forms;
 
+use App\Services\CurrencyService;
 use App\Services\Customer\ProductService;
 use App\Traits\HasMediaFiles;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,10 +32,25 @@ abstract class AbstractProductForm extends Component
     public array $existingFiles = [];
 
     protected ProductService $productService;
+    protected CurrencyService $currencyService;
 
-    public function boot(ProductService $productService): void
+    public function boot(ProductService $productService, CurrencyService $currencyService): void
     {
         $this->productService = $productService;
+        $this->currencyService = $currencyService;
+    }
+
+    public function getUserCurrency(): string
+    {
+        return $this->currencyService->getUserCurrency(auth()->user());
+    }
+
+    public function getCurrencySymbol(): string
+    {
+        $currency = $this->getUserCurrency();
+        $currencyInfo = $this->currencyService->getCurrencyInfo($currency);
+
+        return $currencyInfo['symbol'] ?? $currency;
     }
 
     public function rules(): array

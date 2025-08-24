@@ -1,5 +1,6 @@
 const MediaMessageSender = require("./MediaMessageSender");
 const MessageLogger = require("./MessageLogger");
+const ProductMessagingConfig = require("../config/productMessagingConfig");
 
 class ProductMessageHandler {
     constructor(client) {
@@ -19,11 +20,13 @@ class ProductMessageHandler {
             return { success: true, processedCount: 0 };
         }
 
-        MessageLogger.logIncomingMessage("🛍️ PROCESSING PRODUCTS", {
-            ...context,
-            to,
-            productsCount: products.length
-        });
+        if (ProductMessagingConfig.logging.enableDetailedProductLogs) {
+            MessageLogger.logIncomingMessage(`${ProductMessagingConfig.logging.prefixes.product} PROCESSING PRODUCTS`, {
+                ...context,
+                to,
+                productsCount: products.length
+            });
+        }
 
         const results = {
             success: true,
@@ -44,9 +47,9 @@ class ProductMessageHandler {
                 await this._handleSingleProduct(product, to, productContext);
                 results.processedCount++;
                 
-                // Delay between products to avoid spam detection
+                // Delay between products using config
                 if (i < products.length - 1) {
-                    await this._delay(1000);
+                    await this._delay(ProductMessagingConfig.delays.betweenProducts);
                 }
             } catch (error) {
                 results.failedCount++;
@@ -56,7 +59,7 @@ class ProductMessageHandler {
                     error: error.message
                 });
                 
-                MessageLogger.logError("❌ PRODUCT PROCESSING FAILED", {
+                MessageLogger.logError(`${ProductMessagingConfig.logging.prefixes.error} PRODUCT PROCESSING FAILED`, {
                     ...productContext,
                     to,
                     error: error.message,
@@ -65,14 +68,16 @@ class ProductMessageHandler {
             }
         }
 
-        MessageLogger.logIncomingMessage("🛍️ PRODUCTS PROCESSING COMPLETED", {
-            ...context,
-            to,
-            totalProducts: products.length,
-            processedCount: results.processedCount,
-            failedCount: results.failedCount,
-            overallSuccess: results.success
-        });
+        if (ProductMessagingConfig.logging.enableTimingLogs) {
+            MessageLogger.logIncomingMessage(`${ProductMessagingConfig.logging.prefixes.product} PRODUCTS PROCESSING COMPLETED`, {
+                ...context,
+                to,
+                totalProducts: products.length,
+                processedCount: results.processedCount,
+                failedCount: results.failedCount,
+                overallSuccess: results.success
+            });
+        }
 
         return results;
     }

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('referrer_id')->nullable()->constrained('users')->onDelete('set null');
             $table->unsignedBigInteger('country_id')->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
+            $table->string('currency', 3)->default('XAF'); // Devise par défaut basée sur le pays
             $table->boolean('is_active')->default(true);
             $table->string('locale', 5)->default('fr');
             $table->timestamp('last_login_at')->nullable();

@@ -32,6 +32,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $address
  * @property string $password
  * @property int|null $country_id
+ * @property string $currency
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $phone_verified_at
  * @property Carbon|null $last_login_at
@@ -80,6 +81,7 @@ class User extends Authenticatable implements HasMedia
         'password',
         'is_active',
         'country_id',
+        'currency',
         'referrer_id',
         'locale',
     ];
@@ -201,6 +203,20 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(UserProduct::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(UserSubscription::class);
+    }
+
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(UserSubscription::class)
+            ->where('status', 'active')
+            ->where('starts_at', '<=', now())
+            ->where('ends_at', '>', now())
+            ->latest();
+    }
+
     // ================================================================================
     // TRAIT METHODS
     // ================================================================================
@@ -320,6 +336,49 @@ class User extends Authenticatable implements HasMedia
             ->where('subscribable_id', $this->id)
             ->active()
             ->get();
+    }
+
+    // ================================================================================
+    // PACKAGE METHODS
+    // ================================================================================
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->activeSubscription !== null;
+    }
+
+    public function getCurrentPackage(): ?Package
+    {
+        return $this->activeSubscription?->package;
+    }
+
+    public function hasTrialAvailable(): bool
+    {
+        return !$this->subscriptions()
+            ->whereHas('package', fn($q) => $q->where('name', 'trial'))
+            ->exists();
+    }
+
+    public function canUpgradePackage(): bool
+    {
+        return $this->hasActiveSubscription();
+    }
+
+    public function getRemainingMessages(): int
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription ? $subscription->getRemainingMessages() : 0;
+    }
+
+    public function hasRemainingMessages(): bool
+    {
+        $subscription = $this->activeSubscription;
+        return $subscription ? $subscription->hasRemainingMessages() : false;
+    }
+
+    public function getCurrentUsageTracker(): ?UsageSubscriptionTracker
+    {
+        return $this->activeSubscription?->getCurrentCycleTracker();
     }
 
     // ================================================================================

@@ -35,7 +35,7 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
             ->where('chat_id', $chatId)
             ->first();
 
-        if (!$conversation) {
+        if (! $conversation) {
             $conversation = WhatsAppConversation::create([
                 'whatsapp_account_id' => $account->id,
                 'chat_id' => $chatId,

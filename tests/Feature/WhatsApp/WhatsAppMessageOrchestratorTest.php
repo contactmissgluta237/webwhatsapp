@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp;
 
-use App\Models\{User, WhatsAppAccount, UserProduct, AiModel};
-use App\DTOs\WhatsApp\{WhatsAppMessageRequestDTO, ProductDataDTO, WhatsAppAIResponseDTO, WhatsAppAIStructuredResponseDTO};
-use App\Enums\AIResponseAction;
-use App\DTOs\AI\AiRequestDTO;
-use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use App\Contracts\WhatsApp\AIProviderServiceInterface;
-use Illuminate\Foundation\Testing\{RefreshDatabase, WithFaker};
+use App\DTOs\AI\AiRequestDTO;
+use App\DTOs\WhatsApp\ProductDataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
+use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
+use App\Models\AiModel;
+use App\Models\User;
+use App\Models\UserProduct;
+use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -65,8 +70,8 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         );
 
         // Debug: afficher la réponse pour comprendre l'erreur
-        if (!$response->wasSuccessful()) {
-            $this->fail('Response was not successful. Error: ' . ($response->processingError ?? 'Unknown error'));
+        if (! $response->wasSuccessful()) {
+            $this->fail('Response was not successful. Error: '.($response->processingError ?? 'Unknown error'));
         }
 
         // Assert
@@ -149,7 +154,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
 
         $this->account->userProducts()->attach([
             $activeProduct->id,
-            $inactiveProduct->id
+            $inactiveProduct->id,
         ]);
 
         $messageRequest = new WhatsAppMessageRequestDTO(
@@ -188,12 +193,12 @@ class WhatsAppMessageOrchestratorTest extends TestCase
     private function createTestAccount(): WhatsAppAccount
     {
         $aiModel = AiModel::factory()->create([
-            'model_identifier' => 'deepseek-chat'
+            'model_identifier' => 'deepseek-chat',
         ]);
 
         return WhatsAppAccount::factory()->create([
             'user_id' => $this->user->id,
-            'session_id' => 'test_session_' . uniqid(),
+            'session_id' => 'test_session_'.uniqid(),
             'ai_model_id' => $aiModel->id,
             'agent_prompt' => 'Tu es un assistant commercial.',
         ]);
@@ -218,7 +223,7 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         $aiResponseJson = json_encode([
             'message' => $message,
             'action' => $action,
-            'products' => $productIds
+            'products' => $productIds,
         ], JSON_UNESCAPED_UNICODE);
 
         // Debug : afficher le JSON généré
@@ -233,13 +238,34 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         );
 
         // Create anonymous class for AIProviderServiceInterface
-        $aiProviderService = new class($aiResponse) implements AIProviderServiceInterface {
+        $aiProviderService = new class($aiResponse) implements AIProviderServiceInterface
+        {
             private WhatsAppAIResponseDTO $mockedAiResponse;
-            public function __construct(WhatsAppAIResponseDTO $mockedAiResponse) { $this->mockedAiResponse = $mockedAiResponse; }
-            public function generateResponse(AiRequestDTO $aiRequest): ?WhatsAppAIResponseDTO { return $this->mockedAiResponse; }
-            public function canGenerateResponse(WhatsAppAccount $account): bool { return true; }
-            public function getAvailableModels(WhatsAppAccount $account): array { return []; }
-            public function getUsageStats(WhatsAppAccount $account): array { return []; }
+
+            public function __construct(WhatsAppAIResponseDTO $mockedAiResponse)
+            {
+                $this->mockedAiResponse = $mockedAiResponse;
+            }
+
+            public function generateResponse(AiRequestDTO $aiRequest): ?WhatsAppAIResponseDTO
+            {
+                return $this->mockedAiResponse;
+            }
+
+            public function canGenerateResponse(WhatsAppAccount $account): bool
+            {
+                return true;
+            }
+
+            public function getAvailableModels(WhatsAppAccount $account): array
+            {
+                return [];
+            }
+
+            public function getUsageStats(WhatsAppAccount $account): array
+            {
+                return [];
+            }
         };
 
         // Bind the anonymous classes to the service container

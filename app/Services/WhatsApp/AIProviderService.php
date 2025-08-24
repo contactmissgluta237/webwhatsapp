@@ -49,11 +49,12 @@ final class AIProviderService implements AIProviderServiceInterface
 
         $response = ($model->getService())->chat($model, $aiRequest);
 
-        if (!$response || empty($response->content)) {
+        if (! $response || empty($response->content)) {
             Log::warning('[AI_PROVIDER] Empty response from AI service', [
                 'account_id' => $aiRequest->account->id,
                 'model' => $model->name,
             ]);
+
             return $this->createFallbackResponse($aiRequest->account, $model->name);
         }
 

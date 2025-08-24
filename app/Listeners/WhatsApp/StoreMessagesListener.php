@@ -49,7 +49,7 @@ final class StoreMessagesListener
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            
+
             // Don't re-throw the exception to avoid breaking the webhook response
         }
     }

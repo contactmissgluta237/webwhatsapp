@@ -1,5 +1,6 @@
 const LaravelWebhookService = require("../services/LaravelWebhookService");
 const TypingSimulatorService = require("../services/TypingSimulatorService");
+const ProductMessageHandler = require("../services/ProductMessageHandler");
 const logger = require("../config/logger");
 
 class MessageManager {
@@ -61,24 +62,7 @@ class MessageManager {
             messageId: message.id._serialized
         });
 
-        // Marquer le message comme lu immédiatement
-        try {
-            const session = this.sessionManager.getSession(sessionData.sessionId);
-            if (session && session.client) {
-                await session.client.sendSeen(message.from);
-                logger.incomingMessage("MESSAGE MARKED AS READ", {
-                    sessionId: sessionData.sessionId,
-                    messageId: message.id._serialized,
-                    from: message.from
-                });
-            }
-        } catch (readError) {
-            logger.warning("FAILED TO MARK MESSAGE AS READ", {
-                sessionId: sessionData.sessionId,
-                messageId: message.id._serialized,
-                error: readError.message
-            });
-        }
+        // Message read handling moved to TypingSimulatorService for better timing control
 
         if (message.hasMedia) {
             logger.incomingMessage("MEDIA MESSAGE", {
@@ -205,57 +189,19 @@ class MessageManager {
         }
 
         try {
-            for (let i = 0; i < products.length; i++) {
-                const product = products[i];
-                
-                // Send product message
-                if (product.formattedProductMessage) {
-                    await session.client.sendMessage(to, product.formattedProductMessage);
-                    
-                    logger.outgoingMessage("PRODUCT MESSAGE SENT", {
-                        sessionId: sessionData.sessionId,
-                        originalMessageId: originalMessageId,
-                        productIndex: i + 1,
-                        productMessageLength: product.formattedProductMessage.length,
-                        to: to
-                    });
-                }
-
-                // Send product media if available
-                if (product.mediaUrls && Array.isArray(product.mediaUrls) && product.mediaUrls.length > 0) {
-                    for (let j = 0; j < product.mediaUrls.length; j++) {
-                        const mediaUrl = product.mediaUrls[j];
-                        
-                        try {
-                            await session.client.sendMessage(to, mediaUrl);
-                            
-                            logger.outgoingMessage("PRODUCT MEDIA SENT", {
-                                sessionId: sessionData.sessionId,
-                                originalMessageId: originalMessageId,
-                                productIndex: i + 1,
-                                mediaIndex: j + 1,
-                                mediaUrl: mediaUrl.substring(0, 100) + (mediaUrl.length > 100 ? "..." : ""),
-                                to: to
-                            });
-                        } catch (mediaError) {
-                            logger.error("❌ PRODUCT MEDIA SEND FAILED", {
-                                sessionId: sessionData.sessionId,
-                                originalMessageId: originalMessageId,
-                                productIndex: i + 1,
-                                mediaIndex: j + 1,
-                                mediaUrl: mediaUrl,
-                                error: mediaError.message,
-                                to: to
-                            });
-                        }
-                    }
-                }
-
-                // Add small delay between products to avoid spam detection
-                if (i < products.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-            }
+            // Use ProductMessageHandler with proper delays and media downloading
+            const productHandler = new ProductMessageHandler(session.client);
+            await productHandler.handleProducts(products, to, {
+                sessionId: sessionData.sessionId,
+                originalMessageId: originalMessageId
+            });
+            
+            logger.outgoingMessage("ALL PRODUCT MESSAGES SENT", {
+                sessionId: sessionData.sessionId,
+                originalMessageId: originalMessageId,
+                productsCount: products.length,
+                to: to
+            });
         } catch (error) {
             logger.error("❌ PRODUCT MESSAGES HANDLING FAILED", {
                 sessionId: sessionData.sessionId,
@@ -345,6 +291,84 @@ class MessageManager {
                 to: to,
                 error: error.message,
                 messageLength: messageText.length,
+                stack: error.stack
+            });
+            throw error;
+        }
+    }
+
+    async sendMediaMessage(sessionId, to, media) {
+        console.log("🔥 TRACE: MessageManager.sendMediaMessage called", { sessionId, to: to?.substring(0, 10) + "...", mediaType: media?.mimetype });
+        logger.info("🔥 TRACE: MessageManager.sendMediaMessage called", { sessionId, to: to?.substring(0, 10) + "...", mediaType: media?.mimetype });
+        
+        const session = this.sessionManager.getSession(sessionId);
+
+        console.log("🔥 TRACE: Session retrieved for media", { sessionId, sessionExists: !!session, sessionStatus: session?.status });
+        logger.info("🔥 TRACE: Session retrieved for media", { sessionId, sessionExists: !!session, sessionStatus: session?.status });
+
+        if (!session || session.status !== "connected") {
+            console.log("🔥 TRACE: Session not connected for media, throwing error");
+            logger.error("🔥 TRACE: Session not connected for media, throwing error");
+            throw new Error("Session not connected");
+        }
+
+        try {
+            const chatId = to.includes("@c.us") ? to : `${to}@c.us`;
+            
+            console.log("🔥 TRACE: About to send media message", { chatId, mediaType: media.mimetype });
+            logger.info("🔥 TRACE: About to send media message", { chatId, mediaType: media.mimetype });
+            
+            // Log du message média sortant avant envoi
+            logger.outgoingMessage("MEDIA MESSAGE SENDING", {
+                sessionId: sessionId,
+                userId: session.userId,
+                to: chatId,
+                mediaType: media.mimetype || 'unknown',
+                mediaSize: media.data ? media.data.length : 0,
+                timestamp: new Date().toISOString()
+            });
+
+            console.log("🔥 TRACE: About to call session.client.sendMessage with media");
+            logger.info("🔥 TRACE: About to call session.client.sendMessage with media");
+
+            await session.client.sendMessage(chatId, media);
+
+            console.log("🔥 TRACE: session.client.sendMessage with media completed successfully");
+            logger.info("🔥 TRACE: session.client.sendMessage with media completed successfully");
+
+            session.lastActivity = new Date();
+
+            // Log du message média envoyé avec succès
+            logger.outgoingMessage("MEDIA MESSAGE SENT SUCCESSFULLY", {
+                sessionId: sessionId,
+                userId: session.userId,
+                to: chatId,
+                mediaType: media.mimetype || 'unknown',
+                mediaSize: media.data ? media.data.length : 0,
+                sentAt: new Date().toISOString()
+            });
+
+            console.log("🔥 TRACE: Returning success result for media");
+            logger.info("🔥 TRACE: Returning success result for media");
+
+            return {
+                success: true,
+                sessionId,
+                to,
+                mediaType: media.mimetype,
+                mediaSize: media.data ? media.data.length : 0,
+                timestamp: new Date().toISOString(),
+            };
+        } catch (error) {
+            console.log("🔥 TRACE: Error in sendMediaMessage", { error: error.message });
+            logger.error("🔥 TRACE: Error in sendMediaMessage", { error: error.message });
+            
+            logger.error(`❌ OUTGOING MEDIA MESSAGE FAILED`, {
+                sessionId: sessionId,
+                userId: session.userId,
+                to: to,
+                error: error.message,
+                mediaType: media.mimetype,
                 stack: error.stack
             });
             throw error;

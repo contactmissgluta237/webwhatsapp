@@ -25,8 +25,8 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
             'chatName' => 'Contact Test',
             'metadata' => [
                 'deviceType' => 'android',
-                'hasMedia' => false
-            ]
+                'hasMedia' => false,
+            ],
         ];
 
         // Act
@@ -42,7 +42,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertSame('Contact Test', $dto->chatName);
         $this->assertSame([
             'deviceType' => 'android',
-            'hasMedia' => false
+            'hasMedia' => false,
         ], $dto->metadata);
     }
 
@@ -207,7 +207,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
             'timestamp' => 1692705600,
             'type' => 'image',
             'isGroup' => false,
-            'metadata' => ['hasMedia' => true]
+            'metadata' => ['hasMedia' => true],
         ];
 
         $imageDto = WhatsAppMessageRequestDTO::fromWebhookData($imageData);
@@ -221,7 +221,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
             'timestamp' => 1692705600,
             'type' => 'audio',
             'isGroup' => false,
-            'metadata' => ['hasMedia' => true]
+            'metadata' => ['hasMedia' => true],
         ];
 
         $audioDto = WhatsAppMessageRequestDTO::fromWebhookData($audioData);
@@ -278,16 +278,16 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
                 'hasMedia' => false,
                 'quotedMessage' => [
                     'id' => 'quoted_msg_123',
-                    'body' => 'Message cité'
+                    'body' => 'Message cité',
                 ],
                 'location' => [
                     'latitude' => 3.8480,
-                    'longitude' => 11.5021
+                    'longitude' => 11.5021,
                 ],
                 'contacts' => [
-                    ['name' => 'John Doe', 'phone' => '+237987654321']
-                ]
-            ]
+                    ['name' => 'John Doe', 'phone' => '+237987654321'],
+                ],
+            ],
         ];
 
         // Act

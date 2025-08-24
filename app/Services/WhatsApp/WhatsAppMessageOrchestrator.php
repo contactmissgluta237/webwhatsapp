@@ -13,8 +13,8 @@ use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
-use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
+use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
