@@ -124,6 +124,40 @@ class LaravelWebhookService {
             throw error;
         }
     }
+
+    async notifySessionDisconnected(sessionId, phoneNumber, reason = null) {
+        const payload = {
+            session_id: sessionId,
+            phone_number: phoneNumber,
+            disconnected_at: new Date().toISOString(),
+            reason: reason,
+        };
+
+        try {
+            const response = await axios.post(
+                `${this.webhookBase}/session-disconnected`,
+                payload,
+                {
+                    headers: this.getHeaders(),
+                    timeout: 30000,
+                },
+            );
+
+            console.log(`[Webhook] Session disconnection notified`, {
+                sessionId,
+                phoneNumber,
+                reason,
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error(
+                "[Webhook] Failed to notify disconnection:",
+                error.message,
+            );
+            throw error;
+        }
+    }
 }
 
 module.exports = LaravelWebhookService;

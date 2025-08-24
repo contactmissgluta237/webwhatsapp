@@ -97,6 +97,8 @@ final class WhatsAppAccount extends Model implements HasMedia
         'ignore_words' => 'array',
         'last_ai_response_at' => 'datetime',
         'daily_ai_responses' => 'integer',
+        'last_disconnected_at' => 'datetime',
+        'last_reconnected_at' => 'datetime',
     ];
 
     // ================================================================================

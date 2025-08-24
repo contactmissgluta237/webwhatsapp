@@ -13,6 +13,7 @@ use App\Events\TicketCreatedEvent;
 use App\Events\TicketMessageSentEvent;
 use App\Events\TicketStatusChangedEvent;
 use App\Events\UserUpdatedEvent;
+use App\Events\WhatsAppAccountDisconnectedEvent;
 use App\Events\WithdrawalRequestedEvent;
 use App\Listeners\AdminWithdrawalNotificationListener;
 use App\Listeners\HandleExternalTransactionWebhookListener;
@@ -73,6 +74,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         TicketStatusChangedEvent::class => [
             NotifyCustomerOfStatusChangeListener::class,
+        ],
+        WhatsAppAccountDisconnectedEvent::class => [
+            WhatsAppAccountDisconnectedListener::class,
         ],
     ];
 

@@ -134,16 +134,35 @@ final class Dashboard extends Component
         }
 
         try {
-            $account = WhatsAppAccount::create([
-                'user_id' => Auth::id(),
-                'session_name' => $this->sessionName,
-                'session_id' => $this->tempSessionId,
-                'status' => 'connected',
-                'phone_number' => null,
-                'last_activity_at' => now(),
-            ]);
+            $existingAccount = WhatsAppAccount::where('user_id', Auth::id())
+                ->where('session_name', $this->sessionName)
+                ->first();
 
-            $this->statusMessage = 'Connexion WhatsApp confirmée avec succès !';
+            if ($existingAccount) {
+                // Reconnexion d'un compte existant
+                $existingAccount->update([
+                    'session_id' => $this->tempSessionId,
+                    'status' => 'connected',
+                    'last_activity_at' => now(),
+                    'last_reconnected_at' => now(),
+                ]);
+                
+                $account = $existingAccount;
+                $this->statusMessage = 'Reconnexion WhatsApp confirmée avec succès !';
+            } else {
+                // Nouveau compte
+                $account = WhatsAppAccount::create([
+                    'user_id' => Auth::id(),
+                    'session_name' => $this->sessionName,
+                    'session_id' => $this->tempSessionId,
+                    'status' => 'connected',
+                    'phone_number' => null,
+                    'last_activity_at' => now(),
+                    'last_reconnected_at' => now(),
+                ]);
+                
+                $this->statusMessage = 'Connexion WhatsApp confirmée avec succès !';
+            }
             $this->closeConnectModal();
             $this->refreshAccounts();
 
