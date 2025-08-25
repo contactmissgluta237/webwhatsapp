@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Payment\MyCoolPay\Exceptions;
+namespace App\Services\Payment\Gateways\MyCoolPay\Exceptions;
 
 use Exception;
 

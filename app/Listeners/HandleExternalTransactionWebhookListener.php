@@ -6,23 +6,11 @@ use App\Enums\TransactionStatus;
 use App\Events\ExternalTransactionWebhookProcessedEvent;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\RechargeNotificationMail;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class HandleExternalTransactionWebhookListener implements ShouldQueue
+class HandleExternalTransactionWebhookListener
 {
-    use InteractsWithQueue;
-
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
-
     /**
      * Handle the event.
      */
@@ -39,11 +27,11 @@ class HandleExternalTransactionWebhookListener implements ShouldQueue
 
         if ($transaction->status->equals(TransactionStatus::COMPLETED())) {
             if ($transaction->isRecharge()) {
-                $customer->wallet->increment('balance', $transaction->amount);
+                $transaction->wallet->increment('balance', $transaction->amount);
                 Log::info('Wallet balance incremented for recharge', [
                     'user_id' => $customer->id,
                     'amount' => $transaction->amount,
-                    'new_balance' => $customer->wallet->balance,
+                    'new_balance' => $transaction->wallet->balance,
                 ]);
                 if ($customer->email) {
                     Mail::to($customer->email)->send(new RechargeNotificationMail($transaction));

@@ -4,12 +4,17 @@ namespace Tests\Feature\Customer;
 
 use App\Enums\ExternalTransactionType;
 use App\Enums\PaymentMethod;
+use App\Enums\PermissionEnum;
 use App\Enums\TransactionStatus;
+use App\Enums\UserRole;
 use App\Models\ExternalTransaction;
+use App\Models\Geography\Country;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class ExternalTransactionListTest extends TestCase
@@ -26,17 +31,45 @@ class ExternalTransactionListTest extends TestCase
     {
         parent::setUp();
 
-        // Créer les rôles nécessaires
-        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
-        \Spatie\Permission\Models\Role::create(['name' => 'customer']);
+        // Créer un pays par défaut pour les utilisateurs
+        Country::create([
+            'id' => 1,
+            'name' => 'Cameroun',
+            'code' => 'CM',
+            'phone_code' => '+237',
+            'flag_emoji' => '🇨🇲',
+            'is_active' => true,
+        ]);
 
-        $this->customer = User::factory()->create();
+        // Créer les permissions nécessaires
+        $permissions = PermissionEnum::values();
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+
+        // Créer les rôles nécessaires avec leurs permissions
+        $customerRole = Role::create(['name' => 'customer']);
+        $customerRole->givePermissionTo(UserRole::CUSTOMER()->permissions());
+
+        $adminRole = Role::create(['name' => 'admin']);
+        $adminRole->givePermissionTo(PermissionEnum::values());
+
+        $this->customer = User::factory()->create([
+            'country_id' => 1,
+            'currency' => 'XAF',
+        ]);
         $this->customer->assignRole('customer');
 
-        $this->otherCustomer = User::factory()->create();
+        $this->otherCustomer = User::factory()->create([
+            'country_id' => 1,
+            'currency' => 'XAF',
+        ]);
         $this->otherCustomer->assignRole('customer');
 
-        $this->admin = User::factory()->create();
+        $this->admin = User::factory()->create([
+            'country_id' => 1,
+            'currency' => 'XAF',
+        ]);
         $this->admin->assignRole('admin');
 
         $this->wallet = Wallet::factory()->create(['user_id' => $this->customer->id]);
@@ -51,10 +84,8 @@ class ExternalTransactionListTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('customer.transactions.index');
-        $response->assertViewHas('title', 'Mes Transactions');
-        $response->assertSee('Mes Transactions');
-        $response->assertSee('Nouvelle Recharge');
-        $response->assertSee('Demander un Retrait');
+        $response->assertViewHas('walletBalance');
+        $response->assertSee('Solde Actuel du Portefeuille');
     }
 
     /** @test */

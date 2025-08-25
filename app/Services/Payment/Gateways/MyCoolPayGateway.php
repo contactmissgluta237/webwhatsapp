@@ -1,183 +1,209 @@
 <?php
 
-// app/Services/Payment/Gateways/MyCoolPayGateway.php
+declare(strict_types=1);
 
 namespace App\Services\Payment\Gateways;
 
-use App\Enums\PaymentMethod;
-use App\Enums\PaymentStatus;
-use App\Services\Payment\DTOs\PaymentInitiateDTO;
-use App\Services\Payment\DTOs\PaymentResponseDTO;
-use App\Services\Payment\Exceptions\PaymentException;
+use App\Enums\TransactionStatus;
+use App\Events\ExternalTransactionWebhookProcessedEvent;
+use App\Models\ExternalTransaction;
+use App\Models\Geography\Country;
+use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Services\Payment\DTOs\PaymentIdentifierRequestDTO;
+use App\Services\Payment\Exceptions\PaymentGatewayException;
+use App\Services\Payment\Gateways\MyCoolPay\DTOs\MyCoolPayPaymentResponseDTO;
+use App\Services\Payment\Gateways\MyCoolPay\DTOs\MyCoolPayWebhookDTO;
+use App\Services\Payment\Gateways\MyCoolPay\Exceptions\MyCoolPayWebhookException;
+use App\Services\Payment\Gateways\MyCoolPay\MyCoolPayMappingHelper;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use MyCoolPay\Http\Exception\HttpException;
-use MyCoolPay\Logging\Logger;
+use MyCoolPay\Exception\BadSignatureException;
+use MyCoolPay\Exception\KeyMismatchException;
 use MyCoolPay\MyCoolPayClient;
 
-class MyCoolPayGateway
+final class MyCoolPayGateway implements PaymentGatewayInterface
 {
-    private MyCoolPayClient $client;
+    private string $apiUrl;
+    private string $publicKey;
+    private string $privateKey;
 
-    public function __construct()
-    {
-        $logger = new Logger('mycoolpay.log', storage_path('logs'));
+    public function __construct(
+        private readonly MyCoolPayClient $client,
+    ) {
+        $this->apiUrl = config('services.mycoolpay.api_url');
+        $this->publicKey = config('services.mycoolpay.public_key');
+        $this->privateKey = config('services.mycoolpay.private_key');
 
-        $this->client = new MyCoolPayClient(
-            config('services.mycoolpay.public_key'),
-            config('services.mycoolpay.private_key'),
-            $logger,
-            config('app.debug')
-        );
-    }
-
-    public function initiateRecharge(PaymentInitiateDTO $dto): PaymentResponseDTO
-    {
-        try {
-            $response = $this->client->paylink([
-                'transaction_amount' => $dto->amount,
-                'transaction_currency' => $dto->currency,
-                'transaction_reason' => $dto->description ?? 'Payment',
-                'app_transaction_ref' => $dto->reference,
-                'customer_phone_number' => $dto->customer_phone,
-                'customer_name' => $dto->customer_name,
-                'customer_email' => $dto->customer_email,
-                'customer_lang' => $dto->customer_lang,
-            ]);
-
-            Log::info('MyCoolPayGateway: initiateRecharge response', [
-                'response_data' => $this->formatResponseData($response),
-                'transaction_status' => $response->get('transaction_status'),
-            ]);
-
-            return PaymentResponseDTO::from([
-                'success' => true,
-                'transaction_id' => $response->get('transaction_ref'),
-                'status' => $this->mapResponseStatus($response->get('transaction_status')),
-                'payment_url' => $response->get('payment_url'),
-                'amount' => $dto->amount,
-                'gateway_data' => $this->formatResponseData($response),
-            ]);
-
-        } catch (HttpException $e) {
-            throw new PaymentException('Recharge initiation failed: '.$e->getMessage(), 0, $e);
+        if (! $this->apiUrl || ! $this->publicKey || ! $this->privateKey) {
+            throw new PaymentGatewayException('MyCoolPay configuration is incomplete');
         }
     }
 
-    public function initiateWithdrawal(PaymentInitiateDTO $dto): PaymentResponseDTO
+    public function initiatePayment(ExternalTransaction $transaction, PaymentIdentifierRequestDTO $request): MyCoolPayPaymentResponseDTO
     {
-        try {
-            $response = $this->client->payout([
-                'transaction_amount' => $dto->amount,
-                'transaction_currency' => $dto->currency,
-                'transaction_reason' => $dto->description ?? 'Payout',
-                'transaction_operator' => $this->mapOperator($dto->payment_method),
-                'app_transaction_ref' => $dto->reference,
-                'customer_phone_number' => $dto->customer_phone,
-                'customer_name' => $dto->customer_name,
-                'customer_email' => $dto->customer_email,
-                'customer_lang' => $dto->customer_lang,
-            ]);
+        $transaction->load(['wallet.user']);
+        $user = $transaction->wallet->user;
 
-            Log::info('MyCoolPayGateway: initiateWithdrawal response', [
-                'response_data' => $this->formatResponseData($response),
-                'transaction_status' => $response->get('transaction_status'),
-            ]);
-
-            return PaymentResponseDTO::from([
-                'success' => $response->getStatusCode() === 200,
-                'transaction_id' => $response->get('transaction_ref'),
-                'status' => $this->mapResponseStatus($response->get('transaction_status')),
-                'payment_url' => null, // No redirect for payout
-                'amount' => $dto->amount,
-                'gateway_data' => $this->formatResponseData($response),
-            ]);
-
-        } catch (HttpException $e) {
-            throw new PaymentException('Withdrawal initiation failed: '.$e->getMessage(), 0, $e);
-        }
-    }
-
-    public function checkStatus(string $transactionId): PaymentResponseDTO
-    {
-        try {
-            $response = $this->client->checkStatus($transactionId);
-
-            Log::info('MyCoolPayGateway: checkStatus response', [
-                'response_data' => $this->formatResponseData($response),
-                'transaction_status' => $response->get('transaction_status'),
-            ]);
-
-            return PaymentResponseDTO::from([
-                'success' => true,
-                'transaction_id' => $transactionId,
-                'status' => $this->mapResponseStatus($response->get('transaction_status')),
-                'payment_url' => $response->get('payment_url'),
-                'amount' => $response->get('transaction_amount'),
-                'gateway_data' => $this->formatResponseData($response),
-            ]);
-
-        } catch (HttpException $e) {
-            throw new PaymentException('Status check failed: '.$e->getMessage(), 0, $e);
-        }
-    }
-
-    public function getBalance(): float
-    {
-        try {
-            $response = $this->client->getBalance();
-
-            return (float) $response->get('balance');
-
-        } catch (HttpException $e) {
-            throw new PaymentException('Balance check failed: '.$e->getMessage(), 0, $e);
-        }
-    }
-
-    private function mapPaymentMethod(PaymentMethod $paymentMethod): string
-    {
-        return match ($paymentMethod) {
-            PaymentMethod::MOBILE_MONEY() => 'mtn_mobile_money',
-            PaymentMethod::ORANGE_MONEY() => 'orange_money',
-            PaymentMethod::BANK_CARD() => 'card',
-            default => throw new \InvalidArgumentException("Unsupported payment method: {$paymentMethod->value}"),
-        };
-    }
-
-    private function mapResponseStatus(?string $gatewayStatus): PaymentStatus
-    {
-        if ($gatewayStatus === null) {
-            Log::warning('MyCoolPayGateway: gatewayStatus is null for initiated transaction, defaulting to PENDING', ['gatewayStatus' => $gatewayStatus]);
-
-            return PaymentStatus::PENDING();
-        }
-
-        return match (strtolower($gatewayStatus)) {
-            'pending', 'initiated' => PaymentStatus::PENDING(),
-            'success', 'completed', 'paid' => PaymentStatus::COMPLETED(),
-            'failed', 'error' => PaymentStatus::FAILED(),
-            'cancelled', 'canceled' => PaymentStatus::CANCELLED(),
-            default => PaymentStatus::PENDING(),
-        };
-    }
-
-    private function mapOperator(PaymentMethod $paymentMethod): string
-    {
-        return match ($paymentMethod->value) {
-            'mobile_money' => 'CM_MOMO',
-            'orange_money' => 'CM_OM',
-            default => throw new PaymentException('Unsupported payment method for payout: '.$paymentMethod->value),
-        };
-    }
-
-    private function formatResponseData($response): array
-    {
-        return [
-            'transaction_ref' => $response->get('transaction_ref'),
-            'transaction_status' => $response->get('transaction_status'),
-            'transaction_amount' => $response->get('transaction_amount'),
-            'transaction_currency' => $response->get('transaction_currency'),
-            'payment_url' => $response->get('payment_url'),
-            'created_at' => $response->get('created_at'),
+        $payload = [
+            'transaction_amount' => $transaction->amount,
+            'transaction_currency' => $user->currency ?? 'XAF',
+            'transaction_reason' => $transaction->description ?? 'Account recharge',
+            'app_transaction_ref' => $transaction->external_transaction_id,
+            'customer_phone_number' => $request->phoneNumber,
+            'customer_name' => "{$user->full_name}",
+            'customer_email' => $user->email,
+            'customer_lang' => $user->locale ?? 'fr',
         ];
+
+        try {
+            Log::info('MyCoolPay payment initiation', [
+                'transaction_ref' => $transaction->external_transaction_id,
+                'amount' => $transaction->amount,
+                'phone' => $request->phoneNumber,
+            ]);
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post("{$this->apiUrl}/{$this->publicKey}/payin", $payload);
+
+            if (! $response->successful()) {
+                Log::error('MyCoolPay API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'transaction_ref' => $transaction->external_transaction_id,
+                ]);
+
+                throw new PaymentGatewayException(
+                    'MyCoolPay API request failed: '.$response->body()
+                );
+            }
+
+            $responseData = $response->json();
+
+            Log::info('MyCoolPay payment response', [
+                'transaction_ref' => $transaction->external_transaction_id,
+                'status' => $responseData['status'] ?? 'unknown',
+                'action' => $responseData['action'] ?? null,
+            ]);
+
+            return MyCoolPayPaymentResponseDTO::fromArray($responseData);
+
+        } catch (ConnectionException $e) {
+            Log::error('MyCoolPay connection error', [
+                'error' => $e->getMessage(),
+                'transaction_ref' => $transaction->external_transaction_id,
+            ]);
+            throw new PaymentGatewayException('Connection to MyCoolPay failed', 0, $e);
+        } catch (RequestException $e) {
+            Log::error('MyCoolPay request error', [
+                'error' => $e->getMessage(),
+                'transaction_ref' => $transaction->external_transaction_id,
+            ]);
+            throw new PaymentGatewayException('MyCoolPay request failed', 0, $e);
+        }
+    }
+
+    public function verifyTransaction(string $transactionRef): bool
+    {
+        // MyCoolPay ne fournit pas d'endpoint de vérification
+        // La vérification se fait via le webhook callback uniquement
+        Log::info('MyCoolPay verification called - using webhook only', [
+            'transaction_ref' => $transactionRef,
+        ]);
+
+        return true;
+    }
+
+    public function getSupportedCountries(): array
+    {
+        return ['CM']; // Cameroon
+    }
+
+    public function isCountrySupported(Country $country): bool
+    {
+        return in_array($country->code, $this->getSupportedCountries());
+    }
+
+    public function processWebhook(array $webhookData): ExternalTransaction
+    {
+        Log::info('MyCoolPay Webhook processing started', $webhookData);
+
+        try {
+            $this->verifyWebhookSignature($webhookData);
+
+            $webhookDTO = MyCoolPayWebhookDTO::fromArray($webhookData);
+            $transaction = $this->findTransaction($webhookDTO->app_transaction_ref);
+
+            $this->updateTransaction($transaction, $webhookDTO);
+
+            event(new ExternalTransactionWebhookProcessedEvent($transaction));
+
+            Log::info('MyCoolPay Webhook processed successfully', [
+                'transaction_id' => $transaction->id,
+                'status' => $transaction->status->value,
+            ]);
+
+            return $transaction;
+
+        } catch (KeyMismatchException|BadSignatureException $e) {
+            Log::error('MyCoolPay Webhook signature verification failed', [
+                'error' => $e->getMessage(),
+                'webhook_data' => $webhookData,
+            ]);
+            throw new MyCoolPayWebhookException('Webhook signature verification failed', 403, $e);
+        } catch (\Exception $e) {
+            Log::error('MyCoolPay Webhook processing failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'webhook_data' => $webhookData,
+            ]);
+            throw new MyCoolPayWebhookException('Webhook processing failed', 500, $e);
+        }
+    }
+
+    private function verifyWebhookSignature(array $webhookData): void
+    {
+        $this->client->checkCallbackIntegrity($webhookData);
+    }
+
+    private function findTransaction(string $appTransactionRef): ExternalTransaction
+    {
+        $transaction = ExternalTransaction::where('external_transaction_id', $appTransactionRef)->first();
+
+        if (! $transaction) {
+            Log::warning('MyCoolPay Webhook: Transaction not found', [
+                'app_transaction_ref' => $appTransactionRef,
+            ]);
+            throw new MyCoolPayWebhookException('Transaction not found', 404);
+        }
+
+        return $transaction;
+    }
+
+    private function updateTransaction(ExternalTransaction $transaction, MyCoolPayWebhookDTO $webhookDTO): void
+    {
+        $mappedStatus = $this->mapMyCoolPayStatusToTransactionStatus($webhookDTO->transaction_status);
+        $mappedPaymentMethod = MyCoolPayMappingHelper::operatorToPaymentMethod($webhookDTO->transaction_operator);
+
+        $transaction->update([
+            'status' => $mappedStatus,
+            'payment_method' => $mappedPaymentMethod,
+            'gateway_transaction_id' => $webhookDTO->transaction_ref,
+            'gateway_response' => $webhookDTO->toArray(),
+        ]);
+    }
+
+    private function mapMyCoolPayStatusToTransactionStatus(string $myCoolPayStatus): TransactionStatus
+    {
+        return match (strtolower($myCoolPayStatus)) {
+            'success' => TransactionStatus::COMPLETED(),
+            'failed' => TransactionStatus::FAILED(),
+            'cancelled' => TransactionStatus::CANCELLED(),
+            'pending' => TransactionStatus::PENDING(),
+            default => TransactionStatus::FAILED(),
+        };
     }
 }

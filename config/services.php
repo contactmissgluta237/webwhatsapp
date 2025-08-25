@@ -47,6 +47,7 @@ return [
         ],
     ],
     'mycoolpay' => [
+        'api_url' => 'https://my-coolpay.com/api',
         'public_key' => env('MYCOOLPAY_PUBLIC_KEY'),
         'private_key' => env('MYCOOLPAY_PRIVATE_KEY'),
     ],

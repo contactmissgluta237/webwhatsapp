@@ -15,7 +15,6 @@ class ServiceServiceProvider extends ServiceProvider implements DeferrableProvid
         \App\Services\Shared\Cache\CacheServiceInterface::class => \App\Services\Shared\Cache\LaravelCacheService::class,
         \App\Services\Auth\Contracts\OtpServiceInterface::class => \App\Services\Auth\OtpService::class,
         \App\Services\Auth\Contracts\AccountActivationServiceInterface::class => \App\Services\Auth\AccountActivationService::class,
-        \App\Services\Payment\MyCoolPay\Contracts\MyCoolPayWebhookServiceInterface::class => \App\Services\Payment\MyCoolPay\MyCoolPayWebhookService::class,
     ];
 
     public function register(): void

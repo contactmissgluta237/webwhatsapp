@@ -47,7 +47,7 @@ final class ProductCreationTest extends TestCase
             ->set('description', 'Description complète du produit de test')
             ->set('price', 15000.0)
             ->set('is_active', true)
-            ->set('media', [$image, $pdf])
+            ->set('mediaFiles', [$image, $pdf])
             ->call('save');
 
         // Vérifications en base de données
@@ -128,7 +128,7 @@ final class ProductCreationTest extends TestCase
             ->set('description', $productData['description'])
             ->set('price', $productData['price'])
             ->set('is_active', $productData['is_active'])
-            ->set('media', $productData['media'])
+            ->set('mediaFiles', $productData['media'])
             ->call('save')
             ->assertRedirect(route('customer.products.index'));
 
@@ -163,7 +163,7 @@ final class ProductCreationTest extends TestCase
             ->set('description', $productData['description'])
             ->set('price', $productData['price'])
             ->set('is_active', $productData['is_active'])
-            ->set('media', $productData['media'])
+            ->set('mediaFiles', $productData['media'])
             ->call('save')
             ->assertRedirect(route('customer.products.index'));
 
@@ -187,8 +187,8 @@ final class ProductCreationTest extends TestCase
             ->set('description', '')
             ->call('save')
             ->assertHasErrors([
-                'title' => 'required',
-                'description' => 'required',
+                'title' => 'Le titre est obligatoire.',
+                'description' => 'La description est obligatoire.',
             ]);
     }
 
@@ -224,15 +224,15 @@ final class ProductCreationTest extends TestCase
         $image2 = UploadedFile::fake()->image('image2.jpg');
 
         $component = Livewire::test(CreateProductForm::class)
-            ->set('media', [$image1, $image2]);
+            ->set('mediaFiles', [$image1, $image2]);
 
-        $component->assertCount('media', 2);
+        $component->assertCount('allMediaFiles', 2);
 
-        $component->call('removeMedia', 0)
-            ->assertCount('media', 1);
+        $component->call('removeMediaFile', 0)
+            ->assertCount('allMediaFiles', 1);
 
         // Vérifie que c'est le bon fichier qui reste
-        $this->assertEquals('image2.jpg', $component->get('media')[0]->getClientOriginalName());
+        $this->assertEquals('image2.jpg', $component->get('allMediaFiles')[0]->getClientOriginalName());
     }
 
     public function test_unauthorized_user_cannot_create_product(): void

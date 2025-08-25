@@ -74,7 +74,7 @@ class ExternalTransactionService
                 throw new \InvalidArgumentException('Vous devez être un client pour effectuer cette action.');
             }
 
-            $description = "Recharge compte {$user->full_name} - ".number_format($dto->amount, 0, ',', ' ').' FCFA';
+            $description = "Recharge compte {$user->full_name} - ".number_format($dto->amount, 0, ',', ' ').' '.$user->currency;
 
             $transaction = ExternalTransaction::create([
                 'wallet_id' => $user->wallet->id,

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payment\MyCoolPay\Enums;
+namespace App\Services\Payment\Gateways\MyCoolPay\Enums;
 
 use Spatie\Enum\Laravel\Enum;
 
@@ -14,9 +14,9 @@ final class MyCoolPayTransactionType extends Enum
     protected static function values(): array
     {
         return [
-            'PAYLINK' => 'paylink',
-            'PAYOUT' => 'payout',
-            'PAYIN' => 'payin',
+            'PAYLINK' => 'PAYLINK',
+            'PAYOUT' => 'PAYOUT',
+            'PAYIN' => 'PAYIN',
         ];
     }
 }

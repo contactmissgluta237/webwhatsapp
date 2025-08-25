@@ -150,17 +150,7 @@ abstract class AbstractMessageSender
         return $products->map(function (UserProduct $product) {
             $mediaLinks = $this->extractMediaLinks($product);
 
-            $dto = new ProductDataDTO(
-                id: $product->id,
-                title: $product->title,
-                description: $product->description,
-                price: $this->formatPrice($product->price),
-                mediaLinks: $mediaLinks,
-                isActive: $product->is_active,
-                createdAt: $product->created_at?->toISOString(),
-                updatedAt: $product->updated_at?->toISOString(),
-                rawPrice: $product->price
-            );
+            $dto = ProductDataDTO::fromUserProduct($product);
 
             $this->logProductEnrichment($product, $mediaLinks);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payment\MyCoolPay\Enums;
+namespace App\Services\Payment\Gateways\MyCoolPay\Enums;
 
 use Spatie\Enum\Laravel\Enum;
 

@@ -4,9 +4,14 @@ namespace App\Livewire\Customer;
 
 use App\DTOs\Transaction\CreateCustomerRechargeDTO;
 use App\Enums\PaymentMethod;
+use App\Models\ExternalTransaction;
+use App\Models\Geography\Country;
 use App\Services\CurrencyService;
+use App\Services\Payment\DTOs\PaymentIdentifierRequestDTO;
+use App\Services\Payment\PaymentGatewayFactory;
 use App\Services\Transaction\ExternalTransactionService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
 class CreateCustomerRechargeForm extends Component
@@ -33,6 +38,12 @@ class CreateCustomerRechargeForm extends Component
     public $success = '';
     public $error = '';
     public $loading = false;
+    public $processMessage = '';
+    public $processMessageType = 'info'; // 'info', 'success', 'error'
+
+    public $pollingTransactionId = null;
+    public $pollingAttempts = 0;
+    private $maxPollingAttempts = 80; // 6.5 minutes (5s * 80)
 
     protected $listeners = ['phoneUpdated', 'cardUpdated'];
 
@@ -51,7 +62,7 @@ class CreateCustomerRechargeForm extends Component
 
     private function parseUserPhoneNumber(string $phoneNumber): void
     {
-        $countries = \App\Models\Geography\Country::active()->ordered()->get();
+        $countries = Country::active()->ordered()->get();
 
         foreach ($countries as $country) {
             if (str_starts_with($phoneNumber, $country->phone_code)) {
@@ -61,7 +72,6 @@ class CreateCustomerRechargeForm extends Component
             }
         }
 
-        // Si aucun pays trouvé, utiliser le Cameroun par défaut
         $defaultCountry = $countries->where('code', 'CM')->first();
         if ($defaultCountry) {
             $this->country_id = $defaultCountry->id;
@@ -139,14 +149,11 @@ class CreateCustomerRechargeForm extends Component
             throw new \Exception('Les informations de paiement sont requises.');
         }
 
-        // Validation spécifique selon le type de paiement
         if (in_array($this->payment_method, [PaymentMethod::MOBILE_MONEY()->value, PaymentMethod::ORANGE_MONEY()->value])) {
-            // Pour les paiements mobiles, vérifier que le numéro est complet
             if (empty($this->phone_number)) {
                 throw new \Exception('Veuillez saisir un numéro de téléphone valide.');
             }
         } elseif ($this->payment_method === PaymentMethod::BANK_CARD()->value) {
-            // Pour les cartes, vérifier que la validation a été faite
             if (! $this->card_is_valid) {
                 throw new \Exception('Veuillez saisir des informations de carte valides.');
             }
@@ -155,38 +162,135 @@ class CreateCustomerRechargeForm extends Component
 
     public function createRecharge(ExternalTransactionService $transactionService)
     {
+        Log::info('🔄 CreateRecharge: Method called');
+
         $this->resetMessages();
         $this->loading = true;
+
+        Log::info('🔄 CreateRecharge: Loading set to true', ['loading' => $this->loading]);
 
         try {
             // Validation personnalisée selon le type de paiement
             $this->validatePaymentData();
 
-            $validated = [
+            Log::info('🔄 CreateRecharge: Validation passed');
+
+            Log::info('Recharge initiated from createCustomerRechargeForm', [
                 'amount' => (int) $this->amount,
                 'payment_method' => $this->payment_method,
                 'sender_account' => $this->sender_account,
-            ];
+            ]);
 
             $dto = new CreateCustomerRechargeDTO(
                 user_id: Auth::user()->id,
-                amount: (int) $validated['amount'],
-                payment_method: PaymentMethod::from($validated['payment_method']),
-                sender_account: $validated['sender_account'],
-                created_by: Auth::user()->id
+                amount: (int) $this->amount,
+                // amount: 10,//just for test
+                payment_method: PaymentMethod::from($this->payment_method),
+                sender_account: $this->sender_account,
+                created_by: Auth::user()->id,
             );
 
             $transaction = $transactionService->createRechargeByCustomer($dto);
+            Log::info('🔄 CreateRecharge: Transaction created', ['transaction_id' => $transaction->id]);
 
-            $this->success = "Recharge initié avec succès ! Votre compte sera crédité automatiquement. ID: {$transaction->external_transaction_id}";
-            $this->resetForm();
+            $result = $this->initiatePayment($this->phone_number, $transaction);
+            Log::info('🔄 CreateRecharge: Payment initiated', ['success' => $result->isSuccess()]);
+
+            if ($result->isSuccess()) {
+                $this->processMessage = $result->getUserMessageToDisplay() ?: 'Paiement en cours de traitement...';
+                $this->processMessageType = 'info';
+                $this->pollingAttempts = 0;
+                $this->pollingTransactionId = $transaction->id;
+
+                Log::info('🔄 CreateRecharge: Starting polling', ['loading' => $this->loading, 'transaction_id' => $transaction->id]);
+                // Le polling sera géré par wire:poll dans la vue
+            } else {
+                $this->error = "Erreur lors de l'initiation du paiement : {$result->getUserMessageToDisplay()}";
+                $this->loading = false; // Arrêter le loading en cas d'erreur
+                Log::info('🔄 CreateRecharge: Payment failed, loading set to false');
+            }
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->error = 'Erreurs de validation : '.implode(', ', $e->validator->errors()->all());
+            $this->loading = false;
+            Log::error('🔄 CreateRecharge: Validation exception', ['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             $this->error = 'Erreur : '.$e->getMessage();
-        } finally {
             $this->loading = false;
+            Log::error('🔄 CreateRecharge: General exception', ['error' => $e->getMessage()]);
+        }
+    }
+
+    private function initiatePayment(string $phoneNumber, ExternalTransaction $transaction)
+    {
+        $gatewayFactory = app(PaymentGatewayFactory::class);
+        $gateway = $gatewayFactory->fromCountry(Country::find($this->country_id));
+        $paymentRequest = new PaymentIdentifierRequestDTO(
+            phoneNumber: $phoneNumber,
+        );
+
+        return $gateway->initiatePayment($transaction, $paymentRequest);
+    }
+
+    public function checkTransactionStatus(): void
+    {
+        if (! $this->pollingTransactionId) {
+            return;
+        }
+
+        Log::info('🔄 CheckTransactionStatus: Checking transaction', [
+            'transaction_id' => $this->pollingTransactionId,
+            'attempts' => $this->pollingAttempts,
+            'loading' => $this->loading,
+        ]);
+
+        // Vérifier le timeout
+        if ($this->pollingAttempts >= $this->maxPollingAttempts) {
+            $this->loading = false;
+            $this->success = ''; // Maintenant on peut effacer le message initial
+            $this->error = 'Délai dépassé. Veuillez vérifier votre compte ou réessayer plus tard.';
+            $this->pollingTransactionId = null;
+            Log::info('🔄 CheckTransactionStatus: Timeout reached, loading set to false');
+
+            return;
+        }
+
+        $transaction = ExternalTransaction::find($this->pollingTransactionId);
+
+        if (! $transaction) {
+            $this->loading = false;
+            $this->error = 'Transaction introuvable.';
+            $this->pollingTransactionId = null;
+            Log::error('🔄 CheckTransactionStatus: Transaction not found');
+
+            return;
+        }
+
+        Log::info('🔄 CheckTransactionStatus: Transaction status', ['status' => $transaction->status->value]);
+
+        if ($transaction->isPending()) {
+            $this->pollingAttempts++;
+            Log::info('🔄 CheckTransactionStatus: Still pending', ['attempts' => $this->pollingAttempts]);
+
+            return; // Continue polling with wire:poll
+        }
+
+        // Transaction is complete
+        $this->loading = false;
+        $this->pollingTransactionId = null;
+        Log::info('🔄 CheckTransactionStatus: Final status reached, loading set to false');
+        $this->handleFinalResult($transaction);
+    }
+
+    private function handleFinalResult(ExternalTransaction $transaction): void
+    {
+        if ($transaction->isCompleted()) {
+            $formattedAmount = $this->formatPrice($transaction->amount);
+            $this->processMessage = "🎉 Félicitations ! Votre compte a été crédité de {$formattedAmount}.";
+            $this->processMessageType = 'success';
+        } else {
+            $this->processMessage = 'Une erreur est survenue lors du paiement. Veuillez réessayer plus tard.';
+            $this->processMessageType = 'error';
         }
     }
 
@@ -194,6 +298,7 @@ class CreateCustomerRechargeForm extends Component
     {
         $this->success = '';
         $this->error = '';
+        $this->processMessage = '';
     }
 
     public function resetForm()

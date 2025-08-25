@@ -1,3 +1,4 @@
+<div>
     <!-- Messages d'alerte -->
     @if($success)
         <div class="alert alert-success border-gray-light shadow-none d-flex align-items-center" role="alert">
@@ -15,7 +16,7 @@
         </div>
     @endif
 
-    <form wire:submit.prevent="createRecharge">
+    <form wire:submit.prevent="createRecharge" @if($pollingTransactionId) wire:poll.5s="checkTransactionStatus" @endif>
         <!-- Étape 1: Choix du montant -->
         <div class="mb-4">
             <h6 class="fw-bold mb-3">
@@ -177,6 +178,27 @@
             </div>
         @endif
 
+        <!-- Message de processus -->
+        @if($processMessage)
+            @php
+                $alertClass = match($processMessageType) {
+                    'success' => 'alert-success',
+                    'error' => 'alert-danger', 
+                    default => 'alert-info'
+                };
+                $iconClass = match($processMessageType) {
+                    'success' => 'ti-circle-check',
+                    'error' => 'ti-alert-circle',
+                    default => 'ti-info-circle'
+                };
+            @endphp
+            <div class="alert {{ $alertClass }} border-gray-light shadow-none d-flex align-items-center mb-4" role="alert">
+                <i class="ti {{ $iconClass }} fs-4 me-2"></i>
+                <div class="flex-grow-1">{{ $processMessage }}</div>
+                <button type="button" class="btn-close ms-2" wire:click="$set('processMessage', '')" aria-label="Fermer"></button>
+            </div>
+        @endif
+
         <!-- Boutons d'action -->
         <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-center">
             <button type="button" wire:click="resetForm" class="btn btn-outline-secondary" @disabled($loading)>
@@ -187,13 +209,47 @@
             <button type="submit" 
                     class="btn btn-whatsapp btn-lg px-4 py-2 fw-bold"
                     @disabled($loading || !$amount || !$payment_method || !$sender_account)>
+                <!-- Spinner : instantané au clic OU si $loading est true -->
+                <span class="spinner-border spinner-border-sm me-2" role="status"
+                      style="display: none;"
+                      wire:loading.style.display="inline-block" wire:target="createRecharge"></span>
                 @if($loading)
                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                @endif
+                
+                <!-- Texte : change instantanément au clic ET reste changé si $loading -->
+                @if($loading)
                     {{ __('Traitement en cours...') }}
                 @else
-                    <i class="ti ti-credit-card me-2"></i>
-                    {{ __('Recharger') }} {{ $amount ? $this->formatPrice($amount) : __('mon compte') }}
+                    <span wire:loading.remove wire:target="createRecharge">
+                        <i class="ti ti-credit-card me-2"></i>
+                        {{ __('Recharger') }} {{ $amount ? $this->formatPrice($amount) : __('mon compte') }}
+                    </span>
+                    <span wire:loading wire:target="createRecharge">
+                        {{ __('Traitement en cours...') }}
+                    </span>
                 @endif
             </button>
         </div>
     </form>
+
+<!-- Debug info -->
+@if(config('app.debug'))
+    <div class="small text-muted mb-2">
+        Debug: loading={{ $loading ? 'true' : 'false' }}, 
+        pollingTransactionId={{ $pollingTransactionId }}, 
+        pollingAttempts={{ $pollingAttempts }}
+    </div>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 Frontend: DOM loaded');
+    
+    // Simple logging for form submission
+    document.addEventListener('livewire:init', function() {
+        console.log('🔄 Frontend: Livewire initialized');
+    });
+});
+</script>
+</div>
