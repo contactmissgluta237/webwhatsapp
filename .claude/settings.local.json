@@ -4,7 +4,9 @@
       "Bash(php artisan test:*)",
       "Bash(php artisan config:clear:*)",
       "Bash(php artisan:*)",
-      "mcp__laravel-boost__get-absolute-url"
+      "mcp__laravel-boost__get-absolute-url",
+      "mcp__laravel-boost__database-schema",
+      "mcp__laravel-boost__list-routes"
     ]
   },
   "enableAllProjectMcpServers": true,

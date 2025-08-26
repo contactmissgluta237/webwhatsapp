@@ -50,12 +50,6 @@ final class SessionNameInput extends Component
             return;
         }
 
-        if (! preg_match('/^[a-zA-Z0-9_-]+$/', $this->sessionName)) {
-            $this->errorMessage = 'Le nom ne peut contenir que des lettres, chiffres, tirets et underscores.';
-
-            return;
-        }
-
         // Si on arrive ici, c'est valide
         $this->isValid = true;
     }

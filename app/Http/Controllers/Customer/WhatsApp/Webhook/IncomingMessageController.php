@@ -8,6 +8,7 @@ use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Events\WhatsApp\MessageProcessedEvent;
+use App\Exceptions\InsufficientFundsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WhatsApp\Webhook\IncomingMessageRequest;
 use App\Models\WhatsAppAccount;
@@ -15,6 +16,7 @@ use App\Repositories\WhatsAppAccountRepositoryInterface;
 use App\Services\WhatsApp\ConversationHistoryService;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 final class IncomingMessageController extends Controller
@@ -37,6 +39,7 @@ final class IncomingMessageController extends Controller
 
         try {
             $account = $this->whatsAppAccountRepository->findBySessionId($validated['session_id']);
+            $this->validateBillingCapacity($account);
             $messageRequest = WhatsAppMessageRequestDTO::fromWebhookData($validated['message']);
             $conversationHistory = $this->conversationHistory->prepareConversationHistory($account, $messageRequest->from);
 
@@ -52,8 +55,16 @@ final class IncomingMessageController extends Controller
 
             return response()->json(
                 $webhookResponse,
-                $response->wasSuccessful() ? 200 : 500
+                $response->wasSuccessful() ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR
             );
+
+        } catch (InsufficientFundsException $e) {
+            Log::warning('[WEBHOOK] Insufficient funds to process message', [
+                'session_id' => $validated['session_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->errorResponse($e->getMessage(), $e->getCode());
 
         } catch (Exception $e) {
             Log::error('[WEBHOOK] Failed to process message', [
@@ -62,7 +73,7 @@ final class IncomingMessageController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return $this->errorResponse('Failed to process message', 500);
+            return $this->errorResponse('Failed to process message', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -91,6 +102,19 @@ final class IncomingMessageController extends Controller
             'message_id' => $validated['message']['id'],
             'body_preview' => substr($validated['message']['body'], 0, 50).'...',
         ]);
+    }
+
+    private function validateBillingCapacity(WhatsAppAccount $account): void
+    {
+        $user = $account->user;
+        $subscription = $user->activeSubscription;
+
+        if (! $subscription || ! $subscription->isActive() || ! $subscription->hasRemainingMessages(1)) {
+            $minimumCost = config('whatsapp.billing.costs.ai_message', 15);
+            if (! $user->wallet || $user->wallet->balance < $minimumCost) {
+                throw new InsufficientFundsException;
+            }
+        }
     }
 
     private function errorResponse(string $message, int $status): JsonResponse

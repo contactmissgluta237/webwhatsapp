@@ -28,7 +28,6 @@ class AuthenticationService implements AuthenticationServiceInterface
     {
         $user = $this->findUser($credentials->login);
 
-        // TODO : instead of directly writing text, let's start using quickly translation!
         if (! $user || ! Hash::check($credentials->password, $user->password)) {
             throw new AuthenticationException('Les identifiants fournits sont invalides, vérifiez bien votre email ou téléphone et votre mot de passe.');
         }

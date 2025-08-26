@@ -3,20 +3,29 @@
 namespace App\Listeners;
 
 use App\Enums\TicketSenderType;
-use App\Events\TicketMessageSentEvent;
 use App\Models\User;
 use App\Notifications\AdminTicketRepliedNotification;
 use App\Notifications\CustomerTicketRepliedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class SendTicketReplyNotificationsListener implements ShouldQueue
+class SendTicketReplyNotificationsListener extends BaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
     public function __construct() {}
 
-    public function handle(TicketMessageSentEvent $event): void
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'ticket_message_id' => $event->ticketMessage->id,
+            'ticket_id' => $event->ticketMessage->ticket->id,
+            'sender_type' => $event->ticketMessage->sender_type->value,
+            'event_type' => 'ticket_message_sent',
+        ];
+    }
+
+    protected function handleEvent($event): void
     {
         $ticketMessage = $event->ticketMessage;
         $ticket = $ticketMessage->ticket;

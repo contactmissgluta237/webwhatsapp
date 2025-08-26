@@ -43,5 +43,7 @@ Route::middleware(['auth', 'role:customer'])
         Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
             Route::get('/', App\Http\Controllers\Customer\WhatsApp\Account\IndexController::class)->name('index');
             Route::get('/create', App\Http\Controllers\Customer\WhatsApp\Account\CreateController::class)->name('create');
+            Route::get('/{account}/conversations', App\Http\Controllers\Customer\WhatsApp\Conversations\IndexController::class)->name('conversations.index');
+            Route::get('/{account}/conversations/{conversation}', App\Http\Controllers\Customer\WhatsApp\Conversations\ShowController::class)->name('conversations.show');
         });
     });

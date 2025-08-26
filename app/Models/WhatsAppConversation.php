@@ -46,6 +46,7 @@ final class WhatsAppConversation extends Model
         'chat_id',
         'contact_phone',
         'contact_name',
+        'public_name',
         'is_group',
         'last_message_at',
         'unread_count',
@@ -95,7 +96,7 @@ final class WhatsAppConversation extends Model
 
     public function getDisplayName(): string
     {
-        return $this->contact_name ?? $this->contact_phone;
+        return $this->contact_name ?? $this->public_name ?? $this->contact_phone;
     }
 
     public function hasUnreadMessages(): bool

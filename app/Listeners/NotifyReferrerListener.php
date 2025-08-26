@@ -2,14 +2,13 @@
 
 namespace App\Listeners;
 
-use App\Events\CustomerCreatedEvent;
 use App\Mail\ReferralNotificationMail;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
-class NotifyReferrerListener implements ShouldQueue
+class NotifyReferrerListener extends BaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -21,10 +20,19 @@ class NotifyReferrerListener implements ShouldQueue
         //
     }
 
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'customer_id' => $event->customer->id,
+            'referrer_id' => $event->customer->user->referrer?->id,
+            'event_type' => 'customer_created_referral',
+        ];
+    }
+
     /**
      * Handle the event.
      */
-    public function handle(CustomerCreatedEvent $event): void
+    protected function handleEvent($event): void
     {
         $customer = $event->customer;
 

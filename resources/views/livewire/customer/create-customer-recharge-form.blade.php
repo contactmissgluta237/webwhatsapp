@@ -91,7 +91,7 @@
                 <div class="row text-center">
                     <div class="col-4">
                         <div class="text-muted small mb-1">{{ __('Montant') }}</div>
-                        <div class="fs-5 fw-bold text-dark">{{ number_format($amount, 0, ',', ' ') }}</div>
+                        <div class="fs-5 fw-bold text-dark">{{ number_format((float)$amount, 0, ',', ' ') }}</div>
                         <small class="text-muted">{{ $this->getUserCurrency() }}</small>
                     </div>
                     <div class="col-4">
@@ -232,24 +232,4 @@
             </button>
         </div>
     </form>
-
-<!-- Debug info -->
-@if(config('app.debug'))
-    <div class="small text-muted mb-2">
-        Debug: loading={{ $loading ? 'true' : 'false' }}, 
-        pollingTransactionId={{ $pollingTransactionId }}, 
-        pollingAttempts={{ $pollingAttempts }}
-    </div>
-@endif
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔄 Frontend: DOM loaded');
-    
-    // Simple logging for form submission
-    document.addEventListener('livewire:init', function() {
-        console.log('🔄 Frontend: Livewire initialized');
-    });
-});
-</script>
 </div>

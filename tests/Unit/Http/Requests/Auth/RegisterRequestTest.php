@@ -24,6 +24,7 @@ class RegisterRequestTest extends BaseRequestTest
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'terms' => true,
+            'locale' => 'fr',
         ];
     }
 

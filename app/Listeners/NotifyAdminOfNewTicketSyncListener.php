@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Events\TicketCreatedEvent;
 use App\Models\User;
 use App\Notifications\AdminNewTicketSyncNotification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
-final class NotifyAdminOfNewTicketSyncListener
+final class NotifyAdminOfNewTicketSyncListener extends BaseListener
 {
-    public function handle(TicketCreatedEvent $event): void
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'ticket_id' => $event->ticket->id,
+            'user_id' => $event->ticket->user->id,
+            'event_type' => 'ticket_created_sync',
+        ];
+    }
+
+    protected function handleEvent($event): void
     {
         try {
             $admins = $this->getAdminUsers();

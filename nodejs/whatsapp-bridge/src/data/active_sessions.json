@@ -1,10 +1,18 @@
 {
-  "session_2_17552805081829_3d3b6b43": {
+  "session_2_17562223624561_43f7dfe4": {
+    "userId": 2,
+    "status": "qr_code_ready",
+    "phoneNumber": "23755332183",
+    "lastActivity": "2025-08-26T16:03:01.011Z",
+    "createdAt": "2025-08-26T15:32:42.476Z",
+    "savedAt": "2025-08-26T16:07:29.897Z"
+  },
+  "session_2_17562241577050_2e7c9d0a": {
     "userId": 2,
     "status": "connected",
-    "phoneNumber": "237676636794",
-    "lastActivity": "2025-08-24T03:34:30.181Z",
-    "createdAt": "2025-08-15T17:55:08.193Z",
-    "savedAt": "2025-08-25T22:13:28.514Z"
+    "phoneNumber": "23755332183",
+    "lastActivity": "2025-08-26T16:07:26.875Z",
+    "createdAt": "2025-08-26T16:02:37.716Z",
+    "savedAt": "2025-08-26T16:07:29.897Z"
   }
 }

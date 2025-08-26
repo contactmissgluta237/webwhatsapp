@@ -21,8 +21,7 @@ final class CreateSessionRequest extends FormRequest
             'session_name' => [
                 'required',
                 'string',
-                'min:3',
-                'max:50',
+                'max:255',
                 Rule::unique('whatsapp_accounts', 'session_name')
                     ->where('user_id', Auth::id()),
             ],
@@ -34,8 +33,7 @@ final class CreateSessionRequest extends FormRequest
         return [
             'session_name.required' => 'Le nom de session est obligatoire.',
             'session_name.string' => 'Le nom de session doit être une chaîne de caractères.',
-            'session_name.min' => 'Le nom de session doit contenir au moins 3 caractères.',
-            'session_name.max' => 'Le nom de session ne peut pas dépasser 50 caractères.',
+            'session_name.max' => 'Le nom de session ne peut pas dépasser 255 caractères.',
             'session_name.unique' => 'Ce nom de session existe déjà pour votre compte.',
         ];
     }

@@ -1,17 +1,37 @@
 <div class="tab-content-section">
-    <!-- Nom de l'agent -->
-    <div class="form-group">
-        <label for="agent_name" class="form-label required">
-            <i class="la la-robot"></i> {{ __('Nom de l\'agent IA') }}
-        </label>
-        <input type="text" 
-               wire:model.live="agent_name" 
-               id="agent_name" 
-               class="form-control @error('agent_name') is-invalid @enderror" 
-               placeholder="{{ __('Ex: Assistant Client, Support Technique...') }}">
-        @error('agent_name')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
+    <!-- Session et Nom de l'agent -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="session_number" class="form-label">
+                    <i class="la la-whatsapp"></i> {{ __('Numéro de la session') }}
+                </label>
+                <input type="text" 
+                       id="session_number" 
+                       class="form-control" 
+                       value="{{ $account->phone_number }}" 
+                       readonly>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="agent_name" class="form-label required">
+                    <i class="la la-robot"></i> {{ __('Nom de l\'agent IA') }}
+                    <i class="la la-info-circle text-muted" 
+                       data-toggle="tooltip" 
+                       data-placement="top" 
+                       title="{{ __('le nom est juste à titre indicatif pour se répérer!') }}"></i>
+                </label>
+                <input type="text" 
+                       wire:model.live="agent_name" 
+                       id="agent_name" 
+                       class="form-control @error('agent_name') is-invalid @enderror" 
+                       placeholder="{{ __('Ex: Assistant Client, Support Technique...') }}">
+                @error('agent_name')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
     </div>
 
     <!-- Statut d'activation -->
@@ -133,7 +153,7 @@
         <textarea wire:model.live="agent_prompt" 
                   id="agent_prompt" 
                   class="form-control @error('agent_prompt') is-invalid @enderror @if($hasEnhancedPrompt) border-success @endif" 
-                  rows="6" 
+                  rows="20" 
                   placeholder="{{ __('Ex: Tu es un assistant professionnel pour AFRIK SOLUTIONS, spécialisé dans le développement web et mobile. Réponds de manière courtoise et professionnelle...') }}"></textarea>
         @error('agent_prompt')
             <div class="invalid-feedback">{{ $message }}</div>

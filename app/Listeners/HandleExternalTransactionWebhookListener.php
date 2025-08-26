@@ -3,18 +3,26 @@
 namespace App\Listeners;
 
 use App\Enums\TransactionStatus;
-use App\Events\ExternalTransactionWebhookProcessedEvent;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\RechargeNotificationMail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-class HandleExternalTransactionWebhookListener
+class HandleExternalTransactionWebhookListener extends BaseListener
 {
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'transaction_id' => $event->transaction->id,
+            'webhook_event_type' => 'external_transaction',
+            'status' => $event->transaction->status->value,
+        ];
+    }
+
     /**
      * Handle the event.
      */
-    public function handle(ExternalTransactionWebhookProcessedEvent $event): void
+    protected function handleEvent($event): void
     {
         $transaction = $event->transaction;
         $customer = $transaction->wallet->user;
@@ -46,7 +54,6 @@ class HandleExternalTransactionWebhookListener
                 }
             }
         } elseif ($transaction->status->equals(TransactionStatus::FAILED()) || $transaction->status->equals(TransactionStatus::CANCELLED())) {
-            // TODO: Handle failed/cancelled transactions (e.g., refund if necessary, notify admin/customer)
             Log::warning('External transaction failed or cancelled via webhook', [
                 'transaction_id' => $transaction->id,
                 'status' => $transaction->status->value,

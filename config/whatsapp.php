@@ -42,4 +42,30 @@ return [
         // Taille maximale des messages
         'max_message_length' => 4096,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | WhatsApp Billing Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration pour la facturation des messages WhatsApp
+    |
+    */
+
+    'billing' => [
+        // Coûts des différents types de messages (en XAF)
+        'costs' => [
+            // Coût d'un message de réponse IA
+            'ai_message' => env('WHATSAPP_COST_AI_MESSAGE', 15),
+
+            // Coût d'un message texte pour un produit
+            'product_message' => env('WHATSAPP_COST_PRODUCT_MESSAGE', 10),
+
+            // Coût par média (image, vidéo, etc.)
+            'media' => env('WHATSAPP_COST_MEDIA', 5),
+        ],
+
+        // Pourcentage du quota restant pour déclencher une alerte
+        'alert_threshold_percentage' => env('WHATSAPP_ALERT_THRESHOLD', 20),
+    ],
 ];

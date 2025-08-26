@@ -121,6 +121,13 @@ class NotificationHeader extends Component
     {
         $typeClass = $notification->type;
 
+        // Handle WhatsApp notifications
+        if (str_contains($typeClass, 'WhatsApp\\')) {
+            // WhatsApp notifications don't use NotificationType enum,
+            // so return a default that won't be displayed (we use title instead)
+            return NotificationType::ORDER_CREATED();
+        }
+
         if (str_contains($typeClass, 'OrderNotification')) {
             $typeValue = $notification->data['type'] ?? 'order_created';
 

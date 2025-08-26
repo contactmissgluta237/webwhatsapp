@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Enums\MessageDirection;
+use App\Enums\MessageSubtype;
 use App\Enums\MessageType;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
@@ -40,16 +42,43 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
                 'whatsapp_account_id' => $account->id,
                 'chat_id' => $chatId,
                 'contact_phone' => $contactPhone,
-                'contact_name' => $messageRequest->chatName,
+                'contact_name' => $messageRequest->contactName,
+                'public_name' => $messageRequest->getPublicName(),
                 'is_group' => $messageRequest->isFromGroup(),
-                'is_ai_enabled' => true, // Par défaut, l'AI est activée
+                'is_ai_enabled' => true,
             ]);
 
             Log::info('[MESSAGE_REPO] New conversation created', [
                 'conversation_id' => $conversation->id,
                 'chat_id' => $chatId,
                 'contact_phone' => $contactPhone,
+                'contact_name' => $messageRequest->contactName,
+                'public_name' => $messageRequest->getPublicName(),
+                'display_name' => $conversation->getDisplayName(),
             ]);
+        } else {
+            // Update contact information if we have better data
+            $updateData = [];
+
+            // Update contact name if we have one and current is null
+            if ($messageRequest->contactName && ! $conversation->contact_name) {
+                $updateData['contact_name'] = $messageRequest->contactName;
+            }
+
+            // Update public name if we have one and current is null
+            if ($messageRequest->getPublicName() && ! $conversation->public_name) {
+                $updateData['public_name'] = $messageRequest->getPublicName();
+            }
+
+            if (! empty($updateData)) {
+                $conversation->update($updateData);
+
+                Log::info('[MESSAGE_REPO] Conversation contact info updated', [
+                    'conversation_id' => $conversation->id,
+                    'updated_fields' => array_keys($updateData),
+                    'new_display_name' => $conversation->fresh()->getDisplayName(),
+                ]);
+            }
         }
 
         return $conversation;
@@ -114,6 +143,63 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
         return $message;
     }
 
+    /**
+     * Store product messages separately for each product in AI response
+     */
+    public function storeProductMessages(
+        WhatsAppConversation $conversation,
+        WhatsAppAccount $account,
+        array $products
+    ): array {
+        if (empty($products)) {
+            return [];
+        }
+
+        Log::debug('[MESSAGE_REPO] Storing product messages', [
+            'conversation_id' => $conversation->id,
+            'products_count' => count($products),
+        ]);
+
+        $productMessages = [];
+
+        foreach ($products as $product) {
+            if (! $product instanceof ProductDataDTO) {
+                Log::warning('[MESSAGE_REPO] Invalid product data, skipping', [
+                    'product_type' => gettype($product),
+                ]);
+                continue;
+            }
+
+            $productMessage = WhatsAppMessage::create([
+                'whatsapp_conversation_id' => $conversation->id,
+                'whatsapp_message_id' => null, // Product messages don't have WhatsApp IDs
+                'direction' => MessageDirection::OUTBOUND(),
+                'content' => $product->formattedProductMessage,
+                'message_type' => MessageType::TEXT(),
+                'message_subtype' => MessageSubtype::PRODUCT(),
+                'media_urls' => $product->mediaUrls,
+                'is_ai_generated' => true,
+                'ai_model_used' => $account->aiModel?->model_identifier,
+                'processed_at' => now(),
+            ]);
+
+            $productMessages[] = $productMessage;
+
+            Log::info('[MESSAGE_REPO] Product message stored', [
+                'product_message_id' => $productMessage->id,
+                'media_count' => count($product->mediaUrls),
+                'conversation_id' => $conversation->id,
+            ]);
+        }
+
+        Log::info('[MESSAGE_REPO] All product messages stored', [
+            'conversation_id' => $conversation->id,
+            'stored_products' => count($productMessages),
+        ]);
+
+        return $productMessages;
+    }
+
     public function storeMessageExchange(
         WhatsAppAccount $account,
         WhatsAppMessageRequestDTO $incomingMessage,
@@ -137,7 +223,13 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
                 $outgoingMessageRecord = $this->storeOutgoingMessage($conversation, $account, $aiResponse);
             }
 
-            // 4. Update conversation last message timestamp
+            // 4. Store product messages if any
+            $productMessages = [];
+            if ($aiResponse->hasProducts()) {
+                $productMessages = $this->storeProductMessages($conversation, $account, $aiResponse->products);
+            }
+
+            // 5. Update conversation last message timestamp
             $conversation->updateLastMessage(now());
 
             Log::info('[MESSAGE_REPO] Message exchange stored successfully', [
@@ -145,12 +237,14 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
                 'conversation_id' => $conversation->id,
                 'incoming_message_id' => $incomingMessageRecord->id,
                 'outgoing_message_id' => $outgoingMessageRecord?->id,
+                'product_messages_count' => count($productMessages),
             ]);
 
             return [
                 'conversation' => $conversation,
                 'incoming_message' => $incomingMessageRecord,
                 'outgoing_message' => $outgoingMessageRecord,
+                'product_messages' => $productMessages,
             ];
         });
     }

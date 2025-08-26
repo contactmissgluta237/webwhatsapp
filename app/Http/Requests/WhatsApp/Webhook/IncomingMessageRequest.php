@@ -34,6 +34,11 @@ final class IncomingMessageRequest extends FormRequest
             'message.timestamp' => 'required|integer',
             'message.type' => 'required|string',
             'message.isGroup' => 'required|boolean',
+            // Optional contact information
+            'message.contactName' => 'nullable|string|max:255',
+            'message.pushName' => 'nullable|string|max:255',
+            'message.publicName' => 'nullable|string|max:255',
+            'message.displayName' => 'nullable|string|max:255',
         ];
     }
 }

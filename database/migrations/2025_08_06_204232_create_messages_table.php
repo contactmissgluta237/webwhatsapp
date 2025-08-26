@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('ai_model_used')->nullable();
             $table->float('ai_confidence', 3, 2)->nullable();
             $table->json('metadata')->nullable(); // Pour stocker des infos supplémentaires comme taille fichier, etc.
+            $table->json('media_urls')->nullable(); // URLs des médias pour les produits
+            $table->enum('message_subtype', ['main', 'product'])->default('main'); // Type de message
             $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 

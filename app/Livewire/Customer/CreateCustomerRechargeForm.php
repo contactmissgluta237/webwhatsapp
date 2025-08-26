@@ -305,6 +305,8 @@ class CreateCustomerRechargeForm extends Component
     {
         $this->amount = '';
         $this->payment_method = '';
+        $this->feeAmount = null;
+        $this->totalToPay = null;
         $this->resetPaymentData();
     }
 

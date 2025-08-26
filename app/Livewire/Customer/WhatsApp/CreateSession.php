@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customer\WhatsApp;
 
+use App\DTOs\WhatsApp\WhatsAppSessionStatusDTO;
 use App\Enums\WhatsAppStatus;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\WhatsAppQRService;
@@ -107,7 +108,7 @@ final class CreateSession extends Component
         }
 
         $this->connectionAttempts++;
-        $maxAttempts = 60; // 3 minutes (3s * 60 = 180s)
+        $maxAttempts = 60;
 
         Log::info('Checking connection status', [
             'session_id' => $this->tempSessionId,
@@ -117,27 +118,23 @@ final class CreateSession extends Component
 
         try {
             $qrService = app(WhatsAppQRService::class);
-            $isConnected = $qrService->checkSessionConnection($this->tempSessionId);
+            $sessionStatus = $qrService->getSessionStatus($this->tempSessionId);
 
-            if ($isConnected) {
-                // Session connectée ! On peut créer l'account
-                $this->createConnectedAccount();
+            if ($sessionStatus && $sessionStatus->isConnected()) {
+                $this->createConnectedAccount($sessionStatus);
 
                 return;
             }
 
             if ($this->connectionAttempts >= $maxAttempts) {
-                // Timeout atteint
                 $this->handleConnectionTimeout();
 
                 return;
             }
 
-            // Pas encore connecté, on continue à attendre
             $remainingTime = (int) ((($maxAttempts - $this->connectionAttempts) * 3) / 60);
             $this->statusMessage = "Connexion en cours... (Tentative {$this->connectionAttempts}/{$maxAttempts}) - Temps restant: ~{$remainingTime}min";
 
-            // Programmer la prochaine vérification dans 3 secondes
             $this->dispatch('check-connection-later');
 
         } catch (\Exception $e) {
@@ -156,35 +153,17 @@ final class CreateSession extends Component
         }
     }
 
-    private function createConnectedAccount(): void
+    private function createConnectedAccount(WhatsAppSessionStatusDTO $sessionStatus): void
     {
         try {
-            // Récupérer les données du cache temporaire (stockées par le webhook)
-            $tempData = cache()->get("whatsapp_temp_session_{$this->tempSessionId}");
-
-            if ($tempData) {
-                Log::info('Found temp session data from webhook', [
-                    'session_id' => $this->tempSessionId,
-                    'phone_number' => $tempData['phone_number'] ?? null,
-                ]);
-            } else {
-                Log::warning('No temp session data found in cache', [
-                    'session_id' => $this->tempSessionId,
-                ]);
-            }
-
             $account = WhatsAppAccount::create([
                 'user_id' => Auth::id(),
                 'session_name' => $this->sessionName,
                 'session_id' => $this->tempSessionId,
                 'status' => WhatsAppStatus::CONNECTED(),
-                'phone_number' => $tempData['phone_number'] ?? null,
-                'session_data' => $tempData['whatsapp_data'] ?? null,
-                'last_seen_at' => now(),
+                'phone_number' => $sessionStatus->phoneNumber,
+                'last_seen_at' => $sessionStatus->lastActivity ?? now(),
             ]);
-
-            // Nettoyer le cache temporaire
-            cache()->forget("whatsapp_temp_session_{$this->tempSessionId}");
 
             $this->isWaitingConnection = false;
             session()->flash('success', 'Agent WhatsApp créé et connecté avec succès !');

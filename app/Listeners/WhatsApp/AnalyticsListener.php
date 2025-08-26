@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners\WhatsApp;
 
 use App\Events\WhatsApp\MessageProcessedEvent;
+use App\Listeners\BaseListener;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,12 +19,24 @@ use Illuminate\Support\Facades\Log;
  * - AI model performance tracking
  * - Error rate monitoring
  */
-final class AnalyticsListener
+final class AnalyticsListener extends BaseListener
 {
     /**
-     * Handle the event and track analytics
+     * Extrait les identifiants uniques pour MessageProcessedEvent
      */
-    public function handle(MessageProcessedEvent $event): void
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'account_id' => $event->account->id,
+            'message_id' => $event->incomingMessage->id,
+            'session_id' => $event->getSessionId(),
+        ];
+    }
+
+    /**
+     * Traite l'événement pour les analytics
+     */
+    protected function handleEvent($event): void
     {
         Log::debug('[ANALYTICS] Message processed for analytics tracking', [
             'session_id' => $event->getSessionId(),
@@ -31,12 +44,7 @@ final class AnalyticsListener
             'ai_success' => $event->wasSuccessful(),
         ]);
 
-        // TODO: Implement analytics tracking when system is ready
-        // This could include:
-        // - Track message volume per user/session
-        // - Record response time metrics
-        // - Monitor AI model performance
-        // - Track user engagement patterns
+        // Logic to handle analytics
         // - Log error rates and types
         // - Generate usage reports
         // - Send data to analytics platforms (Google Analytics, etc.)

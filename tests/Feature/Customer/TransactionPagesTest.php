@@ -194,6 +194,52 @@ class TransactionPagesTest extends TestCase
             ->assertForbidden();
     }
 
+    #[Test]
+    public function recharge_form_validation_requires_fields(): void
+    {
+        $customer = $this->createCustomerWithWallet();
+
+        $this->actingAs($customer);
+
+        // Test validation without amount
+        $component = Livewire::test(CreateCustomerRechargeForm::class)
+            ->call('createRecharge');
+
+        $component->assertSet('error', 'Erreur : Veuillez sélectionner un montant.');
+    }
+
+    #[Test]
+    public function recharge_form_reset_clears_all_fields(): void
+    {
+        $customer = $this->createCustomerWithWallet();
+
+        $this->actingAs($customer);
+
+        $component = Livewire::test(CreateCustomerRechargeForm::class)
+            ->set('amount', 1000)
+            ->set('payment_method', 'mobile_money')
+            ->call('resetForm');
+
+        $component->assertSet('amount', '')
+            ->assertSet('payment_method', '')
+            ->assertSet('feeAmount', null)
+            ->assertSet('totalToPay', null);
+    }
+
+    #[Test]
+    public function recharge_form_prefills_user_phone_number(): void
+    {
+        $customer = $this->createCustomerWithWallet();
+        $customer->update(['phone_number' => '+237670000001']);
+
+        $this->actingAs($customer);
+
+        $component = Livewire::test(CreateCustomerRechargeForm::class);
+
+        $component->assertSet('sender_account', '+237670000001')
+            ->assertSet('phone_number', '+237670000001');
+    }
+
     private function createCustomerWithWallet(float $balance = 1000.00): User
     {
         $customer = User::factory()->create([

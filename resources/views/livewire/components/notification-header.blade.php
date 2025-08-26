@@ -45,7 +45,7 @@
                     
                     <div class="media-body">
                         <div class="d-flex justify-content-between align-items-start">
-                            <h6 class="media-heading mb-1">{{ $notificationType->label }}</h6>
+                            <h6 class="media-heading mb-1">{{ $notification->data['title'] ?? $notificationType->label }}</h6>
                             <div class="notification-actions">
                                 
                             </div>

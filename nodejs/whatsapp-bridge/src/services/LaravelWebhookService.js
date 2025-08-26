@@ -33,6 +33,11 @@ class LaravelWebhookService {
                 timestamp: message.timestamp,
                 type: message.type,
                 isGroup: message.from.includes("@g.us"),
+                // Include contact information
+                contactName: message.contactName || null,
+                pushName: message.pushName || null,
+                publicName: message.publicName || null,
+                displayName: message.displayName || null,
             },
         };
 

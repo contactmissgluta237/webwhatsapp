@@ -2,15 +2,23 @@
 
 namespace App\Listeners;
 
-use App\Events\AdminWithdrawalCreatedEvent;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\AdminWithdrawalNotificationMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
-class AdminWithdrawalNotificationListener
+class AdminWithdrawalNotificationListener extends BaseListener
 {
-    public function handle(AdminWithdrawalCreatedEvent $event): void
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'transaction_id' => $event->transaction->id,
+            'customer_id' => $event->transaction->wallet->user->id,
+            'event_type' => 'admin_withdrawal_created',
+        ];
+    }
+
+    protected function handleEvent($event): void
     {
         $transaction = $event->transaction;
         $customer = $transaction->wallet->user;

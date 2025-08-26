@@ -2,14 +2,13 @@
 
 namespace App\Listeners;
 
-use App\Events\TicketCreatedEvent;
 use App\Models\User;
 use App\Notifications\AdminNewTicketNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
 
-class NotifyAdminOfNewTicketListener implements ShouldQueue
+class NotifyAdminOfNewTicketListener extends BaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -18,10 +17,19 @@ class NotifyAdminOfNewTicketListener implements ShouldQueue
      */
     public function __construct() {}
 
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'ticket_id' => $event->ticket->id,
+            'user_id' => $event->ticket->user->id,
+            'event_type' => 'ticket_created',
+        ];
+    }
+
     /**
      * Handle the event.
      */
-    public function handle(TicketCreatedEvent $event): void
+    protected function handleEvent($event): void
     {
         // Récupérer tous les administrateurs
         $admins = User::whereHas('roles', function ($query) {

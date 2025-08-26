@@ -35,16 +35,12 @@ class ExternalTransactionFactory extends Factory
             'external_transaction_id' => strtoupper($this->faker->bothify('???_########_????')),
             'description' => $this->faker->sentence(),
             'payment_method' => $this->faker->randomElement(PaymentMethod::values()),
+            'gateway_transaction_id' => $this->faker->optional()->uuid(),
+            'gateway_response' => null,
 
             'sender_name' => $this->faker->optional()->name(),
-            'sender_phone' => $this->faker->optional()->phoneNumber(),
-            'sender_address' => $this->faker->optional()->address(),
-            'sender_bank' => $this->faker->optional()->randomElement(['Ecobank', 'UBA', 'Afriland', 'BICEC']),
             'sender_account' => $this->faker->optional()->numerify('###########'),
             'receiver_name' => $this->faker->optional()->name(),
-            'receiver_phone' => $this->faker->optional()->phoneNumber(),
-            'receiver_address' => $this->faker->optional()->address(),
-            'receiver_bank' => $this->faker->optional()->randomElement(['Ecobank', 'UBA', 'Afriland', 'BICEC']),
             'receiver_account' => $this->faker->optional()->numerify('###########'),
             'created_by' => null, // Ne pas créer automatiquement, laisser les tests définir
             'approved_by' => null, // Ne pas créer automatiquement, laisser les tests définir

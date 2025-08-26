@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('whatsapp_account_id')->constrained('whatsapp_accounts')->onDelete('cascade');
             $table->string('chat_id');
             $table->string('contact_phone');
-            $table->string('contact_name')->nullable();
+            $table->string('contact_name')->nullable(); // Saved contact name
+            $table->string('public_name')->nullable(); // WhatsApp push name
             $table->boolean('is_group')->default(false);
             $table->timestamp('last_message_at')->nullable();
             $table->integer('unread_count')->default(0);
@@ -26,6 +27,7 @@ return new class extends Migration
             // Index pour optimiser les recherches
             $table->index(['whatsapp_account_id', 'chat_id']);
             $table->index('contact_phone');
+            $table->index('contact_name');
         });
     }
 

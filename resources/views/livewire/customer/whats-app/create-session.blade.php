@@ -84,7 +84,7 @@
                                         </button>
                                     </div>
                                 @else
-                                    <button type="button" class="btn btn-success btn-lg" wire:click="confirmQRScanned">
+                                    <button type="button" class="btn btn-whatsapp btn-lg" wire:click="confirmQRScanned">
                                         <i class="la la-check-circle"></i> {{ "J'ai scanné le QR code" }}
                                     </button>
                                 @endif

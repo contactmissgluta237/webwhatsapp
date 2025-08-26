@@ -2,13 +2,12 @@
 
 namespace App\Listeners;
 
-use App\Events\RechargeCompletedByAdminEvent;
 use App\Mail\RechargeNotificationMail;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
-class SendRechargeNotificationToCustomerListener implements ShouldQueue
+class SendRechargeNotificationToCustomerListener extends BaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -20,10 +19,18 @@ class SendRechargeNotificationToCustomerListener implements ShouldQueue
         //
     }
 
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'transaction_id' => $event->transaction->id,
+            'event_type' => 'recharge_completed_by_admin',
+        ];
+    }
+
     /**
      * Handle the event.
      */
-    public function handle(RechargeCompletedByAdminEvent $event): void
+    protected function handleEvent($event): void
     {
         $transaction = $event->transaction;
         $customer = $transaction->wallet->user;

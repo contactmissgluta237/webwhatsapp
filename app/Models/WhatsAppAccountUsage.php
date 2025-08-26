@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Usage tracking per WhatsApp account within a subscription
@@ -100,6 +101,50 @@ class WhatsAppAccountUsage extends Model
     public function incrementMediaUsage(int $mediaCount): void
     {
         $this->increment('media_messages_count', $mediaCount);
+    }
+
+    /**
+     * Can this user afford the wallet debit for overage billing
+     */
+    public function canAffordWalletDebit(float $amount): bool
+    {
+        $user = $this->subscription->user;
+        $wallet = $user->wallet;
+
+        if (! $wallet) {
+            return false;
+        }
+
+        return $wallet->balance >= $amount;
+    }
+
+    /**
+     * Debit wallet for overage billing with protection
+     */
+    public function debitWalletForOverage(float $amount): bool
+    {
+        if (! $this->canAffordWalletDebit($amount)) {
+            return false;
+        }
+
+        $user = $this->subscription->user;
+        $wallet = $user->wallet;
+
+        // Update wallet balance (protected against negative)
+        $newBalance = max(0, $wallet->balance - $amount);
+        $wallet->update(['balance' => $newBalance]);
+
+        // Track overage payment
+        $this->increment('overage_cost_paid_xaf', $amount);
+        $this->update(['last_overage_payment_at' => now()]);
+
+        Log::info('[WhatsAppAccountUsage] Wallet debited for overage', [
+            'account_usage_id' => $this->id,
+            'amount_debited' => $amount,
+            'new_wallet_balance' => $newBalance,
+        ]);
+
+        return true;
     }
 
     // ================================================================================

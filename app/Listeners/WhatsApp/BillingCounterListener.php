@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace App\Listeners\WhatsApp;
 
-use App\Enums\TransactionStatus;
-use App\Enums\TransactionType;
 use App\Events\WhatsApp\MessageProcessedEvent;
-use App\Models\InternalTransaction;
-use App\Models\WhatsAppAccountUsage;
-use App\Services\WhatsApp\Helpers\MessageCostHelper;
+use App\Listeners\BaseListener;
+use App\Notifications\WhatsApp\LowQuotaNotification;
+use App\Notifications\WhatsApp\WalletDebitedNotification;
+use App\Services\WhatsApp\Helpers\MessageBillingHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Listener responsible for tracking message usage for billing/package limits
- * Handles quota decrementing and wallet debiting for overages
+ * Simple billing listener: check quota -> debit quota OR debit wallet
  */
-final class BillingCounterListener
+final class BillingCounterListener extends BaseListener
 {
     /**
-     * Handle the event and update billing counters
+     * Extrait les identifiants uniques pour MessageProcessedEvent
      */
-    public function handle(MessageProcessedEvent $event): void
+    protected function getEventIdentifiers($event): array
     {
-        // Seulement traiter si le message AI a réussi
+        return [
+            'account_id' => $event->account->id,
+            'message_id' => $event->incomingMessage->id,
+            'session_id' => $event->aiResponse->sessionId,
+            'ai_response' => $event->aiResponse->aiResponse ?? '',
+        ];
+    }
+
+    /**
+     * Handles the billing event
+     */
+    protected function handleEvent($event): void
+    {
         if (! $event->wasSuccessful()) {
             return;
         }
@@ -33,7 +43,7 @@ final class BillingCounterListener
         $subscription = $user->activeSubscription;
 
         if (! $subscription) {
-            Log::warning('[BILLING_COUNTER] No active subscription found', [
+            Log::warning('[BillingCounterListener] No active subscription', [
                 'user_id' => $user->id,
                 'session_id' => $event->getSessionId(),
             ]);
@@ -41,89 +51,85 @@ final class BillingCounterListener
             return;
         }
 
-        $accountUsage = $subscription->getUsageForAccount($event->account);
+        try {
+            DB::transaction(function () use ($subscription, $event, $user) {
+                // Get accountUsage for this specific account
+                $accountUsage = $subscription->getUsageForAccount($event->account);
 
-        // Calculer le coût du message basé sur les produits dans la réponse
-        $products = collect($event->aiResponse->products ?? []);
-        $messageCost = MessageCostHelper::calculateMessageCost($products);
+                // Calculate message count from response
+                $messageCount = MessageBillingHelper::getNumberOfMessagesFromResponse($event->aiResponse);
 
-        DB::transaction(function () use ($subscription, $accountUsage, $messageCost, $user, $event, $products) {
-            $this->processMessageBilling($subscription, $accountUsage, $messageCost, $user, $event, $products);
-        });
-    }
+                Log::info('[BillingCounterListener] Processing billing', [
+                    'user_id' => $user->id,
+                    'session_id' => $event->getSessionId(),
+                    'message_count' => $messageCount,
+                    'remaining_messages_before' => $subscription->getRemainingMessages(),
+                ]);
 
-    private function processMessageBilling(
-        $subscription,
-        WhatsAppAccountUsage $accountUsage,
-        int $messageCost,
-        $user,
-        MessageProcessedEvent $event,
-        $products
-    ): void {
-        if ($subscription->hasRemainingMessages()) {
-            // Cas normal : utiliser le quota
-            $this->processNormalQuota($accountUsage, $messageCost, $products);
+                // Check if subscription has remaining messages
+                if ($subscription->hasRemainingMessages($messageCount)) {
+                    // Increment messages_used for this account and update timestamp
+                    $accountUsage->increment('messages_used', $messageCount);
+                    $accountUsage->update(['last_message_at' => now()]);
 
-            Log::debug('[BILLING_COUNTER] Used normal quota', [
+                    Log::info('[BillingCounterListener] Used quota', [
+                        'user_id' => $user->id,
+                        'messages_used' => $messageCount,
+                        'account_usage_id' => $accountUsage->id,
+                    ]);
+
+                    // Fresh subscription to get updated remaining count
+                    $subscription = $subscription->fresh();
+
+                    // Check if we should send low quota alert
+                    if ($subscription->shouldSendLowQuotaAlert()) {
+                        $remainingMessages = $subscription->getRemainingMessages();
+
+                        $user->notify(new LowQuotaNotification($subscription, $remainingMessages));
+
+                        Log::info('[BillingCounterListener] Low quota notification sent', [
+                            'user_id' => $user->id,
+                            'remaining_messages' => $remainingMessages,
+                        ]);
+                    }
+
+                } else {
+                    // No quota remaining: debit wallet
+                    $billingAmount = MessageBillingHelper::getAmountToBillFromResponse($event->aiResponse);
+
+                    if ($accountUsage->debitWalletForOverage($billingAmount)) {
+                        // Update timestamps for overage
+                        $accountUsage->update([
+                            'last_message_at' => now(),
+                            'last_overage_payment_at' => now(),
+                        ]);
+
+                        $newBalance = (float) $user->wallet->fresh()->balance;
+
+                        // Send wallet debited notification
+                        $user->notify(new WalletDebitedNotification($billingAmount, $newBalance));
+
+                        Log::info('[BillingCounterListener] Wallet debited and notification sent', [
+                            'user_id' => $user->id,
+                            'amount_debited' => $billingAmount,
+                            'new_balance' => $newBalance,
+                        ]);
+                    } else {
+                        Log::error('[BillingCounterListener] Failed to debit wallet - insufficient funds', [
+                            'user_id' => $user->id,
+                            'required_amount' => $billingAmount,
+                            'wallet_balance' => $user->wallet?->balance ?? 0,
+                        ]);
+                    }
+                }
+            });
+
+        } catch (\Exception $e) {
+            Log::error('[BillingCounterListener] Billing processing failed', [
                 'user_id' => $user->id,
-                'message_cost' => $messageCost,
-                'remaining_after' => $subscription->getRemainingMessages(),
+                'session_id' => $event->getSessionId(),
+                'error' => $e->getMessage(),
             ]);
-        } else {
-            // Cas dépassement : débiter le wallet
-            $this->processOverageBilling($accountUsage, $messageCost, $user, $products);
-
-            Log::debug('[BILLING_COUNTER] Processed overage billing', [
-                'user_id' => $user->id,
-                'message_cost' => $messageCost,
-                'overage_total' => $accountUsage->overage_messages_used,
-            ]);
-        }
-    }
-
-    private function processNormalQuota(
-        WhatsAppAccountUsage $accountUsage,
-        int $messageCost,
-        $products
-    ): void {
-        $accountUsage->incrementUsage($messageCost);
-
-        $mediaCount = MessageCostHelper::getProductsMediaCount($products);
-        if ($mediaCount > 0) {
-            $accountUsage->incrementMediaUsage($mediaCount);
-        }
-    }
-
-    private function processOverageBilling(
-        WhatsAppAccountUsage $accountUsage,
-        int $messageCost,
-        $user,
-        $products
-    ): void {
-        $overageCostXAF = $messageCost * config('pricing.overage.cost_per_message_xaf', 10);
-
-        // Débiter le wallet via une transaction interne
-        InternalTransaction::create([
-            'wallet_id' => $user->wallet->id,
-            'amount' => $overageCostXAF,
-            'transaction_type' => TransactionType::DEBIT(),
-            'status' => TransactionStatus::COMPLETED(),
-            'description' => "Dépassement WhatsApp: {$messageCost} message(s)",
-            'related_type' => WhatsAppAccountUsage::class,
-            'related_id' => $accountUsage->id,
-            'created_by' => $user->id,
-            'completed_at' => now(),
-        ]);
-
-        // Mettre à jour le solde du wallet
-        $user->wallet->decrement('balance', $overageCostXAF);
-
-        // Tracker les statistiques de dépassement
-        $accountUsage->incrementOverageUsage($messageCost, $overageCostXAF);
-
-        $mediaCount = MessageCostHelper::getProductsMediaCount($products);
-        if ($mediaCount > 0) {
-            $accountUsage->incrementMediaUsage($mediaCount);
         }
     }
 }

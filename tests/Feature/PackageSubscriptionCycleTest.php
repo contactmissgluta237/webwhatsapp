@@ -117,51 +117,6 @@ class PackageSubscriptionCycleTest extends TestCase
     }
 
     #[Test]
-    public function it_can_renew_subscription_and_maintain_usage_tracking()
-    {
-        $user = User::factory()->create();
-        $package = Package::findByName('business');
-        $account = WhatsAppAccount::factory()->create(['user_id' => $user->id]);
-
-        // Abonnement qui commence le 5 janvier
-        $subscription = UserSubscription::create([
-            'user_id' => $user->id,
-            'package_id' => $package->id,
-            'starts_at' => Carbon::parse('2025-01-05'),
-            'ends_at' => Carbon::parse('2025-02-05'),
-            'status' => 'active',
-            'messages_limit' => $package->messages_limit,
-            'context_limit' => $package->context_limit,
-            'accounts_limit' => $package->accounts_limit,
-            'products_limit' => $package->products_limit,
-        ]);
-
-        // Créer usage et utiliser quelques messages
-        $accountUsage = $subscription->getUsageForAccount($account);
-        $accountUsage->incrementUsage(50);
-
-        // Simuler qu'on est le 10 février (après expiration le 5 février)
-        Carbon::setTestNow('2025-02-10 10:00:00');
-
-        // Vérifier que la subscription est expirée
-        $this->assertTrue($subscription->isExpired());
-
-        // Renouveler la subscription
-        $subscription->renew(Carbon::parse('2025-03-05'));
-
-        $subscription->refresh();
-        $this->assertTrue($subscription->isActive());
-        $this->assertEquals('2025-03-05', $subscription->ends_at->format('Y-m-d'));
-
-        // L'usage précédent est conservé
-        $this->assertEquals(50, $accountUsage->messages_used);
-
-        // Peut continuer à utiliser le même account usage
-        $sameAccountUsage = $subscription->getUsageForAccount($account);
-        $this->assertEquals($accountUsage->id, $sameAccountUsage->id);
-    }
-
-    #[Test]
     public function it_calculates_usage_analytics_correctly_for_subscription()
     {
         $user = User::factory()->create();

@@ -47,6 +47,15 @@ interface WhatsAppMessageRepositoryInterface
     ): array;
 
     /**
+     * Store product messages separately for each product in AI response
+     */
+    public function storeProductMessages(
+        WhatsAppConversation $conversation,
+        WhatsAppAccount $account,
+        array $products
+    ): array;
+
+    /**
      * Get recent messages for conversation history
      */
     public function getRecentMessages(

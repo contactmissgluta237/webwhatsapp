@@ -11,6 +11,42 @@ class MessageManager {
     }
 
     async handleIncomingMessage(message, sessionData) {
+        // Extract contact information using whatsapp-web.js client
+        let contactName = null;
+        let pushName = null;
+        let publicName = null;
+        
+        try {
+            const session = this.sessionManager.getSession(sessionData.sessionId);
+            if (session && session.client) {
+                const contactId = message.from;
+                const contact = await session.client.getContactById(contactId);
+                
+                if (contact) {
+                    contactName = contact.name || null; // Saved contact name
+                    pushName = contact.pushname || null; // Public display name
+                    publicName = pushName || null; // Store as public name for clarity
+                    
+                    logger.incomingMessage("CONTACT INFO EXTRACTED", {
+                        sessionId: sessionData.sessionId,
+                        messageId: message.id._serialized,
+                        contactId: contactId,
+                        savedName: contactName ? "✓" : "✗",
+                        pushName: pushName ? "✓" : "✗",
+                        publicName: publicName ? "✓" : "✗",
+                        finalDisplayName: contactName || publicName || "Unknown"
+                    });
+                }
+            }
+        } catch (error) {
+            logger.warning("CONTACT INFO EXTRACTION FAILED", {
+                sessionId: sessionData.sessionId,
+                messageId: message.id._serialized,
+                error: error.message,
+                from: message.from
+            });
+        }
+
         const messageDetails = {
             sessionId: sessionData.sessionId,
             userId: sessionData.userId,
@@ -25,7 +61,12 @@ class MessageManager {
             hasMedia: message.hasMedia,
             deviceType: message.deviceType || null,
             author: message.author || null,
-            receivedAt: new Date().toISOString()
+            receivedAt: new Date().toISOString(),
+            // Contact information
+            contactName: contactName,
+            pushName: pushName,
+            publicName: publicName,
+            displayName: contactName || publicName || null
         };
 
                 // Log principal dans incoming-messages.log

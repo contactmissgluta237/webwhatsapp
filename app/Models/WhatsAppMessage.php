@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Casts\SpatieEnumCast;
 use App\Enums\MessageDirection;
+use App\Enums\MessageSubtype;
 use App\Enums\MessageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,6 +48,8 @@ final class WhatsAppMessage extends Model
         'direction',
         'content',
         'message_type',
+        'message_subtype',
+        'media_urls',
         'is_ai_generated',
         'ai_model_used',
         'ai_confidence',
@@ -61,6 +64,8 @@ final class WhatsAppMessage extends Model
     protected $casts = [
         'direction' => SpatieEnumCast::class.':'.MessageDirection::class,
         'message_type' => SpatieEnumCast::class.':'.MessageType::class,
+        'message_subtype' => SpatieEnumCast::class.':'.MessageSubtype::class,
+        'media_urls' => 'json',
         'is_ai_generated' => 'boolean',
         'ai_confidence' => 'decimal:2',
         'processed_at' => 'datetime',

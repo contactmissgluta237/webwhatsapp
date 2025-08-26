@@ -5,22 +5,38 @@ declare(strict_types=1);
 namespace App\Listeners\WhatsApp;
 
 use App\Events\WhatsApp\MessageProcessedEvent;
+use App\Listeners\BaseListener;
 use App\Repositories\WhatsAppMessageRepositoryInterface;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Listener responsible for storing both incoming user messages and AI responses to the database
  */
-final class StoreMessagesListener
+final class StoreMessagesListener extends BaseListener
 {
     public function __construct(
         private readonly WhatsAppMessageRepositoryInterface $messageRepository
     ) {}
 
     /**
-     * Handle the event and store the complete message exchange
+     * Extrait les identifiants uniques pour MessageProcessedEvent
      */
-    public function handle(MessageProcessedEvent $event): void
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'account_id' => $event->account->id,
+            'message_id' => $event->incomingMessage->id,
+            'session_id' => $event->getSessionId(),
+            'from_phone' => $event->getFromPhone(),
+        ];
+    }
+
+    /**
+     * Traite l'événement de stockage des messages
+     *
+     * @param  MessageProcessedEvent  $event
+     */
+    protected function handleEvent($event): void
     {
         Log::info('[STORE_MESSAGES] Processing message storage', [
             'session_id' => $event->getSessionId(),
@@ -29,7 +45,7 @@ final class StoreMessagesListener
         ]);
 
         try {
-            // Store the complete message exchange (incoming + outgoing) in a transaction
+            // Logic to store WhatsApp messages
             $result = $this->messageRepository->storeMessageExchange(
                 $event->account,
                 $event->incomingMessage,

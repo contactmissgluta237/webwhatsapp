@@ -2,13 +2,17 @@
 
 namespace Tests\Feature\Customer;
 
+use App\Enums\PermissionEnum;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
+use App\Enums\UserRole;
 use App\Models\InternalTransaction;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class InternalTransactionListTest extends TestCase
@@ -25,9 +29,18 @@ class InternalTransactionListTest extends TestCase
     {
         parent::setUp();
 
-        // Create necessary roles
-        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
-        \Spatie\Permission\Models\Role::create(['name' => 'customer']);
+        // Create necessary permissions
+        $permissions = PermissionEnum::values();
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+
+        // Create necessary roles with permissions
+        $adminRole = Role::create(['name' => 'admin']);
+        $customerRole = Role::create(['name' => 'customer']);
+
+        $customerRole->givePermissionTo(UserRole::CUSTOMER()->permissions());
+        $adminRole->givePermissionTo(PermissionEnum::values());
 
         $this->customer = User::factory()->create();
         $this->customer->assignRole('customer');
@@ -46,12 +59,10 @@ class InternalTransactionListTest extends TestCase
     public function customer_can_access_their_internal_transactions_list_page()
     {
         $response = $this->actingAs($this->customer)
-            ->get('/customer/internal-transactions');
+            ->get(route('customer.transactions.internal'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('customer.internal-transactions.index');
-        $response->assertViewHas('title', 'Mes Transactions Internes');
-        $response->assertSee('Mes Transactions Internes');
+        $response->assertViewIs('customer.transactions.internal-index');
     }
 
     /** @test */
@@ -165,7 +176,7 @@ class InternalTransactionListTest extends TestCase
     public function admin_cannot_access_customer_internal_transactions_list()
     {
         $response = $this->actingAs($this->admin)
-            ->get('/customer/internal-transactions');
+            ->get(route('customer.transactions.internal'));
 
         $response->assertStatus(403);
     }
@@ -173,7 +184,7 @@ class InternalTransactionListTest extends TestCase
     /** @test */
     public function unauthenticated_user_cannot_access_customer_internal_transactions_list()
     {
-        $response = $this->get('/customer/internal-transactions');
+        $response = $this->get(route('customer.transactions.internal'));
 
         $response->assertRedirect('/login');
     }

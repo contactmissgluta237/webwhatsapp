@@ -19,7 +19,6 @@ use Illuminate\Support\Carbon;
  * @property int $package_id
  * @property Carbon $starts_at
  * @property Carbon $ends_at
- * @property Carbon|null $next_billing_date
  * @property string $status
  * @property float|null $amount_paid
  * @property string|null $payment_method
@@ -44,7 +43,6 @@ class UserSubscription extends Model
         'package_id',
         'starts_at',
         'ends_at',
-        'next_billing_date',
         'status',
         'messages_limit',
         'context_limit',
@@ -61,7 +59,6 @@ class UserSubscription extends Model
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
-        'next_billing_date' => 'datetime',
         'activated_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'amount_paid' => 'decimal:2',
@@ -209,33 +206,21 @@ class UserSubscription extends Model
         return max(0, $this->messages_limit - $this->getTotalMessagesUsed());
     }
 
-    public function hasRemainingMessages(): bool
+    public function hasRemainingMessages(int $required = 1): bool
     {
-        return $this->getRemainingMessages() > 0;
+        return $this->getRemainingMessages() >= $required;
     }
 
-    public function canAffordMessage(int $cost = 1): bool
+    /**
+     * Check if we should send low quota alert
+     */
+    public function shouldSendLowQuotaAlert(): bool
     {
-        return $this->getRemainingMessages() >= $cost || $this->canAffordOverage($cost);
-    }
+        $remainingMessages = $this->getRemainingMessages();
+        $alertThreshold = config('whatsapp.billing.alert_threshold_percentage', 20);
+        $thresholdMessages = ($this->messages_limit * $alertThreshold) / 100;
 
-    public function canAffordOverage(int $cost = 1): bool
-    {
-        if (! config('pricing.overage.enabled', true)) {
-            return false;
-        }
-
-        $user = $this->user;
-        $wallet = $user->wallet;
-
-        if (! $wallet) {
-            return false;
-        }
-
-        $overageCost = $cost * config('pricing.overage.cost_per_message_xaf', 10);
-        $minimumBalance = config('pricing.overage.minimum_wallet_balance', 0);
-
-        return ($wallet->balance - $overageCost) >= $minimumBalance;
+        return $remainingMessages <= $thresholdMessages;
     }
 
     public function getUsageForAccount(WhatsAppAccount $account): WhatsAppAccountUsage
@@ -246,17 +231,6 @@ class UserSubscription extends Model
     // ================================================================================
     // SUBSCRIPTION MANAGEMENT
     // ================================================================================
-
-    public function renew(?Carbon $newEndDate = null): void
-    {
-        if ($this->package->is_recurring) {
-            $this->update([
-                'ends_at' => $newEndDate ?? $this->ends_at->addMonth(),
-                'next_billing_date' => $newEndDate ? $newEndDate->addMonth() : $this->next_billing_date?->addMonth(),
-                'status' => SubscriptionStatus::ACTIVE()->value,
-            ]);
-        }
-    }
 
     public function cancel(?string $reason = null): void
     {

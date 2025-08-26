@@ -16,7 +16,6 @@ return new class extends Migration
             // Période d'abonnement
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
-            $table->timestamp('next_billing_date')->nullable();
             
             // État de l'abonnement
             $table->enum('status', ['active', 'expired', 'cancelled', 'suspended'])->default('active');

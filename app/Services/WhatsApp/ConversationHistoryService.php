@@ -18,7 +18,7 @@ final class ConversationHistoryService
     private const CONTEXT_WINDOW_HOURS = 24;
 
     /**
-     * Prépare l'historique de conversation au format structuré pour l'orchestrateur
+     * Prepare conversation history in structured format for orchestrator
      */
     public function prepareConversationHistory(
         WhatsAppAccount $account,
@@ -68,7 +68,7 @@ final class ConversationHistoryService
     }
 
     /**
-     * Obtient un résumé rapide de la conversation récente
+     * Get a quick summary of the recent conversation
      */
     public function getConversationSummary(WhatsAppAccount $account, string $fromPhone): array
     {
@@ -112,7 +112,7 @@ final class ConversationHistoryService
     }
 
     /**
-     * Charge les messages récents avec une fenêtre de temps contextuelle
+     * Load recent messages with contextual time window
      */
     private function loadRecentMessages(WhatsAppConversation $conversation, int $limit): Collection
     {
@@ -126,7 +126,7 @@ final class ConversationHistoryService
     }
 
     /**
-     * Formate l'historique avec une meilleure contextualisation
+     * Format history with better contextualization
      */
     private function formatConversationHistory(Collection $messages): string
     {
@@ -141,7 +141,7 @@ final class ConversationHistoryService
         foreach ($messages as $message) {
             $messageDate = $message->created_at->format('Y-m-d');
 
-            // Ajouter un séparateur de date si nécessaire
+            // Add date separator if necessary
             if ($currentDate !== $messageDate) {
                 if ($currentDate !== null) {
                     $formattedMessages[] = '--- '.$message->created_at->format('d/m/Y').' ---';
@@ -156,7 +156,7 @@ final class ConversationHistoryService
     }
 
     /**
-     * Formate un message individuel avec plus de contexte
+     * Format individual message with more context
      */
     private function formatSingleMessage(WhatsAppMessage $message): string
     {
@@ -167,7 +167,7 @@ final class ConversationHistoryService
             return "[$timestamp] Client: $content";
         }
 
-        // Pour les messages sortants, distinguer AI vs manuel
+        // For outbound messages, distinguish AI vs manual
         if ($message->is_ai_generated) {
             $confidence = $message->ai_confidence ?
                 ' (conf: '.number_format($message->ai_confidence * 100, 0).'%)' : '';

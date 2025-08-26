@@ -18,7 +18,7 @@ final class DestroyController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account): RedirectResponse
     {
-        // Vérification d\'autorisation
+        // Authorization check
         if ($account->user_id !== $request->user()->id) {
             return redirect()->route('whatsapp.index')
                 ->with('error', 'Accès non autorisé à ce compte WhatsApp.');

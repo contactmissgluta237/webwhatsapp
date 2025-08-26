@@ -10,12 +10,9 @@ use App\Models\WhatsAppAccount;
 
 interface WhatsAppMessageOrchestratorInterface
 {
-    /**
-     * MÉTHODE UNIFIÉE ULTRA-SIMPLE - Juste l'historique string
-     */
     public function processMessage(
         WhatsAppAccount $account,
         WhatsAppMessageRequestDTO $messageRequest,
-        string $conversationHistory  // Format: "user: message\nsystem: réponse\nuser: message..."
+        string $conversationHistory, // Format: "user: message\nsystem: réponse\nuser: message..."
     ): WhatsAppMessageResponseDTO;
 }

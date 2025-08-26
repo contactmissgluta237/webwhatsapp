@@ -2,14 +2,13 @@
 
 namespace App\Listeners;
 
-use App\Events\SystemAccountTransactionCreatedEvent;
 use App\Mail\SystemAccountTransactionNotificationMail;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
-class NotifyAdminsOfSystemAccountTransactionListener implements ShouldQueue
+class NotifyAdminsOfSystemAccountTransactionListener extends BaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -18,13 +17,21 @@ class NotifyAdminsOfSystemAccountTransactionListener implements ShouldQueue
      */
     public function __construct()
     {
-        //
+        // Retrieve all active administrators
+    }
+
+    protected function getEventIdentifiers($event): array
+    {
+        return [
+            'system_transaction_id' => $event->systemAccountTransaction->id,
+            'event_type' => 'system_account_transaction_created',
+        ];
     }
 
     /**
      * Handle the event.
      */
-    public function handle(SystemAccountTransactionCreatedEvent $event): void
+    protected function handleEvent($event): void
     {
         $systemAccountTransaction = $event->systemAccountTransaction;
 
