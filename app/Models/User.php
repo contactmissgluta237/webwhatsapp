@@ -226,6 +226,11 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(AiUsageLog::class);
     }
 
+    public function messageUsageLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\MessageUsageLog::class);
+    }
+
     // ================================================================================
     // TRAIT METHODS
     // ================================================================================

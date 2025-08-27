@@ -97,7 +97,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
      */
     private function formatProductsForDisplay(array $products): array
     {
-        return array_map(function (ProductDataDTO $product, $index) {
+        return array_map(function (ProductDataDTO $product, int $index): array {
             return [
                 'id' => $index + 1, // Utiliser l'index comme ID
                 'formatted_message' => $product->formattedProductMessage,

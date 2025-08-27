@@ -40,7 +40,7 @@ class LaravelCacheService implements CacheServiceInterface
     public function forgetPattern(string $pattern): bool
     {
         $keys = $this->cache->get($this->getKey('_keys')) ?? [];
-        $matchingKeys = array_filter($keys, fn ($key) => str_contains($key, $pattern));
+        $matchingKeys = array_filter($keys, fn (string $key): bool => str_contains($key, $pattern));
 
         foreach ($matchingKeys as $key) {
             $this->cache->forget($key);

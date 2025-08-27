@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * == Properties ==
@@ -122,6 +123,6 @@ final class UserProduct extends Model implements HasMedia
 
     public function getAllImageUrls(): array
     {
-        return $this->getMedia('medias')->map(fn ($media) => $media->getUrl())->toArray();
+        return $this->getMedia('medias')->map(fn (Media $media): string => $media->getUrl())->toArray();
     }
 }

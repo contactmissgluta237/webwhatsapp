@@ -46,7 +46,7 @@ class ExternalTransactionDataTable extends BaseDataTable
             Column::make('Type', 'transaction_type')
                 ->sortable()
                 ->html()
-                ->format(function ($value) {
+                ->format(function (ExternalTransactionType $value): string {
                     $type = ExternalTransactionType::make($value);
 
                     return '<span class="badge text-outline-'.$type->badge().'">'.$type->label.'</span>';
@@ -59,7 +59,7 @@ class ExternalTransactionDataTable extends BaseDataTable
             Column::make('Mode', 'mode')
                 ->sortable()
                 ->html()
-                ->format(function ($value) {
+                ->format(function (TransactionMode $value): string {
                     $mode = TransactionMode::make($value);
 
                     return '<span class="badge text-outline-'.$mode->badge().'">'.$mode->label.'</span>';
@@ -68,7 +68,7 @@ class ExternalTransactionDataTable extends BaseDataTable
             Column::make('Statut', 'status')
                 ->sortable()
                 ->html()
-                ->format(function ($value) {
+                ->format(function (TransactionStatus $value): string {
                     $status = TransactionStatus::make($value);
 
                     return '<span class="badge text-outline-'.$status->badge().'">'.$status->label.'</span>';
@@ -76,7 +76,7 @@ class ExternalTransactionDataTable extends BaseDataTable
 
             Column::make('Méthode de paiement', 'payment_method')
                 ->sortable()
-                ->format(function ($value) {
+                ->format(function (?PaymentMethod $value): string {
                     if (! $value) {
                         return '-';
                     }

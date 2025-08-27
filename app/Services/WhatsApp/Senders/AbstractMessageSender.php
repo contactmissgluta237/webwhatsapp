@@ -147,7 +147,7 @@ abstract class AbstractMessageSender
      */
     private function transformProductsToDTO(Collection $products): array
     {
-        return $products->map(function (UserProduct $product) {
+        return $products->map(function (UserProduct $product): ProductDataDTO {
             $mediaLinks = $this->extractMediaLinks($product);
 
             $dto = ProductDataDTO::fromUserProduct($product);

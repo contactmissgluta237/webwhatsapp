@@ -86,6 +86,11 @@ final class WhatsAppMessage extends Model
         return $this->hasMany(AiUsageLog::class, 'whatsapp_message_id');
     }
 
+    public function messageUsageLog(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\MessageUsageLog::class, 'whatsapp_message_id');
+    }
+
     // ================================================================================
     // PUBLIC METHODS
     // ================================================================================

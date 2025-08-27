@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\AiUsageTracker;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -41,7 +42,7 @@ final class WhatsAppAccountController extends Controller
     {
         $account->load([
             'user:id,name,email',
-            'conversations' => function ($query) {
+            'conversations' => function (Builder $query): void {
                 $query->withCount('messages')
                     ->orderBy('last_message_at', 'desc')
                     ->limit(10);

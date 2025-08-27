@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Casts\SpatieEnumCast;
 use App\Enums\WhatsAppStatus;
 use App\Traits\HasMediaCollections;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -208,7 +209,7 @@ final class WhatsAppAccount extends Model implements HasMedia
     public function getTodayMessagesCount(): array
     {
         /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\WhatsAppConversation> $conversations */
-        $conversations = $this->conversations()->with(['messages' => function ($query) {
+        $conversations = $this->conversations()->with(['messages' => function (Builder $query): void {
             $query->whereDate('created_at', today());
         }])->get();
 

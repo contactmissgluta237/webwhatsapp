@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class CreateAdminRechargeRequest extends FormRequest
 {
@@ -99,7 +100,7 @@ class CreateAdminRechargeRequest extends FormRequest
 
     public function withValidator($validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function (Validator $validator): void {
             if ($this->filled('customer_id')) {
                 $user = User::find($this->customer_id);
                 if ($user && ! $user->isCustomer()) {

@@ -7,10 +7,9 @@ namespace App\Notifications\WhatsApp;
 use App\Channels\PushNotificationChannel;
 use App\Mail\WhatsApp\WalletDebitedMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class WalletDebitedNotification extends Notification // Retiré ShouldQueue pour tests
+class WalletDebitedNotification extends Notification
 {
     use Queueable;
 

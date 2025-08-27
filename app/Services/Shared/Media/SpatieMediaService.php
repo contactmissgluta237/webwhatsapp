@@ -33,7 +33,7 @@ final class SpatieMediaService implements MediaServiceInterface
 
         Log::info('🔍 SpatieMediaService::attachMedia() - Processing files', [
             'valid_files_count' => count($validFiles),
-            'detailed_files' => array_map(function ($file, $index) {
+            'detailed_files' => array_map(function (UploadedFile $file, int $index): array {
                 return [
                     'index' => $index,
                     'type' => gettype($file),

@@ -91,7 +91,7 @@ final class WhatsAppMessageResponseDTO extends BaseDTO
             'wait_time_seconds' => $this->waitTimeSeconds,
             'typing_duration_seconds' => $this->typingDurationSeconds,
             'products' => array_map(
-                fn (ProductDataDTO $product) => $product->toArray(),
+                fn (ProductDataDTO $product): array => $product->toArray(),
                 $this->products
             ),
         ];

@@ -88,6 +88,17 @@ class ConversationDataTable extends BaseDataTable
                 })
                 ->html(),
 
+            Column::make('Débit du wallet', 'id')
+                ->format(function ($value, $row) {
+                    $walletCost = $row->getWalletCost();
+                    if ($walletCost <= 0) {
+                        return '<span class="text-muted">0 XAF</span>';
+                    }
+
+                    return '<span class="badge badge-danger">'.number_format($walletCost, 0).' XAF</span>';
+                })
+                ->html(),
+
             Column::make('Dernier message à', 'last_message_at')
                 ->sortable()
                 ->format(function ($value) {

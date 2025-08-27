@@ -30,7 +30,6 @@ use App\Listeners\NotifyReferrerListener;
 use App\Listeners\SendApprovalNotificationListener;
 use App\Listeners\SendRechargeNotificationToCustomerListener;
 use App\Listeners\WhatsApp\AnalyticsListener;
-use App\Listeners\WhatsApp\BillingCounterListener;
 use App\Listeners\WhatsApp\StoreMessagesListener;
 use App\Listeners\WhatsApp\TrackAiUsageListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -82,7 +81,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         MessageProcessedEvent::class => [
             StoreMessagesListener::class,
-            BillingCounterListener::class,
             AnalyticsListener::class,
         ],
         AiResponseGenerated::class => [

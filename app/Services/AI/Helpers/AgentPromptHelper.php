@@ -25,7 +25,7 @@ final class AgentPromptHelper
      */
     public static function getAllPromptTypes(): array
     {
-        return collect(AgentType::cases())->map(function ($case) {
+        return collect(AgentType::cases())->map(function (AgentType $case): array {
             return [
                 'value' => $case->value,
                 'label' => $case->label,

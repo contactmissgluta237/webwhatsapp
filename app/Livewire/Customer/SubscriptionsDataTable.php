@@ -15,7 +15,7 @@ use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 final class SubscriptionsDataTable extends BaseDataTable
 {
     protected $model = UserSubscription::class;
-    protected const DEFAULT_SORT_FIELD = 'created_at';
+    protected const DEFAULT_SORT_FIELD = 'user_subscriptions.created_at';
     protected const DEFAULT_SORT_DIRECTION = 'desc';
 
     public function configure(): void
@@ -37,7 +37,7 @@ final class SubscriptionsDataTable extends BaseDataTable
         return UserSubscription::query()
             ->where('user_id', Auth::id())
             ->with(['package'])
-            ->orderBy('created_at', 'desc');
+            ->orderBy('user_subscriptions.created_at', 'desc');
     }
 
     public function columns(): array
@@ -97,7 +97,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                             <div class="progress-bar bg-'.$progressClass.'" role="progressbar" 
                                  style="width: '.min(100, $percentage).'%"></div>
                         </div>
-                        <small class="text-muted">'.number_format($used).' / '.number_format($total).'</small>
+                        <small class="text-muted">'.number_format($used ?? 0).' / '.number_format($total ?? 0).'</small>
                     </div>';
                 })
                 ->html(),

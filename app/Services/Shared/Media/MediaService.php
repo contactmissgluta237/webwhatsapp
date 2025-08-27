@@ -86,7 +86,7 @@ class MediaService implements MediaServiceInterface
 
     public function getAllImagesForModel(HasMedia $model): array
     {
-        return $model->getMedia('medias')->map(function (Media $media) {
+        return $model->getMedia('medias')->map(function (Media $media): ImageDataDTO {
             return new ImageDataDTO(
                 url: $media->getUrl(),
                 thumb: $media->getUrl('thumb'),

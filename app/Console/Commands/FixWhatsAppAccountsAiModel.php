@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
 final class FixWhatsAppAccountsAiModel extends Command
 {
@@ -28,7 +29,7 @@ final class FixWhatsAppAccountsAiModel extends Command
         $this->info("Using default model: {$defaultModel->name} (ID: {$defaultModel->id})");
 
         // Get accounts that need fixing
-        $accountsToFix = WhatsAppAccount::where(function ($query) {
+        $accountsToFix = WhatsAppAccount::where(function (Builder $query): void {
             $query->whereNull('ai_model_id')
                 ->orWhere('agent_enabled', true);
         })->get();

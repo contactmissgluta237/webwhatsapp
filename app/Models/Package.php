@@ -43,6 +43,10 @@ class Package extends Model
         'display_name',
         'description',
         'price',
+        'promotional_price',
+        'promotion_starts_at',
+        'promotion_ends_at',
+        'promotion_is_active',
         'currency',
         'messages_limit',
         'context_limit',
@@ -58,6 +62,10 @@ class Package extends Model
 
     protected $casts = [
         'price' => 'decimal:2',
+        'promotional_price' => 'decimal:2',
+        'promotion_starts_at' => 'datetime',
+        'promotion_ends_at' => 'datetime',
+        'promotion_is_active' => 'boolean',
         'is_recurring' => 'boolean',
         'one_time_only' => 'boolean',
         'is_active' => 'boolean',
@@ -161,6 +169,81 @@ class Package extends Model
         }
 
         return number_format($this->price, 0, ',', ' ').' '.$this->currency;
+    }
+
+    // ================================================================================
+    // PROMOTIONAL PRICING METHODS
+    // ================================================================================
+
+    public function hasActivePromotion(): bool
+    {
+        if (! $this->promotion_is_active || ! $this->promotional_price) {
+            return false;
+        }
+
+        $now = now();
+
+        // Si pas de dates définies, la promotion est active
+        if (! $this->promotion_starts_at && ! $this->promotion_ends_at) {
+            return true;
+        }
+
+        // Vérifier si on est dans la période de promotion
+        $startsOk = ! $this->promotion_starts_at || $now >= $this->promotion_starts_at;
+        $endsOk = ! $this->promotion_ends_at || $now <= $this->promotion_ends_at;
+
+        return $startsOk && $endsOk;
+    }
+
+    public function getCurrentPrice(): float
+    {
+        if ($this->hasActivePromotion()) {
+            return (float) $this->promotional_price;
+        }
+
+        return (float) $this->price;
+    }
+
+    public function getPromotionalDiscount(): float
+    {
+        if (! $this->hasActivePromotion()) {
+            return 0;
+        }
+
+        return (float) $this->price - (float) $this->promotional_price;
+    }
+
+    public function getPromotionalDiscountPercentage(): int
+    {
+        if (! $this->hasActivePromotion() || $this->price == 0) {
+            return 0;
+        }
+
+        return (int) round((($this->price - $this->promotional_price) / $this->price) * 100);
+    }
+
+    public function getFormattedCurrentPrice(): string
+    {
+        $currentPrice = $this->getCurrentPrice();
+
+        if ($currentPrice == 0) {
+            return 'Gratuit';
+        }
+
+        return number_format($currentPrice, 0, ',', ' ').' '.$this->currency;
+    }
+
+    public function getFormattedPromotionalPrice(): string
+    {
+        if (! $this->promotional_price) {
+            return '';
+        }
+
+        if ($this->promotional_price == 0) {
+            return 'Gratuit';
+        }
+
+        return number_format($this->promotional_price, 0, ',', ' ').' '.$this->currency;
     }
 
     public function getDisplayFeatures(): array

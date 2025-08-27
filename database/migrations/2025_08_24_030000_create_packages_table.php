@@ -30,6 +30,12 @@ return new class extends Migration
             // Fonctionnalités avancées
             $table->json('features')->nullable(); // ["weekly_reports", "priority_support"]
             
+            // Système de prix promotionnels
+            $table->decimal('promotional_price', 10, 2)->nullable(); // Prix promotionnel
+            $table->timestamp('promotion_starts_at')->nullable(); // Début de la promotion
+            $table->timestamp('promotion_ends_at')->nullable(); // Fin de la promotion
+            $table->boolean('promotion_is_active')->default(false); // Statut promotion
+            
             // État
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);

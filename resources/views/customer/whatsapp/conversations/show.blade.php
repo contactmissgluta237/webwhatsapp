@@ -156,23 +156,32 @@
                                                     @endif
                                                 @endif
                                                 
-                                                <div class="message-footer d-flex align-items-center justify-content-end mt-1" style="font-size: 11px; color: #667781;">
-                                                    @php
-                                                        $isToday = $message->created_at->isToday();
-                                                        $isYesterday = $message->created_at->isYesterday();
-                                                        
-                                                        if ($isToday) {
-                                                            $dateTime = $message->created_at->format('H:i');
-                                                        } elseif ($isYesterday) {
-                                                            $dateTime = 'Hier ' . $message->created_at->format('H:i');
-                                                        } else {
-                                                            $dateTime = $message->created_at->format('d/m H:i');
-                                                        }
-                                                    @endphp
-                                                    <span>{{ $dateTime }}</span>
-                                                    @if($isFromUser)
-                                                        <i class="la la-check ml-1" style="color: #25D366;"></i>
-                                                    @endif
+                                                <div class="message-footer d-flex align-items-center justify-content-between mt-1" style="font-size: 11px; color: #667781;">
+                                                    <div class="message-cost">
+                                                        @if($message->messageUsageLog && $message->messageUsageLog->isWalletDirect())
+                                                            <span class="badge badge-danger" style="font-size: 9px;">
+                                                                Débit du wallet: {{ number_format($message->messageUsageLog->total_cost, 0) }} XAF
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <div class="message-time">
+                                                        @php
+                                                            $isToday = $message->created_at->isToday();
+                                                            $isYesterday = $message->created_at->isYesterday();
+                                                            
+                                                            if ($isToday) {
+                                                                $dateTime = $message->created_at->format('H:i');
+                                                            } elseif ($isYesterday) {
+                                                                $dateTime = 'Hier ' . $message->created_at->format('H:i');
+                                                            } else {
+                                                                $dateTime = $message->created_at->format('d/m H:i');
+                                                            }
+                                                        @endphp
+                                                        <span>{{ $dateTime }}</span>
+                                                        @if($isFromUser)
+                                                            <i class="la la-check ml-1" style="color: #25D366;"></i>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

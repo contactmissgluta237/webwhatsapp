@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\AdminWithdrawalNotificationMail;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 
 class AdminWithdrawalNotificationListener extends BaseListener
@@ -30,7 +31,7 @@ class AdminWithdrawalNotificationListener extends BaseListener
         $adminEmails = config('admin.emails');
 
         if (empty($adminEmails)) {
-            $adminUsers = User::whereHas('roles', function ($query) {
+            $adminUsers = User::whereHas('roles', function (Builder $query): void {
                 $query->where('name', 'admin');
             })->get();
             $adminEmails = $adminUsers->pluck('email')->toArray();

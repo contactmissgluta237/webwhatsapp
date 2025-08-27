@@ -6,6 +6,7 @@ namespace App\Listeners;
 
 use App\Models\User;
 use App\Notifications\AdminNewTicketSyncNotification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -42,7 +43,7 @@ final class NotifyAdminOfNewTicketSyncListener extends BaseListener
     private function getAdminUsers(): Collection
     {
         try {
-            return User::whereHas('roles', function ($query) {
+            return User::whereHas('roles', function (Builder $query): void {
                 $query->where('name', 'admin');
             })->get() ?? new Collection;
 

@@ -20,6 +20,7 @@ final class WhatsAppStatus extends Enum
     protected static function values(): array
     {
         return [
+            'RECONNECTING' => 'reconnecting',
             'DISCONNECTED' => 'disconnected',
             'CONNECTING' => 'connecting',
             'CONNECTED' => 'connected',
@@ -33,6 +34,7 @@ final class WhatsAppStatus extends Enum
     protected static function labels(): array
     {
         return [
+            'RECONNECTING' => 'Reconnexion',
             'DISCONNECTED' => 'Déconnecté',
             'CONNECTING' => 'Connexion en cours',
             'CONNECTED' => 'Connecté',
@@ -46,6 +48,7 @@ final class WhatsAppStatus extends Enum
     public function getBadgeClass(): string
     {
         return match ($this->value) {
+            'reconnecting' => 'bg-orange-100 text-orange-800',
             'disconnected' => 'bg-gray-100 text-gray-800',
             'connecting' => 'bg-yellow-100 text-yellow-800',
             'connected' => 'bg-green-100 text-green-800',
@@ -60,6 +63,7 @@ final class WhatsAppStatus extends Enum
     public function getIcon(): string
     {
         return match ($this->value) {
+            'reconnecting' => 'arrow-path',
             'disconnected' => 'x-circle',
             'connecting' => 'clock',
             'connected' => 'check-circle',

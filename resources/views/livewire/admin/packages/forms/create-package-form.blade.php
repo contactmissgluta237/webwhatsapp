@@ -1,0 +1,1 @@
+@extends('livewire.admin.packages.forms.package-form')

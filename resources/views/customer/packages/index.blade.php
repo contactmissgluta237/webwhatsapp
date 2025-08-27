@@ -62,9 +62,29 @@
                                     </div>
                                 @else
                                     <div class="pricing-price">
-                                        <span class="price-currency-{{ $package->name }}">{{ number_format($package->price) }}</span> <span class="price-currency-{{ $package->name }}">XAF</span>
+                                        @if($package->hasActivePromotion())
+                                            {{-- Prix barré et badge promotion --}}
+                                            <div class="original-price mb-1">
+                                                <span class="text-decoration-line-through text-muted small">{{ number_format($package->price) }} XAF</span>
+                                                <span class="badge bg-warning text-dark ms-1">-{{ $package->getPromotionalDiscountPercentage() }}%</span>
+                                            </div>
+                                            {{-- Prix promotionnel --}}
+                                            <span class="price-currency-{{ $package->name }} promotional-price">{{ number_format($package->promotional_price) }}</span> <span class="price-currency-{{ $package->name }}">XAF</span>
+                                        @else
+                                            <span class="price-currency-{{ $package->name }}">{{ number_format($package->price) }}</span> <span class="price-currency-{{ $package->name }}">XAF</span>
+                                        @endif
                                         <div class="pricing-duration">/ mois</div>
                                     </div>
+                                    
+                                    {{-- Affichage des dates de promotion --}}
+                                    @if($package->hasActivePromotion() && $package->promotion_ends_at)
+                                        <div class="promotion-info">
+                                            <small class="text-warning">
+                                                <i class="la la-clock"></i>
+                                                Offre jusqu'au {{ $package->promotion_ends_at->format('d/m/Y') }}
+                                            </small>
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
 
@@ -94,39 +114,32 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            @if($currentSubscription)
-                                @if($currentSubscription->package_id === $package->id)
-                                    <button class="btn btn-package-{{ $package->name }} w-100" disabled>
-                                        <i class="la la-check-circle"></i> En cours
-                                    </button>
-                                @else
-                                    <button class="btn btn-outline-secondary w-100" disabled>
-                                        Souscription active
-                                    </button>
-                                @endif
+                            @php
+                                $hasUsedTrial = auth()->user()->subscriptions()
+                                    ->whereHas('package', fn($q) => $q->where('name', 'trial'))
+                                    ->exists();
+                            @endphp
+                            
+                            @if($currentSubscription && $currentSubscription->package_id === $package->id)
+                                <button class="btn btn-package-{{ $package->name }} w-100" disabled>
+                                    <i class="la la-check-circle"></i> En cours
+                                </button>
+                            @elseif($package->isTrial() && $hasUsedTrial)
+                                <button class="btn btn-outline-secondary w-100" disabled>
+                                    Essai déjà utilisé
+                                </button>
                             @else
-                                @php
-                                    $hasUsedTrial = auth()->user()->subscriptions()
-                                        ->whereHas('package', fn($q) => $q->where('name', 'trial'))
-                                        ->exists();
-                                @endphp
-                                @if($package->isTrial() && $hasUsedTrial)
-                                    <button class="btn btn-outline-secondary w-100" disabled>
-                                        Essai déjà utilisé
+                                <form method="POST" action="{{ route('customer.packages.subscribe', $package) }}" 
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir souscrire à ce package ?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-package-{{ $package->name }} w-100">
+                                        @if($package->isTrial())
+                                            <i class="la la-gift"></i> Commencer l'essai
+                                        @else
+                                            <i class="la la-credit-card"></i> Souscrire
+                                        @endif
                                     </button>
-                                @else
-                                    <form method="POST" action="{{ route('customer.packages.subscribe', $package) }}" 
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir souscrire à ce package ?')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-package-{{ $package->name }} w-100">
-                                            @if($package->isTrial())
-                                                <i class="la la-gift"></i> Commencer l'essai
-                                            @else
-                                                <i class="la la-credit-card"></i> Souscrire
-                                            @endif
-                                        </button>
-                                    </form>
-                                @endif
+                                </form>
                             @endif
                         </div>
                     </div>
@@ -264,6 +277,36 @@
 
 .pricing-features li:last-child {
     border-bottom: none;
+}
+
+/* Styles pour les prix promotionnels */
+.promotional-price {
+    animation: promotional-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes promotional-glow {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+
+.promotion-info {
+    margin-top: 10px;
+}
+
+.original-price {
+    font-size: 0.8rem;
+}
+
+/* Badge promotion visible */
+.badge.bg-warning {
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 </style>
 @endsection

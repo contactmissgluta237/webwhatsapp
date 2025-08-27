@@ -187,7 +187,7 @@ class CreateCustomerWithdrawalForm extends Component
     {
         $predefinedAmounts = config('system_settings.predefined_amounts');
 
-        $paymentMethods = collect(PaymentMethod::cases())->map(function ($method) {
+        $paymentMethods = collect(PaymentMethod::cases())->map(function (PaymentMethod $method): array {
             return [
                 'value' => $method->value,
                 'label' => $method->label,

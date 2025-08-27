@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Mail\SystemAccountTransactionNotificationMail;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
@@ -38,7 +39,7 @@ class NotifyAdminsOfSystemAccountTransactionListener extends BaseListener implem
         $adminEmails = config('admin.emails');
 
         if (empty($adminEmails)) {
-            $adminUsers = User::whereHas('roles', function ($query) {
+            $adminUsers = User::whereHas('roles', function (Builder $query): void {
                 $query->where('name', 'admin');
             })->get();
             $adminEmails = $adminUsers->pluck('email')->toArray();

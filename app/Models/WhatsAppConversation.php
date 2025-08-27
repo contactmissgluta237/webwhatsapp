@@ -95,9 +95,32 @@ final class WhatsAppConversation extends Model
         return $this->hasMany(AiUsageLog::class, 'whatsapp_conversation_id');
     }
 
+    public function messageUsageLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\MessageUsageLog::class, 'whatsapp_conversation_id');
+    }
+
     // ================================================================================
     // PUBLIC METHODS
     // ================================================================================
+
+    /**
+     * Get the total wallet cost for this conversation.
+     */
+    public function getWalletCost(): float
+    {
+        return $this->messageUsageLogs()
+            ->where('billing_type', \App\Enums\BillingType::WALLET_DIRECT)
+            ->sum('total_cost');
+    }
+
+    /**
+     * Get the total cost breakdown for this conversation.
+     */
+    public function getTotalCost(): float
+    {
+        return $this->messageUsageLogs()->sum('total_cost');
+    }
 
     public function getDisplayName(): string
     {

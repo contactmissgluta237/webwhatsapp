@@ -6,6 +6,7 @@ use App\Enums\TicketSenderType;
 use App\Models\User;
 use App\Notifications\AdminTicketRepliedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Notification;
 
@@ -35,7 +36,7 @@ class NotifyAdminOfCustomerMessageListener extends BaseListener implements Shoul
     {
         if ($event->ticketMessage->sender_type->equals(TicketSenderType::CUSTOMER())) {
             // Do nothing if the message is from the admin
-            $admins = User::whereHas('roles', function ($query) {
+            $admins = User::whereHas('roles', function (Builder $query): void {
                 $query->where('name', 'admin');
             })->get();
 

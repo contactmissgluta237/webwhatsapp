@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\DTOs\WhatsApp\MessageExchangeResult;
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
@@ -116,7 +117,11 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
         WhatsAppConversation $conversation,
         WhatsAppAccount $account,
         WhatsAppMessageResponseDTO $aiResponse
-    ): WhatsAppMessage {
+    ): ?WhatsAppMessage {
+        if (! $aiResponse->wasSuccessful() || ! $aiResponse->aiResponse) {
+            return null;
+        }
+
         Log::debug('[MESSAGE_REPO] Storing outgoing AI message', [
             'conversation_id' => $conversation->id,
             'response_length' => strlen($aiResponse->aiResponse ?? ''),
@@ -204,32 +209,22 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
         WhatsAppAccount $account,
         WhatsAppMessageRequestDTO $incomingMessage,
         WhatsAppMessageResponseDTO $aiResponse
-    ): array {
+    ): MessageExchangeResult {
         Log::info('[MESSAGE_REPO] Storing complete message exchange', [
             'session_id' => $account->session_id,
             'from_phone' => $incomingMessage->from,
         ]);
 
         return DB::transaction(function () use ($account, $incomingMessage, $aiResponse) {
-            // 1. Find or create conversation
             $conversation = $this->findOrCreateConversation($account, $incomingMessage);
-
-            // 2. Store incoming message
             $incomingMessageRecord = $this->storeIncomingMessage($conversation, $incomingMessage);
 
-            // 3. Store outgoing message if AI response is successful
-            $outgoingMessageRecord = null;
-            if ($aiResponse->wasSuccessful() && $aiResponse->aiResponse) {
-                $outgoingMessageRecord = $this->storeOutgoingMessage($conversation, $account, $aiResponse);
-            }
+            $outgoingMessageRecord = $this->storeOutgoingMessage($conversation, $account, $aiResponse);
 
-            // 4. Store product messages if any
-            $productMessages = [];
             if ($aiResponse->hasProducts()) {
-                $productMessages = $this->storeProductMessages($conversation, $account, $aiResponse->products);
+                $this->storeProductMessages($conversation, $account, $aiResponse->products);
             }
 
-            // 5. Update conversation last message timestamp
             $conversation->updateLastMessage(now());
 
             Log::info('[MESSAGE_REPO] Message exchange stored successfully', [
@@ -237,18 +232,19 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
                 'conversation_id' => $conversation->id,
                 'incoming_message_id' => $incomingMessageRecord->id,
                 'outgoing_message_id' => $outgoingMessageRecord?->id,
-                'product_messages_count' => count($productMessages),
             ]);
 
-            return [
-                'conversation' => $conversation,
-                'incoming_message' => $incomingMessageRecord,
-                'outgoing_message' => $outgoingMessageRecord,
-                'product_messages' => $productMessages,
-            ];
+            return new MessageExchangeResult(
+                conversation: $conversation,
+                incomingMessage: $incomingMessageRecord,
+                outgoingMessage: $outgoingMessageRecord
+            );
         });
     }
 
+    /**
+     * @return Collection<int, WhatsAppMessage>
+     */
     public function getRecentMessages(
         WhatsAppConversation $conversation,
         int $limit = 20
@@ -270,9 +266,9 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
             'chat', 'text' => MessageType::TEXT(),
             'image' => MessageType::IMAGE(),
             'audio' => MessageType::AUDIO(),
-            'video' => MessageType::AUDIO(), // No VIDEO in enum
+            'video' => MessageType::VIDEO(), // No VIDEO in enum
             'document' => MessageType::DOCUMENT(),
-            'location' => MessageType::TEXT(), // No LOCATION in enum
+            'location' => MessageType::LOCATION(), // No LOCATION in enum
             default => MessageType::TEXT(),
         };
     }

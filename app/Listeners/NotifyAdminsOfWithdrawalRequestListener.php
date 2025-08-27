@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Mail\WithdrawalRequestedMail;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
@@ -22,7 +23,7 @@ class NotifyAdminsOfWithdrawalRequestListener extends BaseListener implements Sh
 
     protected function handleEvent($event): void
     {
-        $admins = User::whereHas('roles', function ($query) {
+        $admins = User::whereHas('roles', function (Builder $query): void {
             $query->where('name', 'admin');
         })->get();
 

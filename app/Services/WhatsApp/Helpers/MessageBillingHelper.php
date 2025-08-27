@@ -9,52 +9,52 @@ use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 final class MessageBillingHelper
 {
     /**
-     * Get total number of messages to debit from quota
-     * AI message = 1, each product message = 1, each media = 1
+     * Calculate total messages to debit from subscription quota.
+     * AI response = 1, each product = 1, each media = 1.
      */
     public static function getNumberOfMessagesFromResponse(WhatsAppMessageResponseDTO $response): int
     {
-        $totalMessages = 0;
+        $total = $response->hasAiResponse && $response->aiResponse !== null ? 1 : 0;
 
-        // AI response counts as 1 message
-        if ($response->hasAiResponse && $response->aiResponse !== null) {
-            $totalMessages += 1;
-        }
-
-        // Each product generates 1 message + count of its media
         foreach ($response->products as $product) {
-            // Product message itself = 1
-            $totalMessages += 1;
-
-            // Each media = 1
-            $totalMessages += count($product->mediaUrls);
+            $total += 1 + count($product->mediaUrls);
         }
 
-        return $totalMessages;
+        return $total;
     }
 
     /**
-     * Get total amount to bill in XAF based on response and configuration
+     * Calculate total billing amount in XAF based on configuration costs.
      */
     public static function getAmountToBillFromResponse(WhatsAppMessageResponseDTO $response): float
     {
-        $totalAmount = 0.0;
+        $total = 0.0;
 
-        // AI message cost
         if ($response->hasAiResponse && $response->aiResponse !== null) {
-            $totalAmount += config('whatsapp.billing.costs.ai_message', 15);
+            $total += config('whatsapp.billing.costs.ai_message', 15);
         }
 
-        // Products and media costs
         foreach ($response->products as $product) {
-            // Product message cost
-            $totalAmount += config('whatsapp.billing.costs.product_message', 10);
-
-            // Media costs
-            $mediaCount = count($product->mediaUrls);
-            $totalAmount += $mediaCount * config('whatsapp.billing.costs.media', 5);
+            $total += config('whatsapp.billing.costs.product_message', 10);
+            $total += count($product->mediaUrls) * config('whatsapp.billing.costs.media', 5);
         }
 
-        return $totalAmount;
+        return $total;
+    }
+
+    /**
+     * Get the number of products in the response.
+     */
+    public static function getNumberOfProductsFromResponse(WhatsAppMessageResponseDTO $response): int
+    {
+        return count($response->products);
+    }
+
+    /**
+     * Get total media count across all products.
+     */
+    public static function getMediaCountFromResponse(WhatsAppMessageResponseDTO $response): int
+    {
+        return array_sum(array_map(fn ($product) => count($product->mediaUrls), $response->products));
     }
 }

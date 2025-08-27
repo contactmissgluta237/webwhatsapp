@@ -9,6 +9,7 @@ use App\Http\Requests\Customer\UpdateProductRequest;
 use App\Models\UserProduct;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 final class EditProductForm extends AbstractProductForm
 {
@@ -36,7 +37,7 @@ final class EditProductForm extends AbstractProductForm
 
     private function loadExistingMedias(): void
     {
-        $this->allMediaFiles = $this->product->getMedia('medias')->map(function ($mediaItem) {
+        $this->allMediaFiles = $this->product->getMedia('medias')->map(function (Media $mediaItem): array {
             return [
                 'id' => 'existing_'.$mediaItem->id,
                 'name' => $mediaItem->name,

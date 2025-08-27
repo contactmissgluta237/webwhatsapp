@@ -90,10 +90,10 @@ class ConversationDataTable extends CustomerConversationDataTable
             $columns[] = Column::make('User', 'whatsapp_account.user.name')
                 ->sortable()
                 ->searchable()
-                ->format(function ($value, $row) {
+                ->format(function (string $value, WhatsAppConversation $row): string {
                     return '<div class="d-flex flex-column" style="line-height: 1.2;">
                         <span class="fw-bold text-primary mb-0">
-                            '.$row->whatsappAccount->user->name.'
+                            '.$row->whatsappAccount->user->full_name.'
                         </span>
                         <small class="text-muted">'.$row->whatsappAccount->user->email.'</small>
                     </div>';

@@ -54,7 +54,7 @@ class PhoneInput extends Component
 
     public function updatedSearchCountry(): void
     {
-        $this->filteredCountries = $this->countries->filter(function ($country) {
+        $this->filteredCountries = $this->countries->filter(function (Country $country): bool {
             return str_contains(
                 strtolower($country->name.' '.$country->phone_code),
                 strtolower($this->searchCountry)

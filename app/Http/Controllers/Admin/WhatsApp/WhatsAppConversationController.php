@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
 use App\Services\AI\AiUsageTracker;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -56,7 +57,7 @@ final class WhatsAppConversationController extends Controller
         $conversation->load([
             'whatsappAccount:id,session_name,user_id',
             'whatsappAccount.user:id,name,email',
-            'messages' => function ($query) {
+            'messages' => function (Builder $query): void {
                 $query->orderBy('created_at', 'asc');
             },
         ]);

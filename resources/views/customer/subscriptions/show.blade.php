@@ -21,7 +21,7 @@
         </div>
 
         <div class="content-header-right col-md-4 col-12 text-right">
-            <a href="{{ route('customer.subscriptions.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('customer.subscriptions.index') }}" class="btn btn-outline-whatsapp">
                 <i class="la la-arrow-left mr-1"></i> Retour aux souscriptions
             </a>
         </div>
@@ -31,25 +31,25 @@
         <!-- Package Info Card -->
         <div class="row">
             <div class="col-lg-8 col-md-12">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card shadow-none border-gray-light">
+                    <div class="card-header bg-white border-bottom-0">
                         <h4 class="card-title">
-                            <i class="la la-info-circle mr-2"></i>Informations du Package
+                            <i class="la la-info-circle mr-2 text-whatsapp"></i>Informations du Package
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <h5 class="text-primary mb-3">{{ $subscription->package->name }}</h5>
+                                <h5 class="text-whatsapp mb-3">{{ $subscription->package->display_name }}</h5>
                                 <p class="text-muted mb-4">{{ $subscription->package->description }}</p>
                                 
                                 <div class="mb-3">
                                     <strong>Limites du package :</strong>
                                     <ul class="list-unstyled mt-2">
-                                        <li><i class="la la-message text-success mr-2"></i>{{ number_format($subscription->messages_limit) }} messages</li>
-                                        <li><i class="la la-whatsapp text-success mr-2"></i>{{ number_format($subscription->accounts_limit) }} comptes WhatsApp</li>
-                                        <li><i class="la la-box text-success mr-2"></i>{{ number_format($subscription->products_limit) }} produits</li>
-                                        <li><i class="la la-file text-success mr-2"></i>{{ number_format($subscription->context_limit) }} contextes</li>
+                                        <li><i class="la la-message text-whatsapp mr-2"></i>{{ number_format($subscription->messages_limit) }} messages</li>
+                                        <li><i class="la la-whatsapp text-whatsapp mr-2"></i>{{ number_format($subscription->accounts_limit) }} comptes WhatsApp</li>
+                                        <li><i class="la la-box text-whatsapp mr-2"></i>{{ number_format($subscription->products_limit) }} produits</li>
+                                        <li><i class="la la-file text-whatsapp mr-2"></i>{{ number_format($subscription->context_limit) }} contextes</li>
                                     </ul>
                                 </div>
                             </div>
@@ -77,7 +77,7 @@
                                     <div class="stat-item mb-3 p-3 bg-light rounded">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="text-muted">Montant payé:</span>
-                                            <strong class="text-primary">{{ number_format($subscription->amount_paid ?? 0, 0, ',', ' ') }} XAF</strong>
+                                            <strong class="text-whatsapp">{{ number_format($subscription->amount_paid ?? 0, 0, ',', ' ') }} XAF</strong>
                                         </div>
                                     </div>
 
@@ -96,10 +96,10 @@
                 </div>
 
                 <!-- Usage Statistics -->
-                <div class="card">
-                    <div class="card-header">
+                <div class="card shadow-none border-gray-light">
+                    <div class="card-header bg-white border-bottom-0">
                         <h4 class="card-title">
-                            <i class="la la-chart-bar mr-2"></i>Utilisation des Messages
+                            <i class="la la-chart-bar mr-2 text-whatsapp"></i>Utilisation des Messages
                         </h4>
                     </div>
                     <div class="card-body">
@@ -116,7 +116,7 @@
                                 <span class="text-dark font-weight-bold">{{ number_format($totalUsed) }} / {{ number_format($totalLimit) }}</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar {{ $percentage > 80 ? 'bg-danger' : ($percentage > 60 ? 'bg-warning' : 'bg-success') }}" 
+                                <div class="progress-bar {{ $percentage > 80 ? 'bg-danger' : ($percentage > 60 ? 'bg-warning' : 'bg-whatsapp') }}" 
                                      role="progressbar" 
                                      style="width: {{ min(100, $percentage) }}%"
                                      aria-valuenow="{{ $percentage }}" 
@@ -143,7 +143,7 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <i class="la la-whatsapp text-success mr-2"></i>
+                                                        <i class="la la-whatsapp text-whatsapp mr-2"></i>
                                                         {{ $usage->whatsappAccount->session_name }}
                                                     </div>
                                                 </td>
@@ -169,16 +169,16 @@
 
             <!-- Timeline Card -->
             <div class="col-lg-4 col-md-12">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card shadow-none border-gray-light">
+                    <div class="card-header bg-white border-bottom-0">
                         <h4 class="card-title">
-                            <i class="la la-calendar mr-2"></i>Chronologie
+                            <i class="la la-calendar mr-2 text-whatsapp"></i>Chronologie
                         </h4>
                     </div>
                     <div class="card-body">
                         <div class="timeline">
                             <div class="timeline-item">
-                                <div class="timeline-point bg-primary"></div>
+                                <div class="timeline-point bg-whatsapp"></div>
                                 <div class="timeline-content">
                                     <div class="timeline-header">
                                         <h6 class="mb-0">Souscription créée</h6>
@@ -189,7 +189,7 @@
 
                             @if($subscription->activated_at)
                                 <div class="timeline-item">
-                                    <div class="timeline-point bg-success"></div>
+                                    <div class="timeline-point bg-whatsapp"></div>
                                     <div class="timeline-content">
                                         <div class="timeline-header">
                                             <h6 class="mb-0">Package activé</h6>
@@ -200,7 +200,7 @@
                             @endif
 
                             <div class="timeline-item">
-                                <div class="timeline-point {{ $subscription->isActive() ? 'bg-info' : 'bg-secondary' }}"></div>
+                                <div class="timeline-point {{ $subscription->isActive() ? 'bg-whatsapp' : 'bg-secondary' }}"></div>
                                 <div class="timeline-content">
                                     <div class="timeline-header">
                                         <h6 class="mb-0">Début de validité</h6>
@@ -217,7 +217,7 @@
                                         <small class="text-muted">{{ $subscription->ends_at->format('d/m/Y H:i') }}</small>
                                     </div>
                                     @if(!$subscription->isExpired())
-                                        <p class="mb-0 text-success">
+                                        <p class="mb-0 text-whatsapp">
                                             <i class="la la-clock mr-1"></i>{{ $subscription->getRemainingDays() }} jour(s) restant(s)
                                         </p>
                                     @endif

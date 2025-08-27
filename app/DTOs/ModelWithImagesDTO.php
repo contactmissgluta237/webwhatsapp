@@ -3,6 +3,7 @@
 namespace App\DTOs;
 
 use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ModelWithImagesDTO
 {
@@ -19,7 +20,7 @@ class ModelWithImagesDTO
     {
         $mainImage = ImageDataDTO::fromMedia($model->main_image ?? null);
 
-        $images = $model->getMedia('medias')->map(fn ($media) => ImageDataDTO::fromMedia($media))->toArray();
+        $images = $model->getMedia('medias')->map(fn (Media $media): ImageDataDTO => ImageDataDTO::fromMedia($media))->toArray();
 
         return new self($model, $mainImage, $images);
     }
@@ -29,7 +30,7 @@ class ModelWithImagesDTO
         return [
             'model' => $this->model->toArray(),
             'main_image' => $this->mainImage->toArray(),
-            'images' => array_map(fn (ImageDataDTO $dto) => $dto->toArray(), $this->images),
+            'images' => array_map(fn (ImageDataDTO $dto): array => $dto->toArray(), $this->images),
         ];
     }
 }

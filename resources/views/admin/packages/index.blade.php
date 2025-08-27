@@ -23,7 +23,12 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Liste des packages</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Liste des packages</h5>
+                        <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">
+                            <i class="mdi mdi-plus me-1"></i>Nouveau package
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -61,10 +66,18 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if($package->price > 0)
-                                            <strong>{{ number_format($package->price) }} XAF</strong>
+                                        @if($package->hasActivePromotion())
+                                            <div class="text-decoration-line-through text-muted small">
+                                                {{ $package->getFormattedPrice() }}
+                                            </div>
+                                            <strong class="text-success">{{ $package->getFormattedCurrentPrice() }}</strong>
+                                            <span class="badge bg-warning text-dark small">-{{ $package->getPromotionalDiscountPercentage() }}%</span>
                                         @else
-                                            <span class="badge bg-success">GRATUIT</span>
+                                            @if($package->price > 0)
+                                                <strong>{{ $package->getFormattedPrice() }}</strong>
+                                            @else
+                                                <span class="badge bg-success">GRATUIT</span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td>
@@ -115,6 +128,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
+                                            <a href="{{ route('admin.packages.edit', $package) }}" 
+                                               class="btn btn-sm btn-outline-warning" 
+                                               title="Éditer le package">
+                                                <i class="mdi mdi-pencil"></i>
+                                            </a>
                                             <a href="{{ route('admin.subscriptions.index', ['package_id' => $package->id]) }}" 
                                                class="btn btn-sm btn-outline-primary" 
                                                title="Voir les souscriptions">

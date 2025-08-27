@@ -30,26 +30,26 @@
         @if(auth()->user()->activeSubscription)
             <div class="row mb-3">
                 <div class="col-12">
-                    <div class="card bg-gradient-primary text-white">
+                    <div class="card bg-whatsapp">
                         <div class="card-body">
                             <div class="d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center">
-                                    <div class="mr-3">
+                                    <div class="mr-3 text-white">
                                         <i class="la la-gift la-2x"></i>
                                     </div>
                                     <div>
-                                        <h5 class="mb-1 text-white">Package Actuel</h5>
-                                        <h4 class="mb-0 text-white">{{ auth()->user()->activeSubscription->package->name }}</h4>
+                                        <h3 class="mb-1 text-white">Package Actuel</h3>
+                                        <h3 class="mb-0 text-white" >{{ auth()->user()->activeSubscription->package->display_name }}</h3>
                                     </div>
                                 </div>
                                 <div class="text-right">
                                     <div class="mb-2">
-                                        <span class="badge badge-light badge-lg">
+                                        <span class="badge badge-lg bg-white text-whatsapp">
                                             {{ auth()->user()->activeSubscription->getRemainingDays() }} jour(s) restant(s)
                                         </span>
                                     </div>
                                     <a href="{{ route('customer.subscriptions.show', auth()->user()->activeSubscription->id) }}" 
-                                       class="btn btn-outline-light btn-sm">
+                                       class="btn btn-sm btn-white text-whatsapp">
                                         <i class="la la-eye"></i> Voir les détails
                                     </a>
                                 </div>

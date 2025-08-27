@@ -58,6 +58,8 @@ Route::middleware(['auth', 'role:admin'])
         // Packages management routes
         Route::prefix('packages')->name('packages.')->group(function () {
             Route::get('/', App\Http\Controllers\Admin\Packages\IndexController::class)->name('index');
+            Route::get('/create', App\Http\Controllers\Admin\Packages\CreateController::class)->name('create');
+            Route::get('/{package}/edit', App\Http\Controllers\Admin\Packages\EditController::class)->name('edit');
         });
 
         // Ticket management routes

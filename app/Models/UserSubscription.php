@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\BillingType;
 use App\Enums\SubscriptionStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -149,7 +151,7 @@ class UserSubscription extends Model
             return 0;
         }
 
-        return max(0, $this->ends_at->diffInDays(now()));
+        return max(0, (int) round(now()->diffInDays($this->ends_at)));
     }
 
     public function getRemainingHours(): int
@@ -202,12 +204,16 @@ class UserSubscription extends Model
 
     public function getTotalMessagesUsed(): int
     {
-        return $this->accountUsages()->sum('messages_used');
+        return MessageUsageLog::whereHas('whatsappAccountUsage', function (Builder $query): void {
+            $query->where('user_subscription_id', $this->id);
+        })->where('billing_type', BillingType::SUBSCRIPTION_QUOTA)->count();
     }
 
     public function getTotalOverageMessagesUsed(): int
     {
-        return $this->accountUsages()->sum('overage_messages_used');
+        return MessageUsageLog::whereHas('whatsappAccountUsage', function (Builder $query): void {
+            $query->where('user_subscription_id', $this->id);
+        })->where('billing_type', BillingType::WALLET_DIRECT)->count();
     }
 
     public function getRemainingMessages(): int

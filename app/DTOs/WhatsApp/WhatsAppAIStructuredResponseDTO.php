@@ -58,6 +58,6 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
 
         $validIds = array_map('intval', array_filter($productIds, 'is_numeric'));
 
-        return array_slice(array_filter($validIds, fn ($id) => $id > 0), 0, $maxProducts);
+        return array_slice(array_filter($validIds, fn (int $id): bool => $id > 0), 0, $maxProducts);
     }
 }
