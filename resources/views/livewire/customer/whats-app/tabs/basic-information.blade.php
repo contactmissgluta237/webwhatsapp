@@ -54,6 +54,7 @@
         </div>
     </div>
 
+    @if(auth()->user()->isAdmin())
     <!-- Modèle d'IA -->
     <div class="form-group">
         <label for="ai_model_id" class="form-label required">
@@ -92,6 +93,8 @@
             </div>
         @endif
     </div>
+    @endif
+
 
     <!-- Prompt de l'IA -->
     <div class="form-group">
@@ -103,12 +106,27 @@
                 {{-- Boutons d'action pour le prompt --}}
                 @if(!$hasEnhancedPrompt && !$isPromptValidated)
                     @if(empty(trim($agent_prompt)))
-                        {{-- Si le prompt est vide, afficher le bouton "Insérer un exemple" --}}
-                        <button type="button"
-                                class="btn btn-outline-secondary btn-sm"
-                                wire:click="insertExamplePrompt">
-                            <i class="la la-plus-circle"></i> {{ __('Insérer un exemple') }}
-                        </button>
+                        {{-- Si le prompt est vide, afficher le dropdown pour insérer un prompt type --}}
+                        <div class="dropdown">
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-expanded="false">
+                                <i class="la la-plus-circle"></i> {{ __('Insérer un prompt type') }}
+                            </button>
+                            <div class="dropdown-menu">
+                                @foreach($this->availablePromptTypes as $type)
+                                    <a class="dropdown-item"
+                                       href="#"
+                                       wire:click.prevent="insertPromptByType('{{ $type['value'] }}')">
+                                        <i class="{{ $type['icon'] }}"></i>
+                                        <strong>{{ $type['label'] }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ $type['description'] }}</small>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                     @else
                         {{-- Si le prompt n'est pas vide, afficher le bouton "Améliorer" --}}
                         <button type="button"
@@ -171,12 +189,23 @@
             <i class="la la-lightbulb"></i> {{ __('Définissez le comportement, la personnalité et les instructions principales de votre agent IA') }}
         </small>
         <div class="char-counter mt-2">
-            <small class="text-muted">
-                {{ strlen($agent_prompt ?? '') }} caractères
-                @if($hasEnhancedPrompt)
+            <small class="{{ strlen($agent_prompt ?? '') > 10000 ? 'text-danger' : 'text-muted' }}">
+                <i class="la {{ strlen($agent_prompt ?? '') > 10000 ? 'la-exclamation-triangle' : 'la-info-circle' }}"></i>
+                {{ strlen($agent_prompt ?? '') }} / 10 000 caractères
+                @if(strlen($agent_prompt ?? '') > 10000)
+                    <span class="badge badge-danger ml-1">{{ __('Limite dépassée') }}</span>
+                @elseif($hasEnhancedPrompt)
                     <span class="badge badge-success ml-1">{{ __('Amélioré') }}</span>
                 @endif
             </small>
+            @if(strlen($agent_prompt ?? '') > 10000)
+                <div class="text-danger mt-1">
+                    <small>
+                        <i class="la la-exclamation-circle"></i>
+                        {{ __('Le prompt dépasse la limite de 10 000 caractères. Veuillez le raccourcir.') }}
+                    </small>
+                </div>
+            @endif
         </div>
     </div>
 </div>
@@ -201,6 +230,37 @@
 
 .btn-group .btn {
     margin-left: 0;
+}
+
+/* Dropdown menu styling for agent types */
+.dropdown-menu .dropdown-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.dropdown-menu .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Character counter styling */
+.char-counter small.text-danger {
+    font-weight: 500;
+}
+
+.char-counter .la-exclamation-triangle {
+    color: #dc3545;
+}
+
+/* Save button disabled state */
+.btn.disabled {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+    opacity: 0.65;
+    cursor: not-allowed;
 }
 </style>
 @endpush

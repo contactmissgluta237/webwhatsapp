@@ -524,6 +524,161 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
+    /** @test */
+    public function it_handles_non_text_messages_with_automatic_response()
+    {
+        // Mock les logs
+        Log::shouldReceive('info', 'warning', 'error', 'debug')->withAnyArgs()->zeroOrMoreTimes();
+
+        // Create active subscription with remaining messages
+        $package = Package::factory()->create(['messages_limit' => 100]);
+        UserSubscription::factory()->create([
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addDays(30),
+            'status' => 'active',
+            'messages_limit' => 100,
+        ]);
+
+        $nonTextMessageTypes = ['image', 'video', 'audio', 'document', 'sticker', 'location', 'contact'];
+
+        foreach ($nonTextMessageTypes as $messageType) {
+            $payload = [
+                'event' => 'incoming_message',
+                'session_id' => $this->whatsappAccount->session_id,
+                'session_name' => $this->whatsappAccount->session_name,
+                'message' => [
+                    'id' => 'test_non_text_'.$messageType.'_'.uniqid(),
+                    'from' => '237676636794@c.us',
+                    'body' => $messageType === 'image' ? '' : 'Some content', // Images peuvent avoir un body vide
+                    'timestamp' => now()->timestamp,
+                    'type' => $messageType,
+                    'isGroup' => false,
+                    'contactName' => 'Test Contact',
+                    'pushName' => 'Test Push',
+                    'displayName' => 'Test Display',
+                ],
+            ];
+
+            $response = $this->postJson('/api/whatsapp/webhook/incoming-message', $payload);
+
+            $response->assertStatus(200)
+                ->assertJson([
+                    'success' => true,
+                    'processed' => true,
+                    'response_message' => "Désolé, je ne peux comprendre que les messages texte pour le moment. Veuillez m'envoyer votre message sous forme de texte et je serai ravi de vous aider ! 😊",
+                    'wait_time_seconds' => 30,
+                    'typing_duration_seconds' => 5,
+                ]);
+
+            // Vérifier qu'aucun message n'a été traité par l'IA (pas de stockage en DB)
+            $this->assertDatabaseMissing('whatsapp_messages', [
+                'whatsapp_message_id' => 'test_non_text_'.$messageType.'_'.substr(uniqid(), -10),
+            ]);
+        }
+    }
+
+    /** @test */
+    public function it_handles_notification_messages_with_automatic_response()
+    {
+        // Mock les logs
+        Log::shouldReceive('info', 'warning', 'error', 'debug')->withAnyArgs()->zeroOrMoreTimes();
+
+        // Create active subscription
+        $package = Package::factory()->create(['messages_limit' => 100]);
+        UserSubscription::factory()->create([
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addDays(30),
+            'status' => 'active',
+            'messages_limit' => 100,
+        ]);
+
+        $notificationTypes = ['e2e_notification', 'notification_template'];
+
+        foreach ($notificationTypes as $messageType) {
+            $payload = [
+                'event' => 'incoming_message',
+                'session_id' => $this->whatsappAccount->session_id,
+                'session_name' => $this->whatsappAccount->session_name,
+                'message' => [
+                    'id' => 'test_notification_'.$messageType.'_'.uniqid(),
+                    'from' => '237676636794@c.us',
+                    'body' => '', // Les notifications ont souvent un body vide
+                    'timestamp' => now()->timestamp,
+                    'type' => $messageType,
+                    'isGroup' => false,
+                ],
+            ];
+
+            $response = $this->postJson('/api/whatsapp/webhook/incoming-message', $payload);
+
+            $response->assertStatus(200)
+                ->assertJson([
+                    'success' => true,
+                    'processed' => true,
+                    'response_message' => "Désolé, je ne peux comprendre que les messages texte pour le moment. Veuillez m'envoyer votre message sous forme de texte et je serai ravi de vous aider ! 😊",
+                ]);
+        }
+    }
+
+    /** @test */
+    public function it_processes_text_and_chat_messages_normally()
+    {
+        // Mock les logs
+        Log::shouldReceive('info', 'warning', 'error', 'debug')->withAnyArgs()->zeroOrMoreTimes();
+
+        // Create active subscription
+        $package = Package::factory()->create(['messages_limit' => 100]);
+        UserSubscription::factory()->create([
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addDays(30),
+            'status' => 'active',
+            'messages_limit' => 100,
+        ]);
+
+        $textMessageTypes = ['text', 'chat'];
+
+        foreach ($textMessageTypes as $messageType) {
+            $payload = [
+                'event' => 'incoming_message',
+                'session_id' => $this->whatsappAccount->session_id,
+                'session_name' => $this->whatsappAccount->session_name,
+                'message' => [
+                    'id' => 'test_text_'.$messageType.'_'.uniqid(),
+                    'from' => '237676636794@c.us',
+                    'body' => 'Bonjour, comment allez-vous ?',
+                    'timestamp' => now()->timestamp,
+                    'type' => $messageType,
+                    'isGroup' => false,
+                    'contactName' => 'Test Contact',
+                    'pushName' => 'Test Push',
+                    'displayName' => 'Test Display',
+                ],
+            ];
+
+            $response = $this->postJson('/api/whatsapp/webhook/incoming-message', $payload);
+
+            // Pour les messages texte, le traitement doit se poursuivre normalement
+            $response->assertStatus(200)
+                ->assertJson([
+                    'success' => true,
+                    'processed' => true,
+                ]);
+
+            // Vérifier qu'une conversation a été créée
+            $this->assertDatabaseHas('whatsapp_conversations', [
+                'whatsapp_account_id' => $this->whatsappAccount->id,
+                'contact_phone' => '237676636794',
+                'contact_name' => 'Test Contact',
+            ]);
+        }
+    }
+
     private function getValidPayload(): array
     {
         return [

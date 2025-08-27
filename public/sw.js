@@ -1,63 +1,55 @@
-// Service Worker Debug - Version avancée pour diagnostic
+// Service Worker - Push notifications
 
 const CACHE_NAME = 'laravel-app-v1';
 
-// Log d'initialisation détaillé
-console.log('🚀 Service Worker - Chargement initial');
-console.log('📍 URL Service Worker:', self.location.href);
-console.log('🌐 Scope:', self.registration?.scope);
+// Initialization - Service Worker loaded
 
-// Écouter les messages depuis la page principale
+// Listen to messages from main page
 self.addEventListener('message', (event) => {
-    console.log('💌 Message reçu dans Service Worker:', event.data);
+    // Message received in Service Worker
     
     if (event.data && event.data.type === 'TEST_PUSH') {
-        console.log('🔥 Simulation d\'événement push demandée');
+        // Push event simulation requested
         
         try {
             const payload = JSON.parse(event.data.payload);
-            console.log('📦 Payload de test:', payload);
+            // Test payload received
             
-            // Simuler l'affichage direct d'une notification
+            // Simulate direct notification display
             self.registration.showNotification(payload.title, {
                 body: payload.body,
                 icon: payload.icon,
                 tag: payload.tag,
                 requireInteraction: true
             }).then(() => {
-                console.log('✅ Notification de test affichée via message');
+                // Test notification displayed via message
             }).catch((error) => {
-                console.error('❌ Erreur notification test:', error);
+                console.error('Notification test error:', error);
             });
             
         } catch (error) {
-            console.error('❌ Erreur parsing payload test:', error);
+            console.error('Test payload parsing error:', error);
         }
     }
 });
 
 self.addEventListener('install', (event) => {
-    console.log('🔧 Service Worker - Installation en cours');
-    console.log('📦 Event install:', event);
+    // Service Worker installation
     self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-    console.log('✅ Service Worker - Activation en cours');
-    console.log('📦 Event activate:', event);
+    // Service Worker activation
     event.waitUntil(
         self.clients.claim().then(() => {
-            console.log('👑 Service Worker - Contrôle de tous les clients pris');
+            // Service Worker claimed control of all clients
         })
     );
 });
 
-// Event listener pour debug complet
+// Push event handler
 self.addEventListener('push', (event) => {
-    console.log('🚨 PUSH EVENT REÇU !');
-    console.log('📦 Event complet:', event);
-    console.log('📊 Event.data existe:', !!event.data);
-    console.log('🔍 Type de event.data:', typeof event.data);
+    // Push event received
     
     let data = {};
     let rawPayload = '';
@@ -65,16 +57,13 @@ self.addEventListener('push', (event) => {
     if (event.data) {
         try {
             rawPayload = event.data.text();
-            console.log('📝 Payload brut reçu:', rawPayload);
-            console.log('📏 Taille payload:', rawPayload.length, 'caractères');
+            // Raw payload received
             
             data = event.data.json();
-            console.log('✅ JSON parsé avec succès:', data);
-            console.log('🏷️ Titre détecté:', data.title);
-            console.log('📄 Body détecté:', data.body);
+            // JSON parsed successfully
         } catch (parseError) {
-            console.error('❌ Erreur parsing JSON:', parseError);
-            console.log('🔄 Tentative avec texte brut:', rawPayload);
+            console.error('JSON parsing error:', parseError);
+            // Attempting with raw text
             
             data = {
                 title: '🔧 Debug Notification',
@@ -83,7 +72,7 @@ self.addEventListener('push', (event) => {
             };
         }
     } else {
-        console.warn('⚠️ Aucune donnée dans l\'event push');
+        // No data in push event
         data = {
             title: '🔔 Test Service Worker',
             body: 'Event push reçu mais sans données',
@@ -112,28 +101,24 @@ self.addEventListener('push', (event) => {
         ]
     };
 
-    console.log('🎯 Options notification finales:', JSON.stringify(notificationOptions, null, 2));
+    // Final notification options prepared
 
     const showNotificationPromise = self.registration.showNotification(
         notificationOptions.title, 
         notificationOptions
     ).then(() => {
-        console.log('✅ Notification affichée avec SUCCÈS');
-        console.log('👀 Vérifiez votre zone de notification système');
+        // Notification displayed successfully
         
-        // Test supplémentaire - Lister les notifications actives
+        // Get active notifications
         return self.registration.getNotifications();
     }).then((notifications) => {
-        console.log('📋 Notifications actives:', notifications.length);
-        notifications.forEach((notif, index) => {
-            console.log(`📌 Notification ${index + 1}:`, notif.title);
-        });
+        // Active notifications count logged
     }).catch((error) => {
-        console.error('💥 ERREUR CRITIQUE lors de l\'affichage:', error);
-        console.error('📊 Stack trace complète:', error.stack);
+        console.error('Critical error displaying notification:', error);
+        console.error('Full stack trace:', error.stack);
         
-        // Notification de secours
-        return self.registration.showNotification('🆘 Erreur Debug', {
+        // Fallback notification
+        return self.registration.showNotification('Debug Error', {
             body: `Erreur: ${error.message}`,
             icon: '/favicon.ico',
             tag: 'error-debug'
@@ -143,23 +128,16 @@ self.addEventListener('push', (event) => {
     event.waitUntil(showNotificationPromise);
 });
 
-// Debug des clics
+// Notification click handler
 self.addEventListener('notificationclick', (event) => {
-    console.log('👆 Notification cliquée - Debug');
-    console.log('📦 Event:', event);
-    console.log('🏷️ Notification:', event.notification);
-    console.log('🎬 Action:', event.action);
+    // Notification clicked
     
     event.notification.close();
     
     if (event.action === 'view') {
-        console.log('🔗 Action "voir" cliquée');
+        // View action clicked
     }
 });
 
-// Test périodique pour vérifier que le SW est vivant
-setInterval(() => {
-    console.log('💓 Service Worker - Heartbeat:', new Date().toLocaleTimeString());
-}, 30000);
-
-console.log('🏁 Service Worker - Configuration debug terminée');
+// Service Worker heartbeat disabled to reduce console pollution
+// Configuration completed

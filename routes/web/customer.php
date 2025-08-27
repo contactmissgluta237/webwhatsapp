@@ -40,6 +40,11 @@ Route::middleware(['auth', 'role:customer'])
             Route::post('/{package}/subscribe', App\Http\Controllers\Customer\Packages\SubscribeController::class)->name('subscribe');
         });
 
+        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
+            Route::get('/', App\Http\Controllers\Customer\Subscriptions\IndexController::class)->name('index');
+            Route::get('/{subscription}', App\Http\Controllers\Customer\Subscriptions\ShowController::class)->name('show');
+        });
+
         Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
             Route::get('/', App\Http\Controllers\Customer\WhatsApp\Account\IndexController::class)->name('index');
             Route::get('/create', App\Http\Controllers\Customer\WhatsApp\Account\CreateController::class)->name('create');

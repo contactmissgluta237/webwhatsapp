@@ -5,7 +5,7 @@ namespace App\Helpers;
 class CardHelper
 {
     /**
-     * Masque un numéro de carte bancaire en gardant les 4 premiers et 6 derniers chiffres
+     * Masks a credit card number by keeping the first 4 and last 6 digits
      */
     public static function maskCardNumber(string $cardNumber): string
     {
@@ -23,7 +23,7 @@ class CardHelper
     }
 
     /**
-     * Valide un numéro de carte bancaire en utilisant l'algorithme de Luhn
+     * Validates a credit card number using the Luhn algorithm
      */
     public static function validateCardNumber(string $cardNumber): bool
     {
@@ -37,7 +37,7 @@ class CardHelper
     }
 
     /**
-     * Algorithme de Luhn pour valider les numéros de carte
+     * Luhn algorithm to validate card numbers
      */
     private static function luhnCheck(string $number): bool
     {
@@ -62,7 +62,7 @@ class CardHelper
     }
 
     /**
-     * Détermine le type de carte basé sur le numéro
+     * Determines card type based on number
      */
     public static function getCardType(string $cardNumber): string
     {
@@ -84,7 +84,7 @@ class CardHelper
     }
 
     /**
-     * Formate un numéro de carte avec espaces tous les 4 chiffres et limite à 16 chiffres
+     * Formats a card number with spaces every 4 digits and limits to 16 digits
      */
     public static function formatCardNumber(string $cardNumber): string
     {

@@ -19,10 +19,10 @@ final class ToggleAiController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account): RedirectResponse
     {
-        // Ensure the account belongs to the authenticated user
+        // Make sure the account belongs to the authenticated user
         if ($account->user_id !== $request->user()->id) {
             return redirect()->route('whatsapp.index')
-                ->with('error', 'Accès non autorisé à ce compte WhatsApp.');
+                ->with('error', 'Unauthorized access to this WhatsApp account.');
         }
 
         $enable = $request->boolean('enable');
@@ -34,17 +34,17 @@ final class ToggleAiController extends Controller
                     $defaultModel = \App\Models\AiModel::getDefault();
                     if (! $defaultModel) {
                         return redirect()->route('whatsapp.index')
-                            ->with('error', 'Aucun modèle IA disponible. Veuillez d\'abord configurer l\'agent IA.');
+                            ->with('error', 'No AI model available. Please configure the AI agent first.');
                     }
                     $account->ai_model_id = $defaultModel->id;
                 }
                 $account->agent_enabled = true;
                 $account->save();
 
-                $message = 'Agent IA activé avec succès !';
+                $message = 'AI agent enabled successfully!';
             } else {
                 $account->disableAiAgent();
-                $message = 'Agent IA désactivé avec succès !';
+                $message = 'AI agent disabled successfully!';
             }
 
             return redirect()->route('whatsapp.index')
@@ -52,7 +52,7 @@ final class ToggleAiController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->route('whatsapp.index')
-                ->with('error', 'Erreur lors de la modification : '.$e->getMessage());
+                ->with('error', 'Error during modification: '.$e->getMessage());
         }
     }
 }

@@ -33,7 +33,7 @@ class RouteMap {
      * Initialize Google Maps and direction services
      */
     initialize() {
-        console.log("🚀 Initializing Google Maps...");
+        // Initializing Google Maps
 
         if (this.isInitialized) return;
 
@@ -89,7 +89,7 @@ class RouteMap {
             return;
         }
 
-        console.log("🛣️ Calculating route...");
+        // Calculating route
         this._updateUI("loading");
 
         const request = {
@@ -102,7 +102,7 @@ class RouteMap {
 
         this.directionsService.route(request, (result, status) => {
             if (status === "OK") {
-                console.log("✅ Route calculated successfully");
+                // Route calculated successfully
 
                 // Display the route
                 this._displayRoute(result);

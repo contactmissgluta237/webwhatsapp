@@ -106,8 +106,11 @@ final class ConversationHistoryService
 
     private function findConversation(WhatsAppAccount $account, string $fromPhone): ?WhatsAppConversation
     {
+        // Remove WhatsApp suffix (@c.us) to match database format
+        $cleanPhone = str_replace('@c.us', '', $fromPhone);
+
         return WhatsAppConversation::where('whatsapp_account_id', $account->id)
-            ->where('contact_phone', $fromPhone)
+            ->where('contact_phone', $cleanPhone)
             ->first();
     }
 

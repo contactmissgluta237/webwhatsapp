@@ -63,22 +63,6 @@ final class AiContext extends Model
         return $this->belongsTo(WhatsAppAccount::class);
     }
 
-    public function getFullPrompt(): string
-    {
-        $prompt = "Contexte Business: {$this->business_context}\n";
-        $prompt .= "Ton de réponse: {$this->response_tone->label}\n";
-
-        if ($this->greeting_message) {
-            $prompt .= "Message d'accueil: {$this->greeting_message}\n";
-        }
-
-        if ($this->fallback_message) {
-            $prompt .= "Message de secours: {$this->fallback_message}\n";
-        }
-
-        return $prompt;
-    }
-
     public function shouldDelay(): bool
     {
         return $this->response_delay_seconds > 0;

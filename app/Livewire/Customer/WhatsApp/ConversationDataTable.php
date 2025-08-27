@@ -13,7 +13,7 @@ use Rappasoft\LaravelLivewireTables\Views\Column;
 use Rappasoft\LaravelLivewireTables\Views\Filters\DateFilter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
-final class ConversationDataTable extends BaseDataTable
+class ConversationDataTable extends BaseDataTable
 {
     protected $model = WhatsAppConversation::class;
     protected const DEFAULT_SORT_FIELD = 'last_message_at';
@@ -56,6 +56,11 @@ final class ConversationDataTable extends BaseDataTable
     }
 
     public function columns(): array
+    {
+        return $this->getBasicColumns();
+    }
+
+    protected function getBasicColumns(): array
     {
         return [
             Column::make('ID', 'id')->sortable()->deselected(),
@@ -108,6 +113,11 @@ final class ConversationDataTable extends BaseDataTable
     }
 
     public function filters(): array
+    {
+        return $this->getBasicFilters();
+    }
+
+    protected function getBasicFilters(): array
     {
         return [
             SelectFilter::make('Type', 'is_group')

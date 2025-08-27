@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Customer\WhatsApp;
 
 use App\Contracts\PromptEnhancementInterface;
+use App\Enums\AgentType;
 use App\Enums\ResponseTime;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Rules\PromptLengthRule;
+use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
@@ -40,6 +43,7 @@ final class AiConfigurationForm extends Component
     public bool $isEnhancing = false;
     public bool $hasEnhancedPrompt = false;
     public bool $isPromptValidated = false;
+    public bool $isFormValid = true;
     private bool $isProgrammaticUpdate = false;
 
     public function mount(WhatsAppAccount $account): void
@@ -47,6 +51,7 @@ final class AiConfigurationForm extends Component
         $this->account = $account;
         $this->loadCurrentConfiguration();
         $this->setDefaultModel();
+        $this->updateFormValidity();
     }
 
     #[Computed]
@@ -80,9 +85,16 @@ final class AiConfigurationForm extends Component
         })->toArray();
     }
 
+    #[Computed]
+    public function availablePromptTypes(): array
+    {
+        return AgentPromptHelper::getAllPromptTypes();
+    }
+
     public function updatedAgentEnabled(): void
     {
         $this->dispatch('ai-status-changed', enabled: $this->agent_enabled);
+        $this->updateFormValidity();
     }
 
     public function updatedAiModelId(): void
@@ -97,6 +109,8 @@ final class AiConfigurationForm extends Component
         $this->dispatch('config-changed-live', [
             'ai_model_id' => $this->ai_model_id,
         ]);
+
+        $this->updateFormValidity();
     }
 
     public function updatedAgentPrompt(): void
@@ -120,6 +134,9 @@ final class AiConfigurationForm extends Component
             $this->isPromptValidated = false;
         }
 
+        // Real-time validation using custom rule
+        $this->validatePromptInRealTime();
+
         $this->dispatch('config-changed-live', [
             'agent_prompt' => $this->agent_prompt,
         ]);
@@ -130,6 +147,8 @@ final class AiConfigurationForm extends Component
         $this->dispatch('config-changed-live', [
             'contextual_information' => $this->contextual_information,
         ]);
+
+        $this->updateFormValidity();
     }
 
     public function updatedIgnoreWords(): void
@@ -137,6 +156,8 @@ final class AiConfigurationForm extends Component
         $this->dispatch('config-changed-live', [
             'ignore_words' => $this->ignore_words,
         ]);
+
+        $this->updateFormValidity();
     }
 
     public function updatedResponseTime(): void
@@ -144,6 +165,8 @@ final class AiConfigurationForm extends Component
         $this->dispatch('config-changed-live', [
             'response_time' => $this->response_time,
         ]);
+
+        $this->updateFormValidity();
     }
 
     public function enhancePrompt(): void
@@ -223,47 +246,22 @@ final class AiConfigurationForm extends Component
         $this->isEnhancing = false;
     }
 
-    public function insertExamplePrompt()
+    public function insertPromptByType(string $agentType): void
     {
-        $this->agent_prompt = "Tu es un agent commercial naturel et efficace. Ton objectif : comprendre profondément pour proposer LA bonne solution.
+        try {
+            $type = AgentType::from($agentType);
+            $this->agent_prompt = AgentPromptHelper::getPromptByType($type);
 
-MÉTHODE EN 3 ÉTAPES
-
-1. DÉCOUVRIR (70% du temps)
-Questions clés :
-- \"Parlez-moi de votre situation actuelle...\"
-- \"Quel est votre plus gros défi ?\"
-- \"Qu'est-ce que le succès représente pour vous ?\"
-- \"Quelles sont vos contraintes ?\"
-
-2. REFORMULER
-\"Si je comprends bien, vous cherchez... C'est ça ?\"
-
-3. PROPOSER & CLOSER
-- Connecter chaque bénéfice au besoin exprimé
-- \"Qu'est-ce qui vous pose encore question ?\"
-- \"Quelles seraient les prochaines étapes pour vous ?\"
-
-RÈGLES D'OR
-
-FAIRE :
-- Écouter 80%, parler 20%
-- Être genuinement curieux
-- Raconter des histoires clients
-- Créer l'urgence par la valeur
-
-ÉVITER :
-- Présenter avant de comprendre
-- Être insistant
-- Ignorer les objections
-- Jargon trop technique
-
-PHRASES MAGIQUES
-- \"Racontez-moi en plus...\"
-- \"Qu'est-ce que ça vous coûte de ne rien faire ?\"
-- \"Qu'est-ce qui vous aiderait à décider ?\"
-
-Règle ultime : Tu résous des problèmes, tu ne \"vends\" pas !";
+            $this->dispatch('show-toast', [
+                'type' => 'success',
+                'message' => __('Prompt :type inséré avec succès !', ['type' => $type->label]),
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => __('Type d\'agent non supporté'),
+            ]);
+        }
     }
 
     public function acceptEnhancedPrompt(): void
@@ -327,7 +325,7 @@ Règle ultime : Tu résous des problèmes, tu ne \"vends\" pas !";
             'agent_name' => 'required|string|max:100',
             'agent_enabled' => 'boolean',
             'ai_model_id' => $this->agent_enabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
-            'agent_prompt' => $this->agent_enabled ? 'required|string|max:2000' : 'nullable|string|max:2000',
+            'agent_prompt' => $this->agent_enabled ? ['required', 'string', new PromptLengthRule] : ['nullable', 'string', new PromptLengthRule],
             'trigger_words' => 'nullable|string|max:500',
             'contextual_information' => 'nullable|string|max:5000',
             'ignore_words' => 'nullable|string|max:500',
@@ -411,6 +409,27 @@ Règle ultime : Tu résous des problèmes, tu ne \"vends\" pas !";
 
             $this->ai_model_id = $defaultModel->id;
         }
+    }
+
+    private function validatePromptInRealTime(): void
+    {
+        $this->resetErrorBag('agent_prompt');
+
+        if ($this->agent_prompt) {
+            $promptRule = new PromptLengthRule;
+
+            $promptRule->validate('agent_prompt', $this->agent_prompt, function (string $message) {
+                $this->addError('agent_prompt', $message);
+            });
+        }
+
+        // Update form validity based on ALL errors in the error bag
+        $this->updateFormValidity();
+    }
+
+    private function updateFormValidity(): void
+    {
+        $this->isFormValid = $this->getErrorBag()->isEmpty();
     }
 
     public function render()

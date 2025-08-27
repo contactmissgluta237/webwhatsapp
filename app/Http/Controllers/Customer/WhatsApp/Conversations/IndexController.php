@@ -20,7 +20,7 @@ final class IndexController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account): View
     {
-        // Log pour débugger
+        // Log for debugging
         Log::info('IndexController called', [
             'account_id' => $account->id,
             'user_id' => auth()->id(),

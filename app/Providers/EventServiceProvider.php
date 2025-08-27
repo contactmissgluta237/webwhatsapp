@@ -13,6 +13,7 @@ use App\Events\TicketCreatedEvent;
 use App\Events\TicketMessageSentEvent;
 use App\Events\TicketStatusChangedEvent;
 use App\Events\UserUpdatedEvent;
+use App\Events\WhatsApp\AiResponseGenerated;
 use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Events\WithdrawalRequestedEvent;
 use App\Listeners\AdminWithdrawalNotificationListener;
@@ -31,6 +32,7 @@ use App\Listeners\SendRechargeNotificationToCustomerListener;
 use App\Listeners\WhatsApp\AnalyticsListener;
 use App\Listeners\WhatsApp\BillingCounterListener;
 use App\Listeners\WhatsApp\StoreMessagesListener;
+use App\Listeners\WhatsApp\TrackAiUsageListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -82,6 +84,9 @@ class EventServiceProvider extends ServiceProvider
             StoreMessagesListener::class,
             BillingCounterListener::class,
             AnalyticsListener::class,
+        ],
+        AiResponseGenerated::class => [
+            TrackAiUsageListener::class,
         ],
     ];
 

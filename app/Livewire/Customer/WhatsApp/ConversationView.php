@@ -22,10 +22,10 @@ final class ConversationView extends Component
         $this->account = $account;
         $this->conversation = $conversation;
 
-        // Marquer la conversation comme lue
+        // Mark conversation as read
         if ($this->conversation->unread_count > 0) {
             $this->conversation->markAsRead();
-            Log::info('Conversation marquée comme lue', [
+            Log::info('Conversation marked as read', [
                 'conversation_id' => $this->conversation->id,
                 'account_id' => $this->account->id,
             ]);

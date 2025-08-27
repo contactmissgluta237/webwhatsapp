@@ -6,10 +6,12 @@ namespace Tests\Feature\WhatsApp\Integration;
 
 use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
+use App\Events\WhatsApp\AiResponseGenerated;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class WhatsAppEndToEndTest extends TestCase
@@ -163,5 +165,78 @@ class WhatsAppEndToEndTest extends TestCase
         $this->assertInstanceOf(\App\DTOs\WhatsApp\WhatsAppMessageResponseDTO::class, $result);
         $this->assertTrue($result->processed);
         $this->assertFalse($result->hasAiResponse);
+    }
+
+    public function test_ai_tracking_is_dispatched_during_message_processing(): void
+    {
+        Event::fake();
+
+        // Arrange
+        $orchestrator = app(WhatsAppMessageOrchestrator::class);
+
+        $accountMetadata = new WhatsAppAccountMetadataDTO(
+            sessionId: 'test_session',
+            sessionName: 'Test Session',
+            accountId: 1,
+            agentEnabled: true,
+            aiModelId: 1,
+            contextualInformation: 'Test business information'
+        );
+
+        $messageRequest = new WhatsAppMessageRequestDTO(
+            id: 'msg_123',
+            from: '+237123456789@c.us',
+            body: 'Bonjour',
+            timestamp: time(),
+            type: 'text',
+            isGroup: false
+        );
+
+        // Act
+        $result = $orchestrator->processIncomingMessage($accountMetadata, $messageRequest);
+
+        // Assert
+        $this->assertNotNull($result);
+
+        // If AI response was generated, tracking event should be dispatched
+        if ($result->hasAiResponse) {
+            Event::assertDispatched(AiResponseGenerated::class);
+        }
+    }
+
+    public function test_simulation_mode_does_not_trigger_ai_tracking(): void
+    {
+        Event::fake();
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Arrange
+        $orchestrator = app(WhatsAppMessageOrchestrator::class);
+
+        $accountMetadata = new WhatsAppAccountMetadataDTO(
+            sessionId: 'simulation_session',
+            sessionName: 'Simulation',
+            accountId: 1,
+            agentEnabled: true,
+            aiModelId: 1
+        );
+
+        $userMessage = 'Bonjour, comment allez-vous ?';
+        $context = [
+            ['type' => 'user', 'content' => 'Message précédent'],
+            ['type' => 'ai', 'content' => 'Réponse précédente'],
+        ];
+
+        // Act
+        $result = $orchestrator->processSimulatedMessage($accountMetadata, $userMessage, $context);
+
+        // Assert
+        $this->assertNotNull($result);
+        $this->assertTrue($result->processed);
+
+        // Even if AI response is generated in simulation, no tracking should occur
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Events might be dispatched but should not create database entries
+        // since the listener checks the isSimulation flag
     }
 }

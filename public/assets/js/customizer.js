@@ -19,7 +19,7 @@ $(document).on("click",".color-hint > li", function () {
   let colorClassName = $(this).attr('class');
   let colorOption = getLocalStorageItem("color-option","default");
   $(".app-wrapper").removeClass(colorOption).addClass(colorClassName)
-  console.log(colorClassName);
+  // Color class applied
   let primaryColorValues = $(`.${colorClassName}`).css('--primary').split(',');
   if (primaryColorValues.length === 3) {
     let primaryColorHex = rgbToHex(parseInt(primaryColorValues[0]), parseInt(primaryColorValues[1]), parseInt(primaryColorValues[2]));

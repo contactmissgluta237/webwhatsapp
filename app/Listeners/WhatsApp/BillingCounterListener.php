@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Log;
 final class BillingCounterListener extends BaseListener
 {
     /**
-     * Extrait les identifiants uniques pour MessageProcessedEvent
+     * Extracts unique identifiers for MessageProcessedEvent
      */
     protected function getEventIdentifiers($event): array
     {
@@ -43,10 +43,13 @@ final class BillingCounterListener extends BaseListener
         $subscription = $user->activeSubscription;
 
         if (! $subscription) {
-            Log::warning('[BillingCounterListener] No active subscription', [
+            Log::warning('[BillingCounterListener] No active subscription - attempting direct wallet debit', [
                 'user_id' => $user->id,
                 'session_id' => $event->getSessionId(),
             ]);
+
+            // No subscription: debit wallet directly using existing billing helper
+            $this->debitWalletDirectly($user, $event);
 
             return;
         }
@@ -126,6 +129,66 @@ final class BillingCounterListener extends BaseListener
 
         } catch (\Exception $e) {
             Log::error('[BillingCounterListener] Billing processing failed', [
+                'user_id' => $user->id,
+                'session_id' => $event->getSessionId(),
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Debit wallet directly when no subscription exists
+     * Uses the same MessageBillingHelper functions as the overage system
+     */
+    private function debitWalletDirectly($user, $event): void
+    {
+        try {
+            DB::transaction(function () use ($user, $event) {
+                // Use the same billing helper as the overage system
+                $billingAmount = MessageBillingHelper::getAmountToBillFromResponse($event->aiResponse);
+
+                Log::info('[BillingCounterListener] Direct wallet debit calculation', [
+                    'user_id' => $user->id,
+                    'billing_amount' => $billingAmount,
+                    'session_id' => $event->getSessionId(),
+                ]);
+
+                if (! $user->wallet) {
+                    Log::error('[BillingCounterListener] No wallet found for direct debit', [
+                        'user_id' => $user->id,
+                        'required_amount' => $billingAmount,
+                    ]);
+
+                    return;
+                }
+
+                if ($user->wallet->balance < $billingAmount) {
+                    Log::error('[BillingCounterListener] Insufficient wallet balance for direct debit', [
+                        'user_id' => $user->id,
+                        'required_amount' => $billingAmount,
+                        'wallet_balance' => $user->wallet->balance,
+                    ]);
+
+                    return;
+                }
+
+                // Debit wallet directly (same logic as WhatsAppAccountUsage::debitWalletForOverage)
+                $newBalance = max(0, $user->wallet->balance - $billingAmount);
+                $user->wallet->update(['balance' => $newBalance]);
+
+                // Send notification (same as overage system)
+                $user->notify(new WalletDebitedNotification($billingAmount, $newBalance));
+
+                Log::info('[BillingCounterListener] Direct wallet debit successful', [
+                    'user_id' => $user->id,
+                    'amount_debited' => $billingAmount,
+                    'new_balance' => $newBalance,
+                    'session_id' => $event->getSessionId(),
+                ]);
+            });
+
+        } catch (\Exception $e) {
+            Log::error('[BillingCounterListener] Direct wallet debit failed', [
                 'user_id' => $user->id,
                 'session_id' => $event->getSessionId(),
                 'error' => $e->getMessage(),

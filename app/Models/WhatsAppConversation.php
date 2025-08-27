@@ -90,6 +90,11 @@ final class WhatsAppConversation extends Model
         return $this->hasMany(WhatsAppMessage::class)->latest();
     }
 
+    public function aiUsageLogs(): HasMany
+    {
+        return $this->hasMany(AiUsageLog::class, 'whatsapp_conversation_id');
+    }
+
     // ================================================================================
     // PUBLIC METHODS
     // ================================================================================

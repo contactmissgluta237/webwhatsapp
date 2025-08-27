@@ -11,6 +11,7 @@ use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppAIStructuredResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
+use App\Events\WhatsApp\AiResponseGenerated;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
@@ -30,7 +31,8 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
     public function processMessage(
         WhatsAppAccount $account,
         WhatsAppMessageRequestDTO $messageRequest,
-        string $conversationHistory
+        string $conversationHistory,
+        bool $isSimulation = false
     ): WhatsAppMessageResponseDTO {
         Log::info('[ORCHESTRATOR] Processing message', [
             'session_id' => $account->session_id,
@@ -38,7 +40,10 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
             'message_id' => $messageRequest->id,
             'history_length' => strlen($conversationHistory),
             'ai_model_id' => $account->ai_model_id,
+            'is_simulation' => $isSimulation,
         ]);
+
+        $startTime = microtime(true);
 
         try {
             $aiResponse = $this->generateAIResponse($account, $conversationHistory, $messageRequest->body);
@@ -49,6 +54,19 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
                 ]);
 
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
+            }
+
+            // Track AI usage if not simulation
+            if (! $isSimulation) {
+                $processingTime = (microtime(true) - $startTime) * 1000;
+
+                event(new AiResponseGenerated(
+                    $account,
+                    $messageRequest,
+                    $aiResponse,
+                    $messageRequest->body,
+                    $processingTime
+                ));
             }
 
             $structuredResponse = $this->aiResponseParser->parseStructuredResponse($aiResponse);

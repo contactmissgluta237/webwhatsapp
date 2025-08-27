@@ -21,7 +21,7 @@ final class SimpleConversationsList extends Component
         $this->accountId = $accountId;
         $this->account = WhatsAppAccount::findOrFail($accountId);
 
-        // Vérifier que l'utilisateur a accès à ce compte
+        // Check that the user has access to this account
         if ($this->account->user_id !== auth()->id()) {
             abort(403);
         }

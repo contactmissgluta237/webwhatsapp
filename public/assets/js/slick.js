@@ -103,9 +103,9 @@ $('.js-add-slide').on('click', function () {
 });
 
 $('.js-remove-slide').on('click', function () {
-  console.log("tets");
+  // Slide test
   $('.add-remove').slick('slickRemove', slideIndex - 1);
-  console.log(slideIndex)
+  // Slide index updated
   if (!slideIndex == 0) {
     slideIndex--;
   }

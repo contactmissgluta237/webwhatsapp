@@ -13,6 +13,6 @@ interface WhatsAppMessageOrchestratorInterface
     public function processMessage(
         WhatsAppAccount $account,
         WhatsAppMessageRequestDTO $messageRequest,
-        string $conversationHistory, // Format: "user: message\nsystem: réponse\nuser: message..."
+        string $conversationHistory, // Format: "user: message\nsystem: response\nuser: message..."
     ): WhatsAppMessageResponseDTO;
 }

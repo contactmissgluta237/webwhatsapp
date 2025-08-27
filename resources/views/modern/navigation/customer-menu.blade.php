@@ -25,11 +25,19 @@
 </li>
 
 {{-- 3. Packages --}}
-<li class="nav-item {{ request()->routeIs('customer.packages.*') ? 'active' : '' }}">
-    <a href="{{ route('customer.packages.index') }}">
+<li class="nav-item has-sub {{ request()->is('customer/packages*') || request()->is('customer/subscriptions*') ? 'open' : '' }}">
+    <a href="#">
         <i class="la la-gift"></i>
         <span class="menu-title" data-i18n="Packages">{{ __('Packages') }}</span>
     </a>
+    <ul class="menu-content">
+        <li class="{{ request()->routeIs('customer.packages.*') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.packages.index') }}">{{ __('Packages') }}</a>
+        </li>
+        <li class="{{ request()->routeIs('customer.subscriptions.*') ? 'active' : '' }}">
+            <a class="menu-item" href="{{ route('customer.subscriptions.index') }}">{{ __('Mes Souscriptions') }}</a>
+        </li>
+    </ul>
 </li>
 
 {{-- 4. Produits --}}

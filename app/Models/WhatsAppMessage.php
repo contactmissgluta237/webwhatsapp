@@ -11,6 +11,7 @@ use App\Enums\MessageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -78,6 +79,11 @@ final class WhatsAppMessage extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(WhatsAppConversation::class, 'whatsapp_conversation_id');
+    }
+
+    public function aiUsageLogs(): HasMany
+    {
+        return $this->hasMany(AiUsageLog::class, 'whatsapp_message_id');
     }
 
     // ================================================================================

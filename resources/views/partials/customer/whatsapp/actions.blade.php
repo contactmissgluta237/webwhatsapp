@@ -20,7 +20,12 @@
         <div class="dropdown-divider"></div>
 
         {{-- Toggle Agent IA --}}
-        @if ($account->hasAiAgent())
+        @php
+            // Get fresh data to bypass cache issues
+            $freshAccount = \App\Models\WhatsAppAccount::find($account->id);
+            $isAgentActive = $freshAccount->agent_enabled && $freshAccount->ai_model_id;
+        @endphp
+        @if ($isAgentActive)
             <form method="POST" action="{{ route('whatsapp.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
                 @csrf
                 <input type="hidden" name="enable" value="0">

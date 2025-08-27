@@ -42,7 +42,7 @@ function search(evt) {
 }
 
 function notify_copy_2() {
-    console.log("this")
+    // Icon search performed
 }
 function copyTextToClipboard(text) {
     var textarea = document.createElement('textarea');

@@ -157,7 +157,7 @@ function renameFolder() {
   document.querySelectorAll(".edit-folder-list").forEach((element) => {
     element.addEventListener("click", (event) => {
       const card = event.target.closest(".card-body");
-      console.log(card);
+      // Card element processed
       $("#renameModal").modal("show");
       document.querySelector("#titlename").value = card.querySelector("p.text-center").textContent;
 
@@ -266,7 +266,7 @@ function renameTableEntry() {
     element.addEventListener("click", (event) => {
       const row = event.target.closest("tr");
       const nameCell = row.querySelector(".name"); // Fixed variable naming
-      console.log(nameCell); // Check if this logs correctly
+      // Name cell processed
       $("#renameModal").modal("show");
       document.querySelector("#titlename").value = nameCell.querySelector(".table-text").textContent; // Ensure this is correct
 

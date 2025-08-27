@@ -17,23 +17,32 @@ final class AiConfigurationService
     {
         $defaultModels = [];
 
+        // Only seed the default provider (DeepSeek)
+        $defaultProvider = Config::get('ai.default_provider');
+        $enabledProviders = [$defaultProvider]; // Only enable the default provider
+
+        // Uncomment other providers if needed in the future
+        // $enabledProviders = ['deepseek', 'openai', 'anthropic', 'ollama'];
+
         foreach (Config::get('ai.providers', []) as $provider => $config) {
-            $defaultModels[] = [
-                'name' => $config['name'],
-                'provider' => $provider,
-                'model_identifier' => $config['model_identifier'],
-                'description' => $config['description'],
-                'endpoint_url' => $config['endpoint_url'],
-                'requires_api_key' => $config['requires_api_key'],
-                'api_key' => $config['api_key'],
-                'model_config' => json_encode($config['default_config']),
-                'is_active' => true, // Activer tous les modèles par défaut
-                'is_default' => $provider === Config::get('ai.default_provider'), // Garder un seul défaut
-                'cost_per_1k_tokens' => $config['cost_per_1k_tokens'],
-                'max_context_length' => $config['max_context_length'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            if (in_array($provider, $enabledProviders)) {
+                $defaultModels[] = [
+                    'name' => $config['name'],
+                    'provider' => $provider,
+                    'model_identifier' => $config['model_identifier'],
+                    'description' => $config['description'],
+                    'endpoint_url' => $config['endpoint_url'],
+                    'requires_api_key' => $config['requires_api_key'],
+                    'api_key' => $config['api_key'],
+                    'model_config' => json_encode($config['default_config']),
+                    'is_active' => true,
+                    'is_default' => $provider === $defaultProvider,
+                    'cost_per_1k_tokens' => $config['cost_per_1k_tokens'],
+                    'max_context_length' => $config['max_context_length'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
         }
 
         return $defaultModels;

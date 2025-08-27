@@ -66,4 +66,30 @@ Route::middleware(['auth', 'role:admin'])
             Route::get('/{ticket}', App\Http\Controllers\Admin\Ticket\ShowController::class)->name('show');
             Route::get('/{ticket}/reply', App\Http\Controllers\Admin\Ticket\ReplyController::class)->name('reply');
         });
+
+        // WhatsApp management routes
+        Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+            // Dashboard
+            Route::get('/dashboard', [App\Http\Controllers\Admin\WhatsApp\WhatsAppDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/dashboard/statistics', [App\Http\Controllers\Admin\WhatsApp\WhatsAppDashboardController::class, 'statistics'])->name('dashboard.statistics');
+
+            // Accounts management
+            Route::prefix('accounts')->name('accounts.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\WhatsApp\WhatsAppAccountController::class, 'index'])->name('index');
+                Route::get('/{account}', [App\Http\Controllers\Admin\WhatsApp\WhatsAppAccountController::class, 'show'])->name('show');
+                Route::get('/{account}/statistics', [App\Http\Controllers\Admin\WhatsApp\WhatsAppAccountController::class, 'statistics'])->name('statistics');
+                Route::post('/{account}/toggle-ai', [App\Http\Controllers\Admin\WhatsApp\WhatsAppAccountController::class, 'toggleAi'])->name('toggle-ai');
+                Route::delete('/{account}', [App\Http\Controllers\Admin\WhatsApp\WhatsAppAccountController::class, 'destroy'])->name('destroy');
+            });
+
+            // Conversations management
+            Route::prefix('conversations')->name('conversations.')->group(function () {
+                Route::get('/', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'index'])->name('index');
+                Route::get('/{conversation}', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'show'])->name('show');
+                Route::get('/{conversation}/statistics', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'statistics'])->name('statistics');
+                Route::get('/{conversation}/export', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'export'])->name('export');
+                Route::post('/{conversation}/toggle-ai', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'toggleAi'])->name('toggle-ai');
+                Route::delete('/{conversation}', [App\Http\Controllers\Admin\WhatsApp\WhatsAppConversationController::class, 'destroy'])->name('destroy');
+            });
+        });
     });

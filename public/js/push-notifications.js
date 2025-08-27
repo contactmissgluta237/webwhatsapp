@@ -11,21 +11,12 @@ class PushNotificationManager {
 
     async init() {
         try {
-            console.log('🔍 Initialisation du gestionnaire de notifications push...');
-            console.log('📱 User Agent:', navigator.userAgent);
-            console.log('🌐 HTTPS:', location.protocol === 'https:');
-            console.log('🔧 Service Worker support:', 'serviceWorker' in navigator);
-            console.log('🔔 Notification support:', 'Notification' in window);
-            console.log('📲 PushManager support:', 'PushManager' in window);
-
             if (!this.isSupported()) {
                 const reason = this.getUnsupportedReason();
-                console.warn('❌ Push notifications non supportées:', reason);
                 this.showUnsupportedMessage(reason);
                 return;
             }
 
-            console.log('✅ Support complet détecté');
             await this.registerServiceWorker();
             await this.checkExistingSubscription();
             
@@ -41,10 +32,8 @@ class PushNotificationManager {
                     suggestion: this.isSupported() ? null : 'Utilisez un navigateur récent avec HTTPS'
                 })
             };
-            
-            console.log('✅ Push notification manager initialisé avec succès');
         } catch (error) {
-            console.error('❌ Erreur lors de l\'initialisation des notifications push:', error);
+            console.error('Push notification initialization failed:', error);
         }
     }
 
@@ -81,7 +70,7 @@ class PushNotificationManager {
             message = '📱 Assurez-vous d\'utiliser un navigateur récent et une connexion HTTPS.';
         }
         
-        console.warn(message);
+        // Notification warning silenced
     }
 
     checkSupport() {
@@ -93,11 +82,11 @@ class PushNotificationManager {
     async registerServiceWorker() {
         try {
             this.registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker enregistré:', this.registration);
+            // Service Worker registered successfully
             
             // Attendre que le SW soit prêt
             await navigator.serviceWorker.ready;
-            console.log('Service Worker prêt');
+            // Service Worker ready
             
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement du Service Worker:', error);
@@ -121,7 +110,7 @@ class PushNotificationManager {
         const permission = await Notification.requestPermission();
         
         if (permission === 'granted') {
-            console.log('Permission accordée pour les notifications');
+            // Notification permission granted
             return true;
         } else {
             throw new Error('Permission refusée pour les notifications');
@@ -143,7 +132,7 @@ class PushNotificationManager {
                 applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
             });
 
-            console.log('Abonnement push créé:', this.subscription);
+            // Push subscription created
 
             // Envoyer l'abonnement au serveur
             await this.sendSubscriptionToServer(this.subscription);
@@ -182,10 +171,10 @@ class PushNotificationManager {
         
         // Si la réponse HTTP est OK, considérer comme un succès même si data.success est false
         if (response.ok) {
-            console.log('Abonnement enregistré avec succès:', data.message);
+            // Subscription registered successfully
         }
 
-        console.log('Abonnement envoyé au serveur avec succès');
+        // Subscription sent to server successfully
         return data;
     }
 
@@ -208,7 +197,7 @@ class PushNotificationManager {
                 });
 
                 this.subscription = null;
-                console.log('Désabonnement réussi');
+                // Unsubscription successful
             }
         } catch (error) {
             console.error('Erreur lors du désabonnement:', error);
@@ -222,7 +211,7 @@ class PushNotificationManager {
         try {
             this.subscription = await this.registration.pushManager.getSubscription();
             if (this.subscription) {
-                console.log('Abonnement existant trouvé:', this.subscription.endpoint);
+                // Existing subscription found
             }
         } catch (error) {
             console.error('Erreur lors de la vérification de l\'abonnement existant:', error);
@@ -253,7 +242,7 @@ class PushNotificationManager {
 
             const data = await response.json();
             if (data.success) {
-                console.log('Heartbeat envoyé:', data.timestamp);
+                // Heartbeat sent
             }
         } catch (error) {
             console.error('Erreur lors de l\'envoi du heartbeat:', error);
@@ -277,13 +266,13 @@ class PushNotificationManager {
 
     setupConnectionListeners() {
         window.addEventListener('online', () => {
-            console.log('Connexion rétablie');
+            // Connection restored
             this.isOnline = true;
             this.sendHeartbeat();
         });
 
         window.addEventListener('offline', () => {
-            console.log('Connexion perdue');
+            // Connection lost
             this.isOnline = false;
         });
 
@@ -291,10 +280,10 @@ class PushNotificationManager {
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 // Page cachée, réduire l'activité
-                console.log('Page cachée');
+                // Page hidden
             } else {
                 // Page visible, reprendre l'activité
-                console.log('Page visible');
+                // Page visible
                 if (this.isOnline) {
                     this.sendHeartbeat();
                 }

@@ -8,6 +8,7 @@ use App\Contracts\WhatsApp\MessageBuildServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
+use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -47,7 +48,6 @@ final class MessageBuildService implements MessageBuildServiceInterface
     {
         $components = [
             $this->getBasePrompt($account),
-            $this->getConversationGuidelines(),
             $this->getAntiHallucinationRules(),
             $this->getConversationHistory($conversationHistory),
             $this->getProductsContext($account),
@@ -72,13 +72,7 @@ final class MessageBuildService implements MessageBuildServiceInterface
 
     private function getAntiHallucinationRules(): string
     {
-        return "\n\n⚠️ RÈGLES CRITIQUES - INTERDICTION ABSOLUE D'INVENTER :"
-            ."\n- ❌ JAMAIS inventer d'informations que tu ne connais pas avec certitude"
-            ."\n- ❌ JAMAIS donner de données factuelles non vérifiées (dates, prix, coordonnées, etc.)"
-            ."\n- ❌ JAMAIS faire semblant de connaître des détails spécifiques si tu n'en es pas sûr"
-            ."\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : dire 'Je reviens vers vous dans un instant avec cette information'"
-            ."\n- ✅ Être honnête sur tes limites plutôt que d'inventer"
-            ."\n- ✅ Si tu doutes d'une information, demander plutôt confirmation ou dire que tu vérifies";
+        return AgentPromptHelper::getAntiHallucinationRules();
     }
 
     private function getConversationHistory(string $conversationHistory): string
@@ -146,19 +140,11 @@ final class MessageBuildService implements MessageBuildServiceInterface
 
     private function getProductInstructions(): string
     {
-        return "\n🎯 INSTRUCTIONS POUR LES PRODUITS :"
-            ."\n- Si client demande produits/catalogue/prix → action: \"show_products\" + IDs pertinents"
-            ."\n- Maximum ".self::MAX_PRODUCTS_PER_REQUEST.' produits par envoi'
-            ."\n- IMPORTANT: Utiliser UNIQUEMENT les IDs listés ci-dessus";
+        return AgentPromptHelper::getProductInstructions();
     }
 
     private function getJsonResponseInstructions(): string
     {
-        return "\n\n⚡ FORMAT DE RÉPONSE OBLIGATOIRE :"
-            ."\n- Tu DOIS TOUJOURS répondre en JSON avec cette structure exacte :"
-            ."\n  {\"message\":\"Votre message texte\", \"action\":\"text|show_products|show_catalog\", \"products\":[1,2,3]}"
-            ."\n- Si question générale → action: \"text\" + products: []"
-            ."\n- Si client demande produits → action: \"show_products\" + IDs des produits"
-            ."\n- INTERDICTION: Pas de texte en dehors du JSON, seulement du JSON valide";
+        return AgentPromptHelper::getJsonResponseInstructions();
     }
 }

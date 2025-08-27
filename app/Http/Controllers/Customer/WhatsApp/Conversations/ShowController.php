@@ -20,7 +20,7 @@ final class ShowController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account, WhatsAppConversation $conversation): View
     {
-        // Charger les messages de la conversation
+        // Load conversation messages
         $conversation->load(['messages' => fn ($query) => $query->orderBy('created_at', 'asc')]);
 
         return view('customer.whatsapp.conversations.show', compact('account', 'conversation'));

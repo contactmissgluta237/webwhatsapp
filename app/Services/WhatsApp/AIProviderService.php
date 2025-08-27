@@ -64,12 +64,12 @@ final class AIProviderService implements AIProviderServiceInterface
             confidence: $response->confidence ?? null,
             tokensUsed: $response->tokens_used ?? null,
             cost: $response->cost ?? null,
-            metadata: [
+            metadata: array_merge([
                 'provider' => $model->provider,
                 'model_id' => $model->id,
                 'account_id' => $aiRequest->account->id,
                 'timestamp' => now()->toISOString(),
-            ]
+            ], $response->metadata ?? [])
         );
 
         Log::info('[AI_PROVIDER] AI response generated successfully', [

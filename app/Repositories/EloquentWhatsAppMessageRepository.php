@@ -270,9 +270,9 @@ final class EloquentWhatsAppMessageRepository implements WhatsAppMessageReposito
             'chat', 'text' => MessageType::TEXT(),
             'image' => MessageType::IMAGE(),
             'audio' => MessageType::AUDIO(),
-            'video' => MessageType::AUDIO(), // Pas de VIDEO dans l'enum
+            'video' => MessageType::AUDIO(), // No VIDEO in enum
             'document' => MessageType::DOCUMENT(),
-            'location' => MessageType::TEXT(), // Pas de LOCATION dans l'enum
+            'location' => MessageType::TEXT(), // No LOCATION in enum
             default => MessageType::TEXT(),
         };
     }

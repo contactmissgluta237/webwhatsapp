@@ -8,6 +8,7 @@ use App\Contracts\PromptEnhancementInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Support\Facades\Log;
 
 class PromptEnhancementService implements PromptEnhancementInterface
@@ -16,7 +17,7 @@ class PromptEnhancementService implements PromptEnhancementInterface
 
 Améliore le prompt fourni en respectant ces règles :
 - Conserve le sens et l'intention originale
-- Améliore la clarité et la structure
+- Améliore la clarté et la structure
 - Adapte le ton pour WhatsApp (naturel et direct)
 - Limite à 200 mots maximum
 - Assure-toi que l'agent se comporte comme un humain (jamais mentionner qu'il est une IA)
@@ -43,7 +44,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'original_length' => strlen($originalPrompt),
         ]);
 
-        $userMessage = "Voici le prompt à améliorer pour un agent WhatsApp :\n\n".$originalPrompt;
+        $userMessage = AgentPromptHelper::getImprovePrompt($originalPrompt);
 
         $request = new AiRequestDTO(
             systemPrompt: self::ENHANCEMENT_SYSTEM_PROMPT,
@@ -230,13 +231,13 @@ RÈGLES DE RÉPONSE ABSOLUES :
         ]);
 
         $beforeItalic = $cleaned;
-        $cleaned = preg_replace('/\*([^*]*)\*/', '$1', $cleaned);     // *texte* -> texte
+        $cleaned = preg_replace('/\\*([^*]*)\\*/', '$1', $cleaned);     // *texte* -> texte
         Log::info('🧹 Suppression *texte*', [
             'stars_removed' => substr_count($beforeItalic, '*') - substr_count($cleaned, '*'),
         ]);
 
         $beforeAllStars = $cleaned;
-        $cleaned = preg_replace('/\*+/', '', $cleaned);              // Supprimer toutes les étoiles restantes
+        $cleaned = preg_replace('/\\*+/', '', $cleaned);              // Supprimer toutes les étoiles restantes
         Log::info('🧹 Suppression étoiles restantes', [
             'all_stars_removed' => substr_count($beforeAllStars, '*'),
         ]);
@@ -266,9 +267,9 @@ RÈGLES DE RÉPONSE ABSOLUES :
         // Étape 4: Supprimer les sections structurées
         Log::info('🧹 ÉTAPE 4: Suppression des sections structurées');
         $beforeSections = $cleaned;
-        $cleaned = preg_replace('/\*\*[^:]+:\*\*\s*/', '', $cleaned);
+        $cleaned = preg_replace('/\\*\\*[^:]+:\\*\\*\\s*/', '', $cleaned);
         // Regex plus spécifique pour les vraies sections de structure (lignes entières qui commencent par des mots clés)
-        $cleaned = preg_replace('/^(Rôle|Comportement|Gestion|Interdits|Exemple|Note|Objectifs|Tonalité)\s*:\s*.*$/m', '', $cleaned);
+        $cleaned = preg_replace('/^(Rôle|Comportement|Gestion|Interdits|Exemple|Note|Objectifs|Tonalité)\\s*:\\s*.*$/m', '', $cleaned);
 
         if ($beforeSections !== $cleaned) {
             Log::info('🧹 Sections supprimées', [
@@ -286,7 +287,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         // Étape 5: Nettoyer les listes avec tirets/puces
         Log::info('🧹 ÉTAPE 5: Suppression des puces');
         $beforeBullets = $cleaned;
-        $cleaned = preg_replace('/^[\s]*[-•]\s*/m', '', $cleaned);
+        $cleaned = preg_replace('/^[\\s]*[-•]\\s*/m', '', $cleaned);
 
         if ($beforeBullets !== $cleaned) {
             Log::info('🧹 Puces supprimées', [
@@ -303,9 +304,9 @@ RÈGLES DE RÉPONSE ABSOLUES :
         // Étape 6: Nettoyer les espaces multiples et retours à la ligne excessifs
         Log::info('🧹 ÉTAPE 6: Nettoyage des espaces');
         $beforeSpaces = $cleaned;
-        $cleaned = preg_replace('/\n{3,}/', "\n\n", $cleaned);
-        $cleaned = preg_replace('/[ \t]+/', ' ', $cleaned);
-        $cleaned = preg_replace('/\s*\n\s*/', "\n", $cleaned);
+        $cleaned = preg_replace('/\\n{3,}/', '\\n\\n', $cleaned);
+        $cleaned = preg_replace('/[ \\t]+/', ' ', $cleaned);
+        $cleaned = preg_replace('/\\s*\\n\\s*/', '\\n', $cleaned);
 
         Log::info('🧹 APRÈS ÉTAPE 6 (espaces)', [
             'content' => $cleaned,
@@ -316,8 +317,8 @@ RÈGLES DE RÉPONSE ABSOLUES :
         Log::info('🧹 ÉTAPE 7: Trim final');
         $beforeTrim = $cleaned;
         $cleaned = trim($cleaned);
-        $cleaned = preg_replace('/^\s*\n+/', '', $cleaned);
-        $cleaned = preg_replace('/\n+\s*$/', '', $cleaned);
+        $cleaned = preg_replace('/^\\s*\\n+/', '', $cleaned);
+        $cleaned = preg_replace('/\\n+\\s*$/', '', $cleaned);
 
         Log::info('🧹 RÉSULTAT FINAL', [
             'final_content' => $cleaned,

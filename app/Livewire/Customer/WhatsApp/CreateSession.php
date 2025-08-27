@@ -38,14 +38,14 @@ final class CreateSession extends Component
         Log::debug('CreateSession: generateQRCode START.');
 
         if (empty($this->sessionName)) {
-            $this->statusMessage = 'Aucun nom de session fourni.';
+            $this->statusMessage = 'No session name provided.';
             $this->dispatch('stop-generating');
 
             return;
         }
 
         try {
-            $this->statusMessage = 'Initialisation WhatsApp en cours... Cela peut prendre jusqu\'à 2 minutes.';
+            $this->statusMessage = 'WhatsApp initialization in progress... This may take up to 2 minutes.';
             $this->showQrSection = true;
 
             $qrService = app(WhatsAppQRService::class);
@@ -54,7 +54,7 @@ final class CreateSession extends Component
             if ($result['success']) {
                 $this->qrCode = $result['qr_code'];
                 $this->tempSessionId = $result['session_id'];
-                $this->statusMessage = 'QR Code généré avec succès ! Scannez-le rapidement avec WhatsApp.';
+                $this->statusMessage = 'QR Code generated successfully! Scan it quickly with WhatsApp.';
 
                 Log::info('QR Code generated', [
                     'user_id' => Auth::id(),
@@ -64,11 +64,11 @@ final class CreateSession extends Component
 
                 $this->dispatch('scroll-to-qr', ['targetId' => 'qr-code-section']);
             } else {
-                $this->statusMessage = $result['message'] ?? 'Erreur lors de la génération du QR code';
+                $this->statusMessage = $result['message'] ?? 'Error generating QR code';
                 $this->showQrSection = false;
             }
         } catch (\Exception $e) {
-            $this->statusMessage = 'Erreur: '.$e->getMessage().' (Vérifiez que le bridge Node.js est démarré)';
+            $this->statusMessage = 'Erreur: '.$e->getMessage().' (Check that the Node.js bridge is started)';
             $this->showQrSection = false;
             Log::error('QR generation error', [
                 'user_id' => Auth::id(),
@@ -84,14 +84,14 @@ final class CreateSession extends Component
     public function confirmQRScanned(): void
     {
         if (! $this->tempSessionId) {
-            $this->statusMessage = 'Erreur: Aucune session temporaire trouvée.';
+            $this->statusMessage = 'Error: No temporary session found.';
 
             return;
         }
 
         $this->isWaitingConnection = true;
         $this->connectionAttempts = 0;
-        $this->statusMessage = 'Vérification de la connexion en cours... Patientez quelques secondes.';
+        $this->statusMessage = 'Connection verification in progress... Please wait a few seconds.';
 
         Log::info('Starting connection verification', [
             'session_id' => $this->tempSessionId,
@@ -133,7 +133,7 @@ final class CreateSession extends Component
             }
 
             $remainingTime = (int) ((($maxAttempts - $this->connectionAttempts) * 3) / 60);
-            $this->statusMessage = "Connexion en cours... (Tentative {$this->connectionAttempts}/{$maxAttempts}) - Temps restant: ~{$remainingTime}min";
+            $this->statusMessage = "Connection in progress... (Attempt {$this->connectionAttempts}/{$maxAttempts}) - Remaining time: ~{$remainingTime}min";
 
             $this->dispatch('check-connection-later');
 
@@ -147,7 +147,7 @@ final class CreateSession extends Component
             if ($this->connectionAttempts >= $maxAttempts) {
                 $this->handleConnectionTimeout();
             } else {
-                $this->statusMessage = "Vérification de connexion... (Erreur temporaire, tentative {$this->connectionAttempts}/{$maxAttempts})";
+                $this->statusMessage = "Connection verification... (Temporary error, attempt {$this->connectionAttempts}/{$maxAttempts})";
                 $this->dispatch('check-connection-later');
             }
         }
@@ -156,6 +156,9 @@ final class CreateSession extends Component
     private function createConnectedAccount(WhatsAppSessionStatusDTO $sessionStatus): void
     {
         try {
+            // Get default AI model
+            $defaultModel = \App\Models\AiModel::getDefault();
+
             $account = WhatsAppAccount::create([
                 'user_id' => Auth::id(),
                 'session_name' => $this->sessionName,
@@ -163,10 +166,12 @@ final class CreateSession extends Component
                 'status' => WhatsAppStatus::CONNECTED(),
                 'phone_number' => $sessionStatus->phoneNumber,
                 'last_seen_at' => $sessionStatus->lastActivity ?? now(),
+                'ai_model_id' => $defaultModel?->id,
+                'agent_enabled' => true, // Auto-enable AI agent with default model
             ]);
 
             $this->isWaitingConnection = false;
-            session()->flash('success', 'Agent WhatsApp créé et connecté avec succès !');
+            session()->flash('success', 'WhatsApp Agent created and connected successfully!');
 
             Log::info('WhatsApp account created successfully', [
                 'user_id' => Auth::id(),
@@ -180,7 +185,7 @@ final class CreateSession extends Component
             $this->redirect(route('whatsapp.index'), navigate: true);
 
         } catch (\Exception $e) {
-            $this->statusMessage = 'Erreur lors de la création du compte: '.$e->getMessage();
+            $this->statusMessage = 'Error creating account: '.$e->getMessage();
             $this->isWaitingConnection = false;
 
             Log::error('Account creation failed', [
@@ -195,7 +200,7 @@ final class CreateSession extends Component
     private function handleConnectionTimeout(): void
     {
         $this->isWaitingConnection = false;
-        $this->statusMessage = 'La connexion n\'a pas pu être établie dans les temps. Veuillez générer un nouveau QR code.';
+        $this->statusMessage = 'Connection could not be established in time. Please generate a new QR code.';
 
         Log::warning('Connection timeout reached', [
             'session_id' => $this->tempSessionId,
@@ -203,7 +208,7 @@ final class CreateSession extends Component
             'user_id' => Auth::id(),
         ]);
 
-        // Remettre le bouton "Générer un nouveau QR Code" visible
+        // Make the "Generate new QR Code" button visible again
         $this->qrCode = null;
         $this->tempSessionId = null;
         $this->showQrSection = false;
@@ -213,7 +218,7 @@ final class CreateSession extends Component
     {
         $this->isWaitingConnection = false;
         $this->connectionAttempts = 0;
-        $this->statusMessage = 'Attente annulée. Vous pouvez générer un nouveau QR code.';
+        $this->statusMessage = 'Waiting cancelled. You can generate a new QR code.';
 
         Log::info('Connection waiting cancelled by user', [
             'session_id' => $this->tempSessionId,
@@ -221,7 +226,7 @@ final class CreateSession extends Component
             'attempts_made' => $this->connectionAttempts,
         ]);
 
-        // Reset pour permettre une nouvelle génération
+        // Reset to allow new generation
         $this->qrCode = null;
         $this->tempSessionId = null;
         $this->showQrSection = false;

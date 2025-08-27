@@ -7,21 +7,21 @@ namespace App\Listeners;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Classe de base pour tous les listeners avec protection anti-multilistening
+ * Base class for all listeners with anti-multilistening protection
  *
- * Cette classe résout le problème de duplication des événements où le même
- * listener peut être appelé plusieurs fois pour le même événement.
+ * This class solves the problem of event duplication where the same
+ * listener can be called multiple times for the same event.
  */
 abstract class BaseListener
 {
     private static array $processedEvents = [];
 
     /**
-     * Méthode template qui gère la protection anti-multilistening
+     * Template method that handles anti-multilistening protection
      */
     public function handle($event): void
     {
-        // Créer un identifiant unique pour l'événement
+        // Create a unique identifier for the event
         $eventId = $this->generateEventId($event);
 
         if (in_array($eventId, self::$processedEvents, true)) {
@@ -35,19 +35,19 @@ abstract class BaseListener
 
         self::$processedEvents[] = $eventId;
 
-        // Appeler la méthode handleEvent définie par les classes enfants
+        // Call the handleEvent method defined by child classes
         $this->handleEvent($event);
     }
 
     /**
-     * Génère un ID unique pour l'événement basé sur ses propriétés
+     * Generates a unique ID for the event based on its properties
      *
-     * Les classes enfants peuvent override cette méthode pour personnaliser
-     * la génération d'ID selon le type d'événement qu'elles traitent
+     * Child classes can override this method to customize
+     * the ID generation according to the type of event they handle
      */
     protected function generateEventId($event): string
     {
-        // ID générique basé sur la classe de l'événement et timestamp
+        // Generic ID based on event class and timestamp
         return md5(
             get_class($event).
             get_class($this).
@@ -56,22 +56,22 @@ abstract class BaseListener
     }
 
     /**
-     * Extrait les identifiants uniques de l'événement
+     * Extracts unique identifiers from the event
      *
-     * Les classes enfants doivent override cette méthode pour retourner
-     * les propriétés qui rendent l'événement unique
+     * Child classes must override this method to return
+     * the properties that make the event unique
      */
     abstract protected function getEventIdentifiers($event): array;
 
     /**
-     * Méthode principale que les classes enfants doivent implémenter
+     * Main method that child classes must implement
      *
-     * C'est ici que va la logique métier du listener
+     * This is where the listener's business logic goes
      */
     abstract protected function handleEvent($event): void;
 
     /**
-     * Nettoie les événements traités (utile pour les tests)
+     * Cleans processed events (useful for testing)
      */
     public static function clearProcessedEvents(): void
     {
@@ -79,7 +79,7 @@ abstract class BaseListener
     }
 
     /**
-     * Retourne le nombre d'événements traités (utile pour debug)
+     * Returns the number of processed events (useful for debugging)
      */
     public static function getProcessedEventsCount(): int
     {

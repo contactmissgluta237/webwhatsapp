@@ -15,6 +15,14 @@
                                        placeholder="Tapez le nom d'un produit pour le rechercher..."
                                        wire:model.live="searchTerm"
                                        style="font-size: 1.1rem;">
+                                @if(count($this->selectedToAdd) > 0)
+                                    <button type="button" 
+                                            class="btn btn-whatsapp btn-lg"
+                                            wire:click="addSelectedProducts">
+                                        <i class="la la-plus"></i>
+                                        Ajouter {{ count($this->selectedToAdd) }} produit(s)
+                                    </button>
+                                @endif
                             </div>
                             
                             <!-- Résultats de recherche -->
@@ -26,7 +34,7 @@
                                                 <input class="form-check-input" 
                                                        type="checkbox" 
                                                        value="{{ $product->id }}"
-                                                       wire:model="selectedToAdd"
+                                                       wire:model.live="selectedToAdd"
                                                        id="product-{{ $product->id }}">
                                                 <label class="form-check-label w-100" for="product-{{ $product->id }}">
                                                     <div class="d-flex align-items-center">
@@ -62,17 +70,6 @@
                                 </div>
                             @endif
                             
-                            <!-- Bouton d'ajout -->
-                            @if(count($this->selectedToAdd) > 0)
-                                <div class="text-center mt-3">
-                                    <button type="button" 
-                                            class="btn btn-whatsapp btn-lg px-5"
-                                            wire:click="addSelectedProducts">
-                                        <i class="la la-plus"></i>
-                                        Ajouter {{ count($this->selectedToAdd) }} produit(s)
-                                    </button>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>

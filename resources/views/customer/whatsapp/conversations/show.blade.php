@@ -91,9 +91,7 @@
                                                             @foreach($mediaUrls as $mediaUrl)
                                                                 @php
                                                                     // Detect media type using helper
-                                                                    use App\Services\WhatsApp\MediaTypeDetector;
-                                                                    
-                                                                    $mediaType = MediaTypeDetector::getMediaType($mediaUrl);
+                                                                    $mediaType = \App\Services\WhatsApp\MediaTypeDetector::getMediaType($mediaUrl);
                                                                     $extension = strtolower(pathinfo(parse_url($mediaUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
                                                                 @endphp
                                                                 

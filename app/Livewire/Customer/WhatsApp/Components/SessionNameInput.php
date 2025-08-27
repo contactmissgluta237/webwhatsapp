@@ -31,26 +31,26 @@ final class SessionNameInput extends Component
     public function validateSessionName(): void
     {
         $this->errorMessage = '';
-        $this->isValid = false; // Reset par défaut
+        $this->isValid = false; // Reset by default
 
         if (empty($this->sessionName)) {
-            return; // Pas d'erreur si vide, juste pas valide
+            return; // No error if empty, just not valid
         }
 
-        // Validation du format seulement (pas d'unicité)
+        // Format validation only (no uniqueness)
         if (strlen($this->sessionName) < 3) {
-            $this->errorMessage = 'Le nom doit contenir au moins 3 caractères.';
+            $this->errorMessage = 'The name must contain at least 3 characters.';
 
             return;
         }
 
         if (strlen($this->sessionName) > 50) {
-            $this->errorMessage = 'Le nom ne peut pas dépasser 50 caractères.';
+            $this->errorMessage = 'The name cannot exceed 50 characters.';
 
             return;
         }
 
-        // Si on arrive ici, c'est valide
+        // If we get here, it's valid
         $this->isValid = true;
     }
 
@@ -58,11 +58,11 @@ final class SessionNameInput extends Component
     {
         Log::debug('SessionNameInput: generateQRCode CALLED.');
 
-        // Double vérification avant génération
+        // Double check before generation
         $this->validateSessionName();
 
         if (! $this->isValid || empty($this->sessionName)) {
-            $this->errorMessage = 'Veuillez saisir un nom de session valide.';
+            $this->errorMessage = 'Please enter a valid session name.';
 
             return;
         }

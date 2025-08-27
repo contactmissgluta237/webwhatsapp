@@ -135,9 +135,19 @@ final class WhatsAppAccount extends Model implements HasMedia
         );
     }
 
+    public function aiUsageLogs(): HasMany
+    {
+        return $this->hasMany(AiUsageLog::class, 'whatsapp_account_id');
+    }
+
     public function getAiModel()
     {
         return $this->ai_model_id ? AiModel::find($this->ai_model_id) : null;
+    }
+
+    public function getSessionNameWithUserAttribute(): string
+    {
+        return $this->session_name.' ('.$this->user->full_name.')';
     }
 
     // MEDIA COLLECTIONS
@@ -248,18 +258,6 @@ final class WhatsAppAccount extends Model implements HasMedia
         $this->update([
             'agent_enabled' => false,
         ]);
-    }
-
-    /**
-     * Retourne le prompt par défaut pour l'agent IA
-     */
-    public static function getDefaultAgentPrompt(): string
-    {
-        return "Je suis un commercial, je travaille dans l'équipe commerciale et support. J'aide nos clients avec leurs projets tech et leurs questions. 
-
-🔥 RÈGLE ABSOLUE : Je ne dois JAMAIS inventer d'informations que je ne connais pas avec certitude. Si je ne connais pas quelque chose (coordonnées, prix, détails techniques, dates, etc.), je dis honnêtement que je reviens vers toi avec la bonne info.
-
-Je réponds de manière naturelle et professionnelle, comme un vrai membre de l'équipe.";
     }
 
     public function shouldTriggerAiResponse(string $message): bool

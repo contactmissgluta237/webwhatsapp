@@ -9,11 +9,13 @@ use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Exceptions\InsufficientFundsException;
+use App\Exceptions\NonTextMessageException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WhatsApp\Webhook\IncomingMessageRequest;
 use App\Models\WhatsAppAccount;
 use App\Repositories\WhatsAppAccountRepositoryInterface;
 use App\Services\WhatsApp\ConversationHistoryService;
+use App\Services\WhatsApp\Helpers\MessageTypeValidator;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
@@ -40,6 +42,9 @@ final class IncomingMessageController extends Controller
         try {
             $account = $this->whatsAppAccountRepository->findBySessionId($validated['session_id']);
             $this->validateBillingCapacity($account);
+
+            MessageTypeValidator::validateTextMessage($validated['message']['type']);
+
             $messageRequest = WhatsAppMessageRequestDTO::fromWebhookData($validated['message']);
             $conversationHistory = $this->conversationHistory->prepareConversationHistory($account, $messageRequest->from);
 
@@ -57,6 +62,21 @@ final class IncomingMessageController extends Controller
                 $webhookResponse,
                 $response->wasSuccessful() ? Response::HTTP_OK : Response::HTTP_INTERNAL_SERVER_ERROR
             );
+
+        } catch (NonTextMessageException $e) {
+            Log::info('[WEBHOOK] Non-text message handled', [
+                'session_id' => $validated['session_id'],
+                'message_type' => $e->getMessageType(),
+                'from' => $validated['message']['from'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'processed' => true,
+                'response_message' => $e->getDefaultResponse(),
+                'wait_time_seconds' => 30,
+                'typing_duration_seconds' => 5,
+            ], Response::HTTP_OK);
 
         } catch (InsufficientFundsException $e) {
             Log::warning('[WEBHOOK] Insufficient funds to process message', [
@@ -100,7 +120,7 @@ final class IncomingMessageController extends Controller
             'session_id' => $validated['session_id'],
             'from' => $validated['message']['from'],
             'message_id' => $validated['message']['id'],
-            'body_preview' => substr($validated['message']['body'], 0, 50).'...',
+            'body_preview' => substr($validated['message']['body'] ?? '', 0, 50).'...',
         ]);
     }
 

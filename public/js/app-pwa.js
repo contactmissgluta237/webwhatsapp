@@ -13,16 +13,16 @@ class PWAInstaller {
 
     setupEventListeners() {
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
+            // Don't prevent default to avoid console warning
             this.deferredPrompt = e;
             this.showInstallButton();
-            console.log('📱 PWA installation prompt available');
+            // PWA installation prompt available
         });
 
         window.addEventListener('appinstalled', () => {
             this.hideInstallButton();
             this.showSuccessMessage();
-            console.log('🎉 PWA installed successfully');
+            // PWA installed successfully
         });
 
         if (this.headerButton) {
@@ -56,7 +56,7 @@ class PWAInstaller {
 
     async promptInstall() {
         if (!this.deferredPrompt) {
-            console.log('No install prompt available');
+            // No install prompt available - silenced
             return;
         }
 
@@ -64,9 +64,9 @@ class PWAInstaller {
         const { outcome } = await this.deferredPrompt.userChoice;
         
         if (outcome === 'accepted') {
-            console.log('User accepted the install prompt');
+            // User accepted installation
         } else {
-            console.log('User dismissed the install prompt');
+            // User dismissed installation
         }
         
         this.deferredPrompt = null;

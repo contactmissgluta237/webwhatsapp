@@ -268,12 +268,13 @@ final class ConversationSimulator extends Component
                 isGroup: false
             );
 
-            // Appeler l'orchestrateur (API UNIFIÉE)
+            // Appeler l'orchestrateur (API UNIFIÉE) - Mode simulation
             $orchestrator = app(WhatsAppMessageOrchestratorInterface::class);
             $response = $orchestrator->processMessage(
                 $this->account,
                 $messageRequest,
-                $conversationHistory
+                $conversationHistory,
+                isSimulation: true
             );
 
             if ($response->hasAiResponse) {

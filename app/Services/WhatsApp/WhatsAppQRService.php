@@ -65,7 +65,7 @@ final class WhatsAppQRService
 
     private function createUniqueSessionId(int $userId): string
     {
-        $timestamp = (int) (microtime(true) * 10000); // Microsecondes pour plus d'unicité
+        $timestamp = (int) (microtime(true) * 10000); // Microseconds for more uniqueness
         $random = substr(md5(uniqid().microtime()), 0, 8);
 
         return "session_{$userId}_{$timestamp}_{$random}";

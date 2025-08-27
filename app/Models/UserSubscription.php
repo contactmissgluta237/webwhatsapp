@@ -130,6 +130,15 @@ class UserSubscription extends Model
         return $this->status === 'suspended';
     }
 
+    public function getCurrentStatus(): string
+    {
+        if ($this->ends_at <= now()) {
+            return 'expired';
+        }
+
+        return $this->status;
+    }
+
     // ================================================================================
     // UTILITY METHODS
     // ================================================================================
@@ -175,7 +184,7 @@ class UserSubscription extends Model
 
     public function canSubscribeToTrial(): bool
     {
-        // Vérifier si l'user a déjà eu un trial (incluant celui-ci)
+        // Check if the user has already had a trial (including this one)
         return ! $this->user
             ->subscriptions()
             ->whereHas('package', fn ($q) => $q->where('name', 'trial'))

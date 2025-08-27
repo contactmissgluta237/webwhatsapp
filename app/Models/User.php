@@ -221,6 +221,11 @@ class User extends Authenticatable implements HasMedia
             ->latest();
     }
 
+    public function aiUsageLogs(): HasMany
+    {
+        return $this->hasMany(AiUsageLog::class);
+    }
+
     // ================================================================================
     // TRAIT METHODS
     // ================================================================================

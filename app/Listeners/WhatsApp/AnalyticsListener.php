@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
 final class AnalyticsListener extends BaseListener
 {
     /**
-     * Extrait les identifiants uniques pour MessageProcessedEvent
+     * Extracts unique identifiers for MessageProcessedEvent
      */
     protected function getEventIdentifiers($event): array
     {
@@ -34,7 +34,7 @@ final class AnalyticsListener extends BaseListener
     }
 
     /**
-     * Traite l'événement pour les analytics
+     * Processes the event for analytics
      */
     protected function handleEvent($event): void
     {

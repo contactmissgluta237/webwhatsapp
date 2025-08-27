@@ -39,7 +39,7 @@ class NotifyAdminOfCustomerMessageListener extends BaseListener implements Shoul
                 $query->where('name', 'admin');
             })->get();
 
-            // Envoyer la notification à chaque administrateur
+            // Send notification to each administrator
             foreach ($admins as $admin) {
                 $admin->notify(new AdminTicketRepliedNotification($event->ticketMessage));
             }

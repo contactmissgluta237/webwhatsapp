@@ -97,11 +97,11 @@
                             @if($currentSubscription)
                                 @if($currentSubscription->package_id === $package->id)
                                     <button class="btn btn-package-{{ $package->name }} w-100" disabled>
-                                        <i class="la la-check-circle"></i> Abonnement actuel
+                                        <i class="la la-check-circle"></i> En cours
                                     </button>
                                 @else
                                     <button class="btn btn-outline-secondary w-100" disabled>
-                                        Abonnement en cours
+                                        Souscription active
                                     </button>
                                 @endif
                             @else

@@ -9,13 +9,16 @@ use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
+use App\Events\WhatsApp\AiResponseGenerated;
 use App\Models\AiModel;
+use App\Models\AiUsageLog;
 use App\Models\User;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -269,6 +272,194 @@ class WhatsAppMessageOrchestratorTest extends TestCase
         };
 
         // Bind the anonymous classes to the service container
+        $this->app->instance(AIProviderServiceInterface::class, $aiProviderService);
+    }
+
+    /** @test */
+    public function it_dispatches_ai_tracking_event_when_not_in_simulation_mode(): void
+    {
+        Event::fake();
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Arrange
+        $products = $this->createTestProducts();
+        $messageRequest = new WhatsAppMessageRequestDTO(
+            id: 'msg_123',
+            from: '237690000000',
+            body: 'Montrez-moi vos produits disponibles',
+            timestamp: time(),
+            type: 'text',
+            isGroup: false,
+        );
+
+        // Setup AI response with cost metadata
+        $this->setupAIResponseWithCosts();
+        $this->orchestrator = $this->app->make(WhatsAppMessageOrchestrator::class);
+
+        // Act - NOT in simulation mode (default isSimulation = false)
+        $response = $this->orchestrator->processMessage(
+            $this->account,
+            $messageRequest,
+            'Historique de conversation test'
+        );
+
+        // Assert
+        $this->assertTrue($response->wasSuccessful());
+
+        // AI tracking event should be dispatched for non-simulation mode
+        Event::assertDispatched(AiResponseGenerated::class, function ($event) use ($messageRequest) {
+            return $event->account->id === $this->account->id
+                && $event->messageRequest->id === $messageRequest->id
+                && ! $event->isSimulation; // Should be false
+        });
+    }
+
+    /** @test */
+    public function it_does_not_track_ai_usage_in_simulation_mode(): void
+    {
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Arrange
+        $messageRequest = new WhatsAppMessageRequestDTO(
+            id: 'msg_456',
+            from: '237690000000',
+            body: 'Test simulation mode',
+            timestamp: time(),
+            type: 'text',
+            isGroup: false
+        );
+
+        // Setup AI response with cost metadata
+        $this->setupAIResponseWithCosts();
+        $this->orchestrator = $this->app->make(WhatsAppMessageOrchestrator::class);
+
+        // Act - In simulation mode
+        $response = $this->orchestrator->processMessage(
+            $this->account,
+            $messageRequest,
+            'Historique de conversation test',
+            isSimulation: true
+        );
+
+        // Assert
+        $this->assertTrue($response->wasSuccessful());
+
+        // No AI usage should be tracked in simulation mode
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Event may still be dispatched but with isSimulation = true
+        // The listener should handle this and not create database records
+    }
+
+    /** @test */
+    public function it_tracks_ai_usage_with_correct_cost_data(): void
+    {
+        $this->assertDatabaseEmpty('ai_usage_logs');
+
+        // Arrange
+        $messageRequest = new WhatsAppMessageRequestDTO(
+            id: 'msg_789',
+            from: '237690000000',
+            body: 'Test message for cost tracking',
+            timestamp: time(),
+            type: 'text',
+            isGroup: false
+        );
+
+        // Setup AI response with specific cost data
+        $this->setupAIResponseWithCosts(
+            totalCostUsd: 0.002,
+            totalCostXaf: 1.30,
+            tokensUsed: 300
+        );
+        $this->orchestrator = $this->app->make(WhatsAppMessageOrchestrator::class);
+
+        // Act - Process message (not simulation)
+        $response = $this->orchestrator->processMessage(
+            $this->account,
+            $messageRequest,
+            'Test conversation history'
+        );
+
+        // Assert
+        $this->assertTrue($response->wasSuccessful());
+
+        // Verify AI usage is tracked with correct cost data
+        $this->assertDatabaseCount('ai_usage_logs', 1);
+
+        $usageLog = AiUsageLog::first();
+        $this->assertEquals($this->account->user_id, $usageLog->user_id);
+        $this->assertEquals($this->account->id, $usageLog->whatsapp_account_id);
+        $this->assertEquals(300, $usageLog->total_tokens);
+        $this->assertEquals(0.002, (float) $usageLog->total_cost_usd);
+        $this->assertEquals(1.30, (float) $usageLog->total_cost_xaf);
+        $this->assertEquals('deepseek-chat', $usageLog->ai_model);
+        $this->assertEquals(26, $usageLog->request_length); // "Test message for cost tracking"
+    }
+
+    private function setupAIResponseWithCosts(
+        string $message = 'Voici nos produits disponibles',
+        string $action = 'show_products',
+        array $productIds = [1, 2, 3],
+        float $totalCostUsd = 0.001,
+        float $totalCostXaf = 0.65,
+        int $tokensUsed = 150
+    ): void {
+        // Create structured AI response JSON
+        $aiResponseJson = json_encode([
+            'message' => $message,
+            'action' => $action,
+            'products' => $productIds,
+        ], JSON_UNESCAPED_UNICODE);
+
+        $aiResponse = new WhatsAppAIResponseDTO(
+            response: $aiResponseJson,
+            model: 'deepseek-chat',
+            confidence: 0.9,
+            tokensUsed: $tokensUsed,
+            cost: $totalCostUsd,
+            metadata: [
+                'costs' => [
+                    'prompt_cost_usd' => 0.0002,
+                    'completion_cost_usd' => 0.0008,
+                    'cached_cost_usd' => 0.0000,
+                    'total_cost_usd' => $totalCostUsd,
+                    'total_cost_xaf' => $totalCostXaf,
+                ],
+            ]
+        );
+
+        // Create anonymous AIProviderService
+        $aiProviderService = new class($aiResponse) implements AIProviderServiceInterface
+        {
+            private WhatsAppAIResponseDTO $mockedAiResponse;
+
+            public function __construct(WhatsAppAIResponseDTO $mockedAiResponse)
+            {
+                $this->mockedAiResponse = $mockedAiResponse;
+            }
+
+            public function generateResponse(AiRequestDTO $aiRequest): ?WhatsAppAIResponseDTO
+            {
+                return $this->mockedAiResponse;
+            }
+
+            public function canGenerateResponse(WhatsAppAccount $account): bool
+            {
+                return true;
+            }
+
+            public function getAvailableModels(WhatsAppAccount $account): array
+            {
+                return [];
+            }
+
+            public function getUsageStats(WhatsAppAccount $account): array
+            {
+                return [];
+            }
+        };
+
         $this->app->instance(AIProviderServiceInterface::class, $aiProviderService);
     }
 }

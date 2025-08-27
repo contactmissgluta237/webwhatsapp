@@ -4,7 +4,7 @@
 export class Logger {
     constructor(context = 'App') {
         this.context = context;
-        this.isEnabled = true;
+        this.isEnabled = false; // Disabled by default to reduce console pollution
     }
 
     _formatMessage(level, message, data = null) {

@@ -19,7 +19,7 @@ final class StoreMessagesListener extends BaseListener
     ) {}
 
     /**
-     * Extrait les identifiants uniques pour MessageProcessedEvent
+     * Extracts unique identifiers for MessageProcessedEvent
      */
     protected function getEventIdentifiers($event): array
     {
@@ -32,7 +32,7 @@ final class StoreMessagesListener extends BaseListener
     }
 
     /**
-     * Traite l'événement de stockage des messages
+     * Processes the message storage event
      *
      * @param  MessageProcessedEvent  $event
      */

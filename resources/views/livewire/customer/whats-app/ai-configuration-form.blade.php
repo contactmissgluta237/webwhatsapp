@@ -118,11 +118,16 @@
                 </div>
                 <div class="col-12 text-right">
                     <button type="submit" 
-                            class="btn btn-whatsapp btn-lg" 
+                            class="btn btn-whatsapp btn-lg {{ !$isFormValid ? 'disabled' : '' }}" 
                             wire:loading.attr="disabled"
-                            wire:target="save">
+                            wire:target="save"
+                            @if(!$isFormValid) disabled @endif>
                         <span wire:loading.remove wire:target="save">
-                            <i class="la la-save"></i> {{ __('Sauvegarder la configuration') }}
+                            @if(!$isFormValid)
+                                <i class="la la-exclamation-triangle"></i> {{ __('Corrigez les erreurs pour sauvegarder') }}
+                            @else
+                                <i class="la la-save"></i> {{ __('Sauvegarder la configuration') }}
+                            @endif
                         </span>
                         <span wire:loading wire:target="save">
                             <i class="la la-spinner la-spin"></i> {{ __('Sauvegarde en cours...') }}

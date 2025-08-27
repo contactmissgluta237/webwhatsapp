@@ -187,7 +187,7 @@ class RealPaymentE2ETest extends Command
 
             $this->info('💳 Processing payment with MyCoolPay Gateway...');
 
-            // Créer d'abord une ExternalTransaction pour le test
+            // First, create an ExternalTransaction for the test
             $transaction = ExternalTransaction::create([
                 'wallet_id' => $user->wallet->id,
                 'amount' => $amount,
@@ -200,7 +200,7 @@ class RealPaymentE2ETest extends Command
                 'created_by' => $user->id,
             ]);
 
-            // Appel au gateway avec la transaction et le request
+            // Call the gateway with the transaction and the request
             $gateway = app(MyCoolPayGateway::class);
             $paymentRequest = new PaymentIdentifierRequestDTO(
                 phoneNumber: $phoneNumber,
@@ -280,7 +280,7 @@ class RealPaymentE2ETest extends Command
 
     private function displayWebhookInstructions(object $result): void
     {
-        // Utiliser l'app_transaction_ref stocké dans le result
+        // Use the app_transaction_ref stored in the result
         $appTransactionRef = $result->app_transaction_ref ?? 'unknown';
 
         $this->info('🔗 Webhook testing commands:');

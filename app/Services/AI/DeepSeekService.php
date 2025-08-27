@@ -23,7 +23,7 @@ final class DeepSeekService implements AiServiceInterface
         $this->validateConfiguration($model);
         $messages = $this->prepareMessages($request->systemPrompt, $request->userMessage);
 
-        Log::info('🔄 Appel API DeepSeek', [
+        Log::info('🔄 DeepSeek API Call', [
             'endpoint' => $model->endpoint_url ?? 'https://api.deepseek.com',
             'model_identifier' => $model->model_identifier,
             'message_count' => count($messages),
@@ -62,7 +62,7 @@ final class DeepSeekService implements AiServiceInterface
 
         for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
             try {
-                Log::info('🚀 Tentative API DeepSeek', [
+                Log::info('🚀 DeepSeek API Attempt', [
                     'attempt' => $attempt,
                     'max_retries' => $maxRetries,
                     'timeout' => $timeout,
@@ -79,11 +79,33 @@ final class DeepSeekService implements AiServiceInterface
                 $content = $data['choices'][0]['message']['content'] ?? '';
                 $usage = $data['usage'] ?? [];
 
-                Log::info('✅ Réponse DeepSeek reçue', [
+                // Calculate costs based on DeepSeek pricing
+                $promptTokens = $usage['prompt_tokens'] ?? 0;
+                $completionTokens = $usage['completion_tokens'] ?? 0;
+                $cachedTokens = $usage['prompt_cache_hit_tokens'] ?? 0;
+
+                // DeepSeek pricing per 1M tokens
+                $promptCostPer1M = 0.14;     // $0.14 per 1M prompt tokens
+                $completionCostPer1M = 0.28; // $0.28 per 1M completion tokens
+                $cachedCostPer1M = 0.014;    // $0.014 per 1M cached tokens (90% discount)
+
+                $promptCost = ($promptTokens - $cachedTokens) * $promptCostPer1M / 1000000;
+                $completionCost = $completionTokens * $completionCostPer1M / 1000000;
+                $cachedCost = $cachedTokens * $cachedCostPer1M / 1000000;
+                $totalCostUSD = $promptCost + $completionCost + $cachedCost;
+
+                Log::info('✅ DeepSeek Response Received', [
                     'attempt' => $attempt,
                     'model' => $data['model'] ?? $model->model_identifier,
                     'usage' => $usage,
                     'content_length' => strlen($content),
+                    'costs' => [
+                        'prompt_cost_usd' => round($promptCost, 6),
+                        'completion_cost_usd' => round($completionCost, 6),
+                        'cached_cost_usd' => round($cachedCost, 6),
+                        'total_cost_usd' => round($totalCostUSD, 6),
+                        'total_cost_xaf' => round($totalCostUSD * 650, 2), // ~650 XAF per USD
+                    ],
                 ]);
 
                 return new AiResponseDTO(
@@ -96,6 +118,13 @@ final class DeepSeekService implements AiServiceInterface
                         'usage' => $usage,
                         'confidence' => 1.0,
                         'attempts' => $attempt,
+                        'costs' => [
+                            'prompt_cost_usd' => round($promptCost, 6),
+                            'completion_cost_usd' => round($completionCost, 6),
+                            'cached_cost_usd' => round($cachedCost, 6),
+                            'total_cost_usd' => round($totalCostUSD, 6),
+                            'total_cost_xaf' => round($totalCostUSD * 650, 2),
+                        ],
                     ]
                 );
 
@@ -103,7 +132,7 @@ final class DeepSeekService implements AiServiceInterface
                 $isLastAttempt = $attempt === $maxRetries;
                 $isTimeoutError = str_contains($e->getMessage(), 'timeout') || str_contains($e->getMessage(), 'timed out');
 
-                Log::warning('⚠️ Tentative DeepSeek échouée', [
+                Log::warning('⚠️ DeepSeek Attempt Failed', [
                     'attempt' => $attempt,
                     'max_retries' => $maxRetries,
                     'is_last_attempt' => $isLastAttempt,
@@ -113,23 +142,23 @@ final class DeepSeekService implements AiServiceInterface
                 ]);
 
                 if ($isLastAttempt) {
-                    Log::error('❌ Erreur API DeepSeek - Toutes les tentatives échouées', [
+                    Log::error('❌ DeepSeek API Error - All Attempts Failed', [
                         'total_attempts' => $attempt,
                         'timeout' => $timeout,
                         'error' => $e->getMessage(),
                     ]);
-                    throw new \Exception("Erreur de communication avec l'API DeepSeek après {$attempt} tentatives: ".$e->getMessage(), $e->getCode(), $e);
+                    throw new \Exception("Communication error with DeepSeek API after {$attempt} attempts: ".$e->getMessage(), $e->getCode(), $e);
                 }
 
                 if ($isTimeoutError && $attempt < $maxRetries) {
                     $backoffSeconds = min(5 * $attempt, 15);
-                    Log::info("⏳ Attente avant retry : {$backoffSeconds}s");
+                    Log::info("⏳ Waiting before retry: {$backoffSeconds}s");
                     sleep($backoffSeconds);
                 }
             }
         }
 
-        throw new \Exception('Erreur inattendue: toutes les tentatives ont échoué sans exception appropriée');
+        throw new \Exception('Unexpected error: all attempts failed without appropriate exception');
     }
 
     private function getTimeoutForOperation(AiRequestDTO $request): int
@@ -151,20 +180,20 @@ final class DeepSeekService implements AiServiceInterface
 
     private function isPromptEnhancement(AiRequestDTO $request): bool
     {
-        return str_contains($request->systemPrompt, 'améliorer le prompt') ||
-               str_contains($request->systemPrompt, 'prompt pour agent') ||
-               str_contains($request->userMessage, 'prompt à améliorer');
+        return str_contains($request->systemPrompt, 'enhance the prompt') ||
+               str_contains($request->systemPrompt, 'prompt for agent') ||
+               str_contains($request->userMessage, 'prompt to enhance');
     }
 
     public function validateConfiguration(AiModel $model): bool
     {
         $apiKey = $model->api_key ?? config('services.deepseek.api_key');
         if (empty($apiKey)) {
-            throw new \InvalidArgumentException("La clé API DeepSeek n'est pas configurée.");
+            throw new \InvalidArgumentException('DeepSeek API key is not configured.');
         }
 
         if (empty($model->model_identifier)) {
-            throw new \InvalidArgumentException("L'identifiant du modèle DeepSeek n'est pas configuré.");
+            throw new \InvalidArgumentException('DeepSeek model identifier is not configured.');
         }
 
         return true;
@@ -178,7 +207,7 @@ final class DeepSeekService implements AiServiceInterface
             $endpoint = $baseUrl.'/chat/completions';
             $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
-            Log::info('🔍 Test connexion DeepSeek', [
+            Log::info('🔍 DeepSeek Connection Test', [
                 'endpoint' => $endpoint,
                 'timeout' => 30,
             ]);
@@ -192,12 +221,12 @@ final class DeepSeekService implements AiServiceInterface
                 ]);
 
             if ($response->successful()) {
-                Log::info('✅ Connexion DeepSeek réussie');
+                Log::info('✅ DeepSeek Connection Successful');
 
                 return true;
             }
 
-            Log::warning('❌ Test connexion DeepSeek échoué', [
+            Log::warning('❌ DeepSeek Connection Failed', [
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
@@ -205,7 +234,7 @@ final class DeepSeekService implements AiServiceInterface
             return false;
 
         } catch (\Exception $e) {
-            Log::error('❌ Erreur critique test connexion DeepSeek', ['message' => $e->getMessage()]);
+            Log::error('❌ Critical error DeepSeek connection test', ['message' => $e->getMessage()]);
 
             return false;
         }
