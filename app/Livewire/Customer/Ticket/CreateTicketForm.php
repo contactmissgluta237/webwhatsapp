@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Customer\Ticket;
 
+use App\Http\Requests\Customer\Ticket\CreateTicketRequest;
 use App\Services\TicketService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -23,11 +25,12 @@ class CreateTicketForm extends Component
 
     protected function rules(): array
     {
-        return [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ];
+        return (new CreateTicketRequest)->rules();
+    }
+
+    protected function messages(): array
+    {
+        return (new CreateTicketRequest)->messages();
     }
 
     public function createTicket()
@@ -35,7 +38,7 @@ class CreateTicketForm extends Component
         $this->validate();
 
         $ticket = $this->ticketService->createTicket(
-            auth()->user(),
+            Auth::user(),
             $this->title,
             $this->description,
             $this->attachments

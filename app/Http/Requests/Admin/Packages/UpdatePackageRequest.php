@@ -16,7 +16,9 @@ class UpdatePackageRequest extends FormRequest
 
     public function rules(): array
     {
-        $packageId = $this->route('package')->id;
+        // Essayer d'obtenir l'ID du package depuis la route ou depuis les données injectées
+        $package = $this->route('package');
+        $packageId = $package ? $package->id : $this->input('package_id');
 
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('packages', 'name')->ignore($packageId)],
@@ -36,7 +38,7 @@ class UpdatePackageRequest extends FormRequest
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
 
-            'promotional_price' => ['nullable', 'numeric', 'min:0', 'lt:price', 'required_with:promotion_is_active'],
+            'promotional_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
             'promotion_starts_at' => ['nullable', 'date'],
             'promotion_ends_at' => ['nullable', 'date', 'after:promotion_starts_at'],
             'promotion_is_active' => ['boolean'],
@@ -52,7 +54,6 @@ class UpdatePackageRequest extends FormRequest
             'price.required' => 'Le prix est obligatoire.',
             'price.min' => 'Le prix doit être positif ou nul.',
             'promotional_price.lt' => 'Le prix promotionnel doit être inférieur au prix normal.',
-            'promotional_price.required_with' => 'Un prix promotionnel est requis si la promotion est activée.',
             'promotion_ends_at.after' => 'La fin de promotion doit être après le début.',
             'messages_limit.required' => 'La limite de messages est obligatoire.',
             'accounts_limit.min' => 'Il faut au moins 1 compte autorisé.',

@@ -15,24 +15,23 @@
 
 <!-- Breadcrumb start -->
 <div class="row mx-0 mt-1 mb-1">
-    <div class="col-8 p-0">
-        <h2 class="content-header-title mb-0">{{ __('Home') }}</h2>
-        <div class="breadcrumb-wrapper">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="la la-dashboard"></i>{{ __('Dashboard') }}</a></li>
-                <li class="breadcrumb-item">{{ __('Home') }}</li>
-            </ol>
+    <div class="content-header-left col-md-6 col-12 mb-2">
+        <h3 class="content-header-title text-whatsapp">{{ __('Dashboard Admin') }}</h3>
+        <div class="row breadcrumbs-top">
+            <div class="breadcrumb-wrapper col-12">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active">Dashboard</li>
+                </ol>
+            </div>
         </div>
     </div>
-    <!-- Filter -->
-    <div class="col-4 p-0">
-        <div class="d-flex justify-content-end">
-            <button type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" role="button"
-                aria-expanded="false" aria-controls="collapseFilter"
-                class="btn btn-info">
-                <i class="la la-filter"></i> {{ __('Filter') }}
-            </button>
-        </div>
+    <div class="content-header-right col-md-6 col-12 text-right">
+        <button type="button" data-bs-toggle="collapse" data-bs-target="#collapseFilter" role="button"
+            aria-expanded="false" aria-controls="collapseFilter"
+            class="btn btn-outline-whatsapp rounded btn-glow">
+            <i class="la la-filter"></i> {{ __('Filter') }}
+        </button>
     </div>
 </div>
 <!-- Breadcrumb end -->
@@ -48,9 +47,9 @@
 <!-- Component 2: System Account Balances -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Soldes des Comptes Système</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Soldes des Comptes Système</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
             </div>
             <div class="card-content">
@@ -65,9 +64,9 @@
 <!-- Component 3: System Account Management -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Gestion des Comptes Système</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Gestion des Comptes Système</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                 <div class="heading-elements">
                     <ul class="list-inline mb-0">

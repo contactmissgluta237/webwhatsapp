@@ -7,6 +7,7 @@ namespace App\Livewire\Customer\WhatsApp;
 use App\Contracts\PromptEnhancementInterface;
 use App\Enums\AgentType;
 use App\Enums\ResponseTime;
+use App\Http\Requests\Customer\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Rules\PromptLengthRule;
@@ -321,17 +322,8 @@ final class AiConfigurationForm extends Component
 
     public function save(): void
     {
-        $this->validate([
-            'agent_name' => 'required|string|max:100',
-            'agent_enabled' => 'boolean',
-            'ai_model_id' => $this->agent_enabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
-            'agent_prompt' => $this->agent_enabled ? ['required', 'string', new PromptLengthRule] : ['nullable', 'string', new PromptLengthRule],
-            'trigger_words' => 'nullable|string|max:500',
-            'contextual_information' => 'nullable|string|max:5000',
-            'ignore_words' => 'nullable|string|max:500',
-            'response_time' => 'required|string|in:instant,fast,random,slow',
-            'stop_on_human_reply' => 'boolean',
-        ]);
+        $request = new AiConfigurationRequest;
+        $this->validate($request->rules(), $request->messages());
 
         try {
             $this->account->update([

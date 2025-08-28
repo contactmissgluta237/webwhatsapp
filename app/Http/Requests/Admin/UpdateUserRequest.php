@@ -54,9 +54,21 @@ class UpdateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'first_name.required' => 'Le prénom est obligatoire.',
+            'first_name.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
+            'last_name.required' => 'Le nom est obligatoire.',
+            'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'email.required' => 'L\'email est obligatoire.',
+            'email.email' => 'L\'email doit être valide.',
+            'email.unique' => 'Cet email est déjà utilisé.',
+            'phone_number.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+            'password.min' => 'Le mot de passe doit contenir au moins 3 caractères.',
+            'is_active.required' => 'Le statut est obligatoire.',
             'selectedRoles.required' => 'Veuillez sélectionner au moins un rôle.',
             'selectedRoles.min' => 'Veuillez sélectionner au moins un rôle.',
             'selectedRoles.*.exists' => 'Le rôle sélectionné n\'est pas valide.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.max' => 'L\'image ne peut pas dépasser 2 Mo.',
         ];
     }
 }

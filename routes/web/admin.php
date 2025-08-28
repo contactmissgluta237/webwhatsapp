@@ -65,6 +65,13 @@ Route::middleware(['auth', 'role:admin'])
             Route::delete('/{package}', App\Http\Controllers\Admin\Packages\DeleteController::class)->name('delete');
         });
 
+        // Coupons management routes
+        Route::prefix('coupons')->name('coupons.')->group(function () {
+            Route::get('/', function () {
+                return view('admin.coupons.index');
+            })->name('index');
+        });
+
         // Ticket management routes
         Route::prefix('tickets')->name('tickets.')->group(function () {
             Route::get('/', App\Http\Controllers\Admin\Ticket\IndexController::class)->name('index');

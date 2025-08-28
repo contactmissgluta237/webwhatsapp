@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->decimal('referral_commission_percentage', 5, 2)->default(10.00)->after('affiliation_code');
+            if (!Schema::hasColumn('users', 'referral_commission_percentage')) {
+                $table->decimal('referral_commission_percentage', 5, 2)->default(10.00)->after('affiliation_code');
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('referral_commission_percentage');
+            if (Schema::hasColumn('users', 'referral_commission_percentage')) {
+                $table->dropColumn('referral_commission_percentage');
+            }
         });
     }
 };

@@ -69,9 +69,9 @@ class EditPackageForm extends AbstractPackageForm
     protected function customRequest(): FormRequest
     {
         $request = new UpdatePackageRequest;
-        $request->setRouteResolver(function () {
-            return app('router')->current();
-        });
+
+        // Injecter l'ID du package dans la requête pour la validation unique
+        $request->merge(['package_id' => $this->package->id]);
 
         return $request;
     }

@@ -115,7 +115,7 @@ class User extends Authenticatable implements HasMedia
         'last_login_at' => 'datetime',
         'is_active' => 'boolean',
         'password' => 'hashed',
-        'referral_commission_percentage' => 'decimal:2',
+        'referral_commission_percentage' => 'float',
     ];
 
     protected static function boot(): void

@@ -40,7 +40,7 @@ final class ReferralService
 
         DB::transaction(function () use ($subscription, $user, $referrer, $amount) {
             // Calculer la commission du parrain
-            $commissionPercentage = $referrer->referral_commission_percentage ?? 10.00;
+            $commissionPercentage = floatval($referrer->referral_commission_percentage ?? 10.00);
             $commissionAmount = ($amount * $commissionPercentage) / 100;
             $systemAmount = $amount - $commissionAmount;
 

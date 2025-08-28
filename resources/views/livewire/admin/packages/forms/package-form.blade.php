@@ -83,15 +83,27 @@
         </div>
     </div>
 
-    <div class="card border-warning mb-4">
-        <div class="card-header bg-warning bg-opacity-10">
-            <h6 class="card-title mb-0">
-                <i class="mdi mdi-tag-outline me-2"></i>Prix promotionnel
-            </h6>
+    <div class="card shadow-none border-gray-light mb-4">
+        <div class="card-header bg-white border-bottom-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">
+                    <i class="la la-percent text-whatsapp mr-2"></i>Prix promotionnel
+                </h6>
+                <div class="form-check form-switch">
+                    <input class="form-check-input @error('promotion_is_active') is-invalid @enderror" 
+                           type="checkbox" role="switch" wire:model="promotion_is_active" id="promotion_is_active_toggle">
+                    <label class="form-check-label" for="promotion_is_active_toggle">
+                        Activer la promotion
+                    </label>
+                    @error('promotion_is_active')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
         </div>
-        <div class="card-body">
+        <div class="card-body" x-show="$wire.promotion_is_active" x-transition>
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label for="promotional_price" class="form-label">Prix promotionnel</label>
                         <input type="number" step="0.01" class="form-control @error('promotional_price') is-invalid @enderror" 
@@ -102,7 +114,7 @@
                         <div class="form-text">Doit être inférieur au prix normal</div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label for="promotion_starts_at" class="form-label">Début de promotion</label>
                         <input type="datetime-local" class="form-control @error('promotion_starts_at') is-invalid @enderror" 
@@ -110,9 +122,10 @@
                         @error('promotion_starts_at')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <div class="form-text">Optionnel - laissez vide pour immédiat</div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="mb-3">
                         <label for="promotion_ends_at" class="form-label">Fin de promotion</label>
                         <input type="datetime-local" class="form-control @error('promotion_ends_at') is-invalid @enderror" 
@@ -120,18 +133,7 @@
                         @error('promotion_ends_at')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-                </div>
-                <div class="col-md-3 d-flex align-items-center">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input @error('promotion_is_active') is-invalid @enderror" 
-                               type="checkbox" role="switch" wire:model="promotion_is_active" id="promotion_is_active">
-                        <label class="form-check-label" for="promotion_is_active">
-                            Promotion active
-                        </label>
-                        @error('promotion_is_active')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <div class="form-text">Optionnel - laissez vide pour illimité</div>
                     </div>
                 </div>
             </div>
@@ -248,18 +250,18 @@
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="hstack gap-2 justify-content-end">
-                <a href="{{ route('admin.packages.index') }}" class="btn btn-light">Annuler</a>
-                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
-                    <span wire:loading.remove>{{ isset($package) ? 'Mettre à jour' : 'Créer le package' }}</span>
-                    <span wire:loading>
-                        <i class="spinner-border spinner-border-sm me-2" role="status"></i>
-                        Traitement...
-                    </span>
-                </button>
-            </div>
-        </div>
+    {{-- Boutons d'action --}}
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a href="{{ route('admin.packages.index') }}" class="btn btn-outline-secondary">
+            <i class="la la-times mr-1"></i> Annuler
+        </a>
+        <button type="submit" class="btn btn-whatsapp" wire:loading.attr="disabled">
+            <span wire:loading.remove>
+                <i class="la la-save mr-1"></i> {{ isset($package) ? 'Mettre à jour' : 'Créer le package' }}
+            </span>
+            <span wire:loading>
+                <i class="la la-spinner la-spin mr-1"></i> Traitement...
+            </span>
+        </button>
     </div>
 </form>

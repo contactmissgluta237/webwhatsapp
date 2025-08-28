@@ -141,10 +141,10 @@ class Coupon extends Model
     public function calculateDiscount(float $amount): float
     {
         if ($this->type === CouponType::PERCENTAGE()) {
-            return ($amount * $this->value) / 100;
+            return ($amount * (float) $this->value) / 100;
         }
 
-        return min($this->value, $amount);
+        return min((float) $this->value, $amount);
     }
 
     public function applyDiscount(float $amount): float

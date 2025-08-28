@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Customer\Ticket;
 
 use App\Enums\TicketSenderType;
+use App\Http\Requests\Customer\Ticket\ReplyTicketRequest;
 use App\Models\Ticket;
 use App\Services\TicketService;
 use Illuminate\Support\Facades\Auth;
@@ -28,10 +29,12 @@ final class ReplyTicketForm extends Component
 
     protected function rules(): array
     {
-        return [
-            'message' => 'required|string',
-            'attachments.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ];
+        return (new ReplyTicketRequest)->rules();
+    }
+
+    protected function messages(): array
+    {
+        return (new ReplyTicketRequest)->messages();
     }
 
     public function replyToTicket(): void

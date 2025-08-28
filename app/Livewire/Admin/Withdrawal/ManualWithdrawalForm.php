@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Withdrawal;
 
 use App\Enums\PaymentMethod;
+use App\Http\Requests\Admin\Withdrawal\ManualWithdrawalRequest;
 use App\Models\User;
 use Livewire\Component;
 
@@ -124,19 +125,8 @@ class ManualWithdrawalForm extends Component
 
     private function validateForm(): void
     {
-        $rules = [
-            'customer_id' => ['required', 'integer', 'exists:users,id'],
-            'amount' => ['required', 'integer', 'min:1'],
-            'payment_method' => ['required', 'string', 'in:'.implode(',', PaymentMethod::values())],
-            'receiver_account' => ['required', 'string', 'max:255'],
-            'external_transaction_id' => ['required', 'string', 'max:255', 'unique:external_transactions,external_transaction_id'],
-            'description' => ['required', 'string', 'max:500'],
-            'sender_name' => ['required', 'string', 'max:255'],
-            'sender_account' => ['required', 'string', 'max:255'],
-            'receiver_name' => ['required', 'string', 'max:255'],
-        ];
-
-        $this->validate($rules);
+        $request = new ManualWithdrawalRequest;
+        $this->validate($request->rules(), $request->messages());
         $this->validatePaymentMethodSpecificData();
     }
 
