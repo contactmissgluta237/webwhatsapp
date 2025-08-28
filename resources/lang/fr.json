@@ -29,10 +29,5 @@
     "Remove All Filters": "Supprimer tous les filtres",
     "Clear Search": "Effacer la recherche",
     "From Date": "Du",
-    "To Date": "Au",
-    "AI service failed to enhance the prompt": "Le service IA a échoué à améliorer le prompt",
-    "Enhanced prompt cannot be empty": "Le prompt amélioré ne peut pas être vide",
-    "No AI model available for prompt enhancement": "Aucun modèle IA disponible pour l'amélioration du prompt",
-    "AI could not enhance the prompt": "L'IA n'a pas pu améliorer le prompt",
-    "Unable to enhance prompt: all AI services are unavailable": "Impossible d'améliorer le prompt : tous les services IA sont indisponibles"
+    "To Date": "Au"
 }

@@ -1,31 +1,41 @@
-<x-mail::message>
-    # Activation de votre compte
+@extends('emails.layouts.master')
 
-    Bienvenue ! Votre compte a été créé avec succès.
+@section('title', __('emails.account_activation.subject'))
 
-    Pour activer votre compte {{ $maskedIdentifier }}, utilisez le code ci-dessous :
+@section('header-title', __('emails.account_activation.header'))
 
-    <div
-        style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px; border: 2px solid #10b981; border-radius: 8px; margin: 20px 0; background-color: #ecfdf5; color: #047857;">
-        {{ $otp }}
+@section('content')
+    <div class="greeting">
+        {{ __('emails.account_activation.welcome') }}
     </div>
 
-    Ce code est valide pendant 10 minutes.
+    <div class="content">
+        {!! __('emails.account_activation.instructions', ['identifier' => $maskedIdentifier]) !!}
+    </div>
 
-    Vous pouvez également cliquer sur le bouton ci-dessous pour activer directement votre compte :
+    <div class="otp-container">
+        <div class="otp-label">{{ __('emails.account_activation.otp_label') }}</div>
+        <div class="otp-code">{{ $otp }}</div>
+        <div class="otp-validity">{{ __('emails.account_activation.validity') }}</div>
+    </div>
 
-    <x-mail::button :url="$activationUrl" color="success">
-        Activer mon compte
-    </x-mail::button>
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ $activationUrl }}" class="button">{{ __('emails.account_activation.activate_button') }}</a>
+    </div>
 
-    🎉 **Une fois votre compte activé, vous pourrez :**
-    - Vous connecter à votre espace personnel
-    - Accéder à toutes les fonctionnalités
-    - Profiter de nos services
+    <div class="divider"></div>
 
-    Si vous n'avez pas créé de compte, veuillez ignorer cet email.
+    <div class="content">
+        <h3 style="color: #075E54; margin-bottom: 15px;">{{ __('emails.account_activation.features_title') }}</h3>
+        <ul style="color: #4a5568; padding-left: 20px;">
+            <li>{{ __('emails.account_activation.feature_1') }}</li>
+            <li>{{ __('emails.account_activation.feature_2') }}</li>
+            <li>{{ __('emails.account_activation.feature_3') }}</li>
+        </ul>
+    </div>
 
-    Merci de nous avoir rejoint !
-
-    {{ config('app.name') }}
-</x-mail::message>
+    <div class="security-notice">
+        <h3>{{ __('emails.security.title') }}</h3>
+        <p>{{ __('emails.account_activation.security_notice') }}</p>
+    </div>
+@endsection

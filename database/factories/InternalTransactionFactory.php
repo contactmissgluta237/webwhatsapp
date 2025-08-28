@@ -25,7 +25,7 @@ class InternalTransactionFactory extends Factory
         return [
             'wallet_id' => Wallet::factory(),
             'amount' => $amount,
-            'transaction_type' => $this->faker->randomElement(['credit', 'debit']),
+            'transaction_type' => $this->faker->randomElement(TransactionType::values()),
             'status' => $this->faker->randomElement(TransactionStatus::values()),
             'description' => $this->faker->optional()->sentence(),
             'related_type' => null,

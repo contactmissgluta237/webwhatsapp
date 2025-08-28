@@ -8,6 +8,7 @@ use App\Models\Package;
 use App\Models\User;
 use App\Models\UserSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PackageManagementTest extends TestCase
@@ -15,6 +16,10 @@ class PackageManagementTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+    private Package $trialPackage;
+    private Package $starterPackage;
+    private Package $proPackage;
+    private Package $businessPackage;
 
     protected function setUp(): void
     {
@@ -28,8 +33,22 @@ class PackageManagementTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'PackagesSeeder']);
 
         $this->admin = User::factory()->admin()->create();
+        
+        // Cache packages for reuse
+        $this->trialPackage = Package::where('name', 'trial')->first();
+        $this->starterPackage = Package::where('name', 'starter')->first();
+        $this->proPackage = Package::where('name', 'pro')->first();
+        $this->businessPackage = Package::where('name', 'business')->first();
     }
 
+    private function createSubscriptionsForPackage(Package $package, int $count = 1): void
+    {
+        UserSubscription::factory()->count($count)->create([
+            'package_id' => $package->id,
+        ]);
+    }
+
+    #[Test]
     public function test_admin_can_view_packages_page(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -40,13 +59,11 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Gestion des Packages');
     }
 
+    #[Test]
     public function test_packages_are_displayed_with_all_information(): void
     {
         // Créer quelques souscriptions pour tester les compteurs
-        $package = Package::where('name', 'starter')->first();
-        UserSubscription::factory()->count(3)->create([
-            'package_id' => $package->id,
-        ]);
+        $this->createSubscriptionsForPackage($this->starterPackage, 3);
 
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
 
@@ -80,6 +97,7 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Actif');
     }
 
+    #[Test]
     public function test_packages_table_shows_correct_structure(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -100,43 +118,41 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Actions');
     }
 
+    #[Test]
     public function test_view_subscriptions_link_redirects_correctly(): void
     {
-        $package = Package::where('name', 'starter')->first();
-
         $response = $this->actingAs($this->admin)
-            ->get(route('admin.subscriptions.index', ['package_id' => $package->id]));
+            ->get(route('admin.subscriptions.index', ['package_id' => $this->starterPackage->id]));
 
         $response->assertStatus(200);
         $response->assertViewIs('admin.subscriptions.index');
     }
 
+    #[Test]
     public function test_packages_display_features_correctly(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
 
-        $businessPackage = Package::where('name', 'business')->first();
-        $proPackage = Package::where('name', 'pro')->first();
-        $starterPackage = Package::where('name', 'starter')->first();
-        $trialPackage = Package::where('name', 'trial')->first();
+        // Utiliser les packages en cache
 
         // Business package (ancien pro) - doit avoir des fonctionnalités
-        if ($businessPackage->hasWeeklyReports()) {
+        if ($this->businessPackage->hasWeeklyReports()) {
             $response->assertSee('Rapports hebdo.');
         }
-        if ($businessPackage->hasPrioritySupport()) {
+        if ($this->businessPackage->hasPrioritySupport()) {
             $response->assertSee('Support prioritaire');
         }
 
         // Pro package (ancien business) - doit avoir des fonctionnalités aussi
-        if ($proPackage->hasWeeklyReports()) {
+        if ($this->proPackage->hasWeeklyReports()) {
             $response->assertSee('Rapports hebdo.');
         }
-        if ($proPackage->hasPrioritySupport()) {
+        if ($this->proPackage->hasPrioritySupport()) {
             $response->assertSee('Support prioritaire');
         }
     }
 
+    #[Test]
     public function test_packages_display_duration_and_recurring_info(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -154,6 +170,7 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Une seule fois'); // Badge one_time_only pour trial
     }
 
+    #[Test]
     public function test_packages_show_product_limits_correctly(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -161,34 +178,26 @@ class PackageManagementTest extends TestCase
         $response->assertStatus(200);
 
         // Trial et Starter: pas de produits (0)
-        $trialPackage = Package::where('name', 'trial')->first();
-        $starterPackage = Package::where('name', 'starter')->first();
-
-        if ($trialPackage->products_limit === 0) {
+        if ($this->trialPackage->products_limit === 0) {
             $response->assertSee('-'); // Indicateur pour 0 produit
         }
 
         // Pro: 5 produits
-        $proPackage = Package::where('name', 'pro')->first();
-        if ($proPackage->products_limit > 0) {
-            $response->assertSee((string) $proPackage->products_limit);
+        if ($this->proPackage->products_limit > 0) {
+            $response->assertSee((string) $this->proPackage->products_limit);
         }
 
         // Business: 10 produits
-        $businessPackage = Package::where('name', 'business')->first();
-        if ($businessPackage->products_limit > 0) {
-            $response->assertSee((string) $businessPackage->products_limit);
+        if ($this->businessPackage->products_limit > 0) {
+            $response->assertSee((string) $this->businessPackage->products_limit);
         }
     }
 
+    #[Test]
     public function test_subscription_count_is_accurate(): void
     {
-        $package = Package::where('name', 'starter')->first();
-
         // Créer quelques souscriptions
-        UserSubscription::factory()->count(5)->create([
-            'package_id' => $package->id,
-        ]);
+        $this->createSubscriptionsForPackage($this->starterPackage, 5);
 
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
 
@@ -196,6 +205,7 @@ class PackageManagementTest extends TestCase
         $response->assertSee('5'); // Le compteur doit afficher 5
     }
 
+    #[Test]
     public function test_action_buttons_are_present(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -213,6 +223,7 @@ class PackageManagementTest extends TestCase
         $response->assertSee('mdi-eye');
     }
 
+    #[Test]
     public function test_recommended_badge_is_shown_for_business_package(): void
     {
         $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
@@ -223,6 +234,7 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Recommandé');
     }
 
+    #[Test]
     public function test_empty_state_when_no_packages(): void
     {
         // Supprimer tous les packages

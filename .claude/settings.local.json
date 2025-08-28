@@ -14,7 +14,8 @@
       "Bash(composer:*)",
       "mcp__laravel-boost__last-error",
       "mcp__laravel-boost__read-log-entries",
-      "Bash(vendor/bin/pint:*)"
+      "Bash(vendor/bin/pint:*)",
+      "Bash(./vendor/bin/phpstan analyse:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

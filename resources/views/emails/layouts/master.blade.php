@@ -28,7 +28,7 @@
         }
         
         .email-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #075E54 0%, #054A42 100%);
             padding: 40px 30px;
             text-align: center;
         }
@@ -64,12 +64,12 @@
         }
         
         .otp-container {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #075E54 0%, #054A42 100%);
             border-radius: 12px;
             padding: 30px;
             text-align: center;
             margin: 30px 0;
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+            box-shadow: 0 4px 15px rgba(7, 94, 84, 0.3);
         }
         
         .otp-label {
@@ -98,7 +98,7 @@
         
         .button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #075E54 0%, #054A42 100%);
             color: white;
             padding: 15px 30px;
             border-radius: 8px;
@@ -120,21 +120,21 @@
         }
         
         .security-notice {
-            background-color: #fef5e7;
-            border-left: 4px solid #f6ad55;
+            background-color: #e8f5f0;
+            border-left: 4px solid #075E54;
             padding: 20px;
             border-radius: 0 8px 8px 0;
             margin: 30px 0;
         }
         
         .security-notice h3 {
-            color: #c05621;
+            color: #054A42;
             font-size: 16px;
             margin-bottom: 10px;
         }
         
         .security-notice p {
-            color: #744210;
+            color: #054A42;
             font-size: 14px;
         }
         

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Auth;
 
 use App\Livewire\Auth\ActivateAccountForm;
@@ -7,14 +9,15 @@ use App\Models\User;
 use App\Services\Auth\Contracts\AccountActivationServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ActivationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function users_can_view_activation_form_with_valid_identifier()
+    #[Test]
+    public function users_can_view_activation_form_with_valid_identifier(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -27,8 +30,8 @@ class ActivationTest extends TestCase
         $response->assertSeeLivewire(ActivateAccountForm::class);
     }
 
-    /** @test */
-    public function users_can_activate_account_with_valid_code()
+    #[Test]
+    public function users_can_activate_account_with_valid_code(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -53,8 +56,8 @@ class ActivationTest extends TestCase
         $this->assertNotNull($user->email_verified_at);
     }
 
-    /** @test */
-    public function activation_fails_with_invalid_code()
+    #[Test]
+    public function activation_fails_with_invalid_code(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -79,8 +82,8 @@ class ActivationTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
-    /** @test */
-    public function users_can_resend_activation_code()
+    #[Test]
+    public function users_can_resend_activation_code(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -103,8 +106,8 @@ class ActivationTest extends TestCase
             ->assertSet('loading', false); // Vérifier que le loading est arrêté
     }
 
-    /** @test */
-    public function activation_requires_valid_otp_code_format()
+    #[Test]
+    public function activation_requires_valid_otp_code_format(): void
     {
         Livewire::test(ActivateAccountForm::class, ['identifier' => 'test@example.com'])
             ->set('otpCode', '12') // Too short
@@ -112,8 +115,8 @@ class ActivationTest extends TestCase
             ->assertHasErrors(['otpCode']);
     }
 
-    /** @test */
-    public function activation_handles_service_exceptions()
+    #[Test]
+    public function activation_handles_service_exceptions(): void
     {
         $user = User::factory()->create([
             'email' => 'test@example.com',
@@ -130,5 +133,55 @@ class ActivationTest extends TestCase
             ->set('otpCode', '123456')
             ->call('activateAccount')
             ->assertSet('error', 'Une erreur est survenue lors de l\'activation. Veuillez réessayer.');
+    }
+
+    #[Test]
+    public function activation_page_loads_for_verified_users(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'email_verified_at' => now(),
+        ]);
+
+        $response = $this->get(route('account.activate', ['identifier' => 'test@example.com']));
+
+        // L'utilisateur peut accéder à la page même s'il est déjà vérifié
+        $response->assertSuccessful();
+    }
+
+    #[Test]
+    public function activation_form_handles_empty_identifier(): void
+    {
+        $response = $this->get(route('account.activate', ['identifier' => '']));
+
+        // La route redirige probablement vers une autre page
+        $this->assertContains($response->status(), [302, 404]);
+    }
+
+    #[Test]
+    public function activation_validates_required_otp_code(): void
+    {
+        Livewire::test(ActivateAccountForm::class, ['identifier' => 'test@example.com'])
+            ->call('activateAccount')
+            ->assertHasErrors(['otpCode' => 'required']);
+    }
+
+    #[Test]
+    public function resend_activation_handles_service_exceptions(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'email_verified_at' => null,
+        ]);
+
+        $activationService = $this->createMock(AccountActivationServiceInterface::class);
+        $activationService->method('sendActivationCode')
+            ->willThrowException(new \Exception('Service error'));
+
+        $this->app->instance(AccountActivationServiceInterface::class, $activationService);
+
+        Livewire::test(ActivateAccountForm::class, ['identifier' => 'test@example.com'])
+            ->call('resendActivationCode')
+            ->assertSet('error', 'Impossible de renvoyer le code. Veuillez réessayer plus tard.');
     }
 }

@@ -68,26 +68,24 @@ class InternalTransactionListTest extends TestCase
     /** @test */
     public function customer_can_only_see_their_own_internal_transactions()
     {
-        // Ensure clean state - delete all existing transactions
         InternalTransaction::query()->delete();
 
-        // Create ONLY credit transactions for this customer using factory states
-        InternalTransaction::factory()->credit()->count(3)->create([
+        InternalTransaction::factory()->credit()->count(2)->create([
             'wallet_id' => $this->wallet->id,
             'created_by' => $this->customer->id,
+            'description' => 'My Transaction Customer 1',
         ]);
 
-        // Create debit transactions for OTHER customer (should not be visible)
         InternalTransaction::factory()->debit()->count(2)->create([
             'wallet_id' => $this->otherWallet->id,
             'created_by' => $this->otherCustomer->id,
+            'description' => 'Other Transaction Customer 2',
         ]);
 
-        // The customer should only see their own 3 credit transactions (skip data verification)
         Livewire::actingAs($this->customer)
             ->test(\App\Livewire\Customer\InternalTransactionDataTable::class)
-            ->assertSee('Crédit') // Should see credit transactions
-            ->assertDontSee('Débit'); // Should not see debit transactions
+            ->assertSee('My Transaction Customer 1') // Should see their own transactions
+            ->assertDontSee('Other Transaction Customer 2'); // Should not see other customer's transactions
     }
 
     /** @test */
