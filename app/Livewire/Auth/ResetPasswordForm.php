@@ -12,13 +12,13 @@ use Livewire\Component;
 
 class ResetPasswordForm extends Component
 {
-    public $token;
-    public $identifier;
-    public $resetType;
-    public $password = '';
-    public $password_confirmation = '';
-    public $error = null;
-    public $loading = false;
+    public string $token;
+    public string $identifier;
+    public string $resetType;
+    public string $password = '';
+    public string $password_confirmation = '';
+    public ?string $error = null;
+    public bool $loading = false;
 
     protected OtpServiceInterface $otpService;
 
@@ -27,16 +27,16 @@ class ResetPasswordForm extends Component
         $this->otpService = $otpService;
     }
 
-    public function mount($token, $identifier, $resetType = 'email')
+    public function mount(string $token, string $identifier, string $resetType = 'email')
     {
         $this->token = $token;
         $this->identifier = $identifier;
-        $this->resetType = is_string($resetType) ? LoginChannel::make($resetType) : $resetType;
+        $this->resetType = $resetType;
     }
 
     public function isEmailReset(): bool
     {
-        return $this->resetType->equals(LoginChannel::EMAIL());
+        return $this->resetType === LoginChannel::EMAIL()->value;
     }
 
     public function getIdentifierLabel(): string
@@ -51,7 +51,7 @@ class ResetPasswordForm extends Component
 
     protected function rules()
     {
-        return ResetPasswordFormRequest::getRulesForResetType($this->resetType->value);
+        return ResetPasswordFormRequest::getRulesForResetType($this->resetType);
     }
 
     protected function messages()
@@ -93,7 +93,7 @@ class ResetPasswordForm extends Component
     public function render()
     {
         return view('livewire.auth.reset-password-form', [
-            'resetType' => $this->resetType,
+            'resetType' => LoginChannel::from($this->resetType),
         ]);
     }
 

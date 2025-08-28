@@ -20,13 +20,12 @@ class InternalTransactionFactory extends Factory
      */
     public function definition(): array
     {
-        $transactionType = $this->faker->randomElement(TransactionType::values());
         $amount = $this->faker->numberBetween(1000, 50000);
 
         return [
             'wallet_id' => Wallet::factory(),
             'amount' => $amount,
-            'transaction_type' => $transactionType,
+            'transaction_type' => $this->faker->randomElement(['credit', 'debit']),
             'status' => $this->faker->randomElement(TransactionStatus::values()),
             'description' => $this->faker->optional()->sentence(),
             'related_type' => null,
