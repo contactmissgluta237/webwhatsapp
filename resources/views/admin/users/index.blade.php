@@ -6,29 +6,31 @@
 
 <!-- Breadcrumb start -->
 <div class="row mx-0 mt-1 mb-1">
-    <div class="col-8 p-0">
-        <h2 class="content-header-title mb-0">{{ __('User Management') }}</h2>
-        <div class="breadcrumb-wrapper">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="la la-home"></i>{{ __('Home') }}</a></li>
-                <li class="breadcrumb-item active">{{ __('Users') }}</li>
-            </ol>
+    <div class="content-header-left col-md-6 col-12 mb-2">
+        <h3 class="content-header-title text-whatsapp">{{ __('Gestion des Utilisateurs') }}</h3>
+        <div class="row breadcrumbs-top">
+            <div class="breadcrumb-wrapper col-12">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Accueil</a></li>
+                    <li class="breadcrumb-item active">Utilisateurs</li>
+                </ol>
+            </div>
         </div>
     </div>
-    <div class="col-4 p-0">
-        <div class="d-flex justify-content-end">
-            <a href="{{ route('admin.users.create') }}" class="btn btn-info">{{ __('Create a new user') }}</a>
-        </div>
+    <div class="content-header-right col-md-6 col-12 text-right">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-whatsapp rounded btn-glow">
+            <i class="la la-plus mr-1"></i> {{ __('Créer un utilisateur') }}
+        </a>
     </div>
 </div>
 
-<!-- Ticket start -->
-<div class="row ticket-app p-0">
-    <div class="col-12 p-0">
-        <div class="card card-border">
-            <div class="card-header">
-                <h4 class="card-title">
-                    {{ __('Users List') }}
+<!-- Users List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">
+                    {{ __('Liste des Utilisateurs') }}
                 </h4>
             </div>
             <div class="card-body">
@@ -39,5 +41,4 @@
         </div>
     </div>
 </div>
-<!-- Ticket end -->
 @endsection

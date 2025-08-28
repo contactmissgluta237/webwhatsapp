@@ -110,7 +110,7 @@ final class WhatsAppConversation extends Model
      */
     public function getWalletCost(): float
     {
-        return $this->messageUsageLogs()
+        return (float) $this->messageUsageLogs()
             ->where('billing_type', \App\Enums\BillingType::WALLET_DIRECT)
             ->sum('total_cost');
     }
@@ -120,7 +120,7 @@ final class WhatsAppConversation extends Model
      */
     public function getTotalCost(): float
     {
-        return $this->messageUsageLogs()->sum('total_cost');
+        return (float) $this->messageUsageLogs()->sum('total_cost');
     }
 
     public function getDisplayName(): string

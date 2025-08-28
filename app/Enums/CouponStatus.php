@@ -29,11 +29,6 @@ class CouponStatus extends Enum
         ];
     }
 
-    public function label(): string
-    {
-        return static::labels()[$this->name];
-    }
-
     public function badge(): string
     {
         return match ($this->value) {

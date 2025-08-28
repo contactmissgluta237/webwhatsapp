@@ -160,8 +160,8 @@ final class ReferralService
             ->map(function ($earning) {
                 return [
                     'user' => $earning->referrer,
-                    'total_earnings' => $earning->total_earnings,
-                    'total_referrals' => $earning->total_referrals,
+                    'total_earnings' => (float) $earning->getAttributeValue('total_earnings'),
+                    'total_referrals' => (int) $earning->getAttributeValue('total_referrals'),
                     'commission_rate' => $earning->referrer->referral_commission_percentage,
                 ];
             })

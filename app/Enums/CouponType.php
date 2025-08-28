@@ -25,9 +25,4 @@ class CouponType extends Enum
             'FIXED_AMOUNT' => 'Montant Fixe',
         ];
     }
-
-    public function label(): string
-    {
-        return static::labels()[$this->name];
-    }
 }

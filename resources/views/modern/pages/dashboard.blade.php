@@ -19,10 +19,10 @@
 
 @section('content')
 <!-- Breadcrumb start -->
-<div class="content-header-left col-md-8 col-12 mb-2">
-    <div class="row breadcrumbs-top">
-        <div class="col-12">
-            <h2 class="content-header-title float-left mb-0">Dashboard Admin</h2>
+<div class="row mx-0 mt-1 mb-1">
+    <div class="content-header-left col-md-6 col-12 mb-2">
+        <h3 class="content-header-title text-whatsapp">Dashboard Admin</h3>
+        <div class="row breadcrumbs-top">
             <div class="breadcrumb-wrapper col-12">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('modern.dashboard') }}">Accueil</a></li>
@@ -44,9 +44,9 @@
 <!-- System Account Balances with Modern Cards -->
 <div class="row match-height">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Soldes des Comptes Système</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Soldes des Comptes Système</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
             </div>
             <div class="card-content">
@@ -61,9 +61,9 @@
 <!-- System Account Management -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Gestion des Comptes Système</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Gestion des Comptes Système</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                 <div class="heading-elements">
                     <ul class="list-inline mb-0">
@@ -85,9 +85,9 @@
 <!-- Additional Analytics Section -->
 <div class="row">
     <div class="col-12 col-xl-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Activité Récente</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Activité Récente</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
                 <div class="heading-elements">
                     <ul class="list-inline mb-0">
@@ -156,9 +156,9 @@
         </div>
     </div>
     <div class="col-12 col-xl-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title">Statistiques du Jour</h4>
+        <div class="card shadow-none border-gray-light">
+            <div class="card-header bg-white border-bottom-0">
+                <h4 class="card-title text-whatsapp">Statistiques du Jour</h4>
                 <a class="heading-elements-toggle"><i class="la la-ellipsis-v font-medium-3"></i></a>
             </div>
             <div class="card-content">
