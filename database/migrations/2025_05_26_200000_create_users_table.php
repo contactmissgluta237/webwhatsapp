@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('affiliation_code')->unique()->nullable();
             $table->foreignId('referrer_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->decimal('referral_commission_percentage', 5, 2)->default(10.00);
             $table->unsignedBigInteger('country_id')->nullable();
             $table->foreign('country_id')->references('id')->on('countries');
             $table->string('currency', 3)->default('XAF'); // Devise par défaut basée sur le pays

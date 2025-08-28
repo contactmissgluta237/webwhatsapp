@@ -24,16 +24,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property PaymentMethod|null $payment_method
  * @property string|null $gateway_transaction_id
- * @property array|null $gateway_response
+ * @property string|null $gateway_response
  * @property string|null $sender_name
- * @property string|null $sender_phone
- * @property string|null $sender_address
- * @property string|null $sender_bank
  * @property string|null $sender_account
  * @property string|null $receiver_name
- * @property string|null $receiver_phone
- * @property string|null $receiver_address
- * @property string|null $receiver_bank
  * @property string|null $receiver_account
  * @property int $created_by
  * @property int|null $approved_by
@@ -46,6 +40,16 @@ use Illuminate\Support\Carbon;
  * @property-read Wallet $wallet
  * @property-read User $creator
  * @property-read User|null $approver
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction recharges()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction withdrawals()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction automatic()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction manual()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction pending()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction completed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ExternalTransaction needsApproval()
  */
 class ExternalTransaction extends Model
 {

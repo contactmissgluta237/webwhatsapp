@@ -45,11 +45,16 @@ use Spatie\MediaLibrary\HasMedia;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
+ * == Accessors ==
+ * @property-read string $session_name_with_user
+ *
  * == Relationships ==
  * @property-read User $user
  * @property-read Collection|WhatsAppConversation[] $conversations
  * @property-read AiContext|null $aiContext
  * @property-read AiModel|null $aiModel
+ * @property-read Collection|UserProduct[] $userProducts
+ * @property-read Collection|AiUsageLog[] $aiUsageLogs
  */
 final class WhatsAppAccount extends Model implements HasMedia
 {

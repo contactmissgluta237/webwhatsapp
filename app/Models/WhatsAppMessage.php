@@ -23,15 +23,20 @@ use Illuminate\Support\Carbon;
  * @property MessageDirection $direction
  * @property string $content
  * @property MessageType $message_type
+ * @property MessageSubtype|null $message_subtype
  * @property bool $is_ai_generated
  * @property string|null $ai_model_used
  * @property float|null $ai_confidence
+ * @property array|null $metadata
+ * @property array|null $media_urls
  * @property Carbon|null $processed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
  *
  * == Relationships ==
  * @property-read WhatsAppConversation $conversation
+ * @property-read \Illuminate\Database\Eloquent\Collection|AiUsageLog[] $aiUsageLogs
+ * @property-read MessageUsageLog|null $messageUsageLog
  */
 final class WhatsAppMessage extends Model
 {

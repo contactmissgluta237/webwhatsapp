@@ -33,6 +33,12 @@ use Illuminate\Support\Carbon;
  * @property-read WhatsAppAccountUsage|null $whatsappAccountUsage
  * @property-read WhatsAppConversation $whatsappConversation
  * @property-read User $user
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|MessageUsageLog byBillingType(BillingType $billingType)
+ * @method static \Illuminate\Database\Eloquent\Builder|MessageUsageLog byConversation(int $conversationId)
+ * @method static \Illuminate\Database\Eloquent\Builder|MessageUsageLog byUser(int $userId)
  */
 class MessageUsageLog extends Model
 {

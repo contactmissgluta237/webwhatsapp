@@ -24,6 +24,11 @@ use Illuminate\Support\Carbon;
  *
  * == Relationships ==
  * @property-read Collection|City[] $cities
+ *
+ * == Scopes ==
+ *
+ * @method static Builder|Country active()
+ * @method static Builder|Country ordered()
  */
 class Country extends Model
 {

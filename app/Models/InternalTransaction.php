@@ -31,6 +31,12 @@ use Illuminate\Support\Carbon;
  * @property-read User $creator
  * @property-read User|null $recipient
  * @property-read Model|null $related
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|InternalTransaction credits()
+ * @method static \Illuminate\Database\Eloquent\Builder|InternalTransaction debits()
+ * @method static \Illuminate\Database\Eloquent\Builder|InternalTransaction completed()
  */
 class InternalTransaction extends Model
 {

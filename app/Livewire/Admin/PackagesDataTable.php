@@ -80,10 +80,14 @@ final class PackagesDataTable extends BaseDataTable
             Column::make('Limites', 'id')
                 ->html()
                 ->format(function ($value, $row) {
+                    // Debug: Let's see what we get
+                    $debug = "ID:{$row->id} - M:{$row->messages_limit} - A:{$row->accounts_limit} - P:{$row->products_limit}";
+
                     return '<div class="small">
-                        <div><i class="la la-comment text-whatsapp mr-1"></i> '.number_format((int) ($row->messages_limit ?? 0)).' messages</div>
-                        <div><i class="la la-whatsapp text-whatsapp mr-1"></i> '.number_format((int) ($row->accounts_limit ?? 0)).' compte'.((int) ($row->accounts_limit ?? 0) > 1 ? 's' : '').'</div>
-                        <div><i class="la la-shopping-bag text-whatsapp mr-1"></i> '.number_format((int) ($row->products_limit ?? 0)).' produit'.((int) ($row->products_limit ?? 0) > 1 ? 's' : '').'</div>
+                        <div><i class="la la-comment text-whatsapp mr-1"></i> '.number_format((int) $row->messages_limit).' messages</div>
+                        <div><i class="la la-whatsapp text-whatsapp mr-1"></i> '.number_format((int) $row->accounts_limit).' compte'.((int) $row->accounts_limit > 1 ? 's' : '').'</div>
+                        <div><i class="la la-shopping-bag text-whatsapp mr-1"></i> '.number_format((int) $row->products_limit).' produit'.((int) $row->products_limit > 1 ? 's' : '').'</div>
+                        <div class="text-muted small">'.$debug.'</div>
                     </div>';
                 }),
 
@@ -117,7 +121,7 @@ final class PackagesDataTable extends BaseDataTable
                 ->format(fn ($value) => $value->format('j M Y H:i')),
 
             Column::make('Actions')
-                ->label(fn (Package $row) => view('partials.admin.packages.actions', ['package' => $row]))
+                ->label(fn (Package $row) => view('partials.admin.packages.actions', ['package' => $row])->render())
                 ->html(),
         ];
     }

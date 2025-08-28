@@ -17,6 +17,10 @@ use Illuminate\Support\Carbon;
  * @property string $display_name
  * @property string|null $description
  * @property float $price
+ * @property float|null $promotional_price
+ * @property Carbon|null $promotion_starts_at
+ * @property Carbon|null $promotion_ends_at
+ * @property bool $promotion_is_active
  * @property string $currency
  * @property int $messages_limit
  * @property int $context_limit
@@ -33,6 +37,11 @@ use Illuminate\Support\Carbon;
  *
  * == Relationships ==
  * @property-read \Illuminate\Database\Eloquent\Collection|UserSubscription[] $subscriptions
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|Package active()
+ * @method static \Illuminate\Database\Eloquent\Builder|Package ordered()
  */
 class Package extends Model
 {

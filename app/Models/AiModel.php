@@ -34,6 +34,11 @@ use Illuminate\Support\Carbon;
  *
  * == Relationships ==
  * @property-read Collection|WhatsAppAccount[] $whatsappAccounts
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|AiModel active()
+ * @method static \Illuminate\Database\Eloquent\Builder|AiModel byProvider(AiProvider $provider)
  */
 final class AiModel extends Model
 {

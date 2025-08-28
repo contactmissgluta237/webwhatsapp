@@ -59,7 +59,10 @@ Route::middleware(['auth', 'role:admin'])
         Route::prefix('packages')->name('packages.')->group(function () {
             Route::get('/', App\Http\Controllers\Admin\Packages\IndexController::class)->name('index');
             Route::get('/create', App\Http\Controllers\Admin\Packages\CreateController::class)->name('create');
+            Route::get('/{package}', App\Http\Controllers\Admin\Packages\ShowController::class)->name('show');
             Route::get('/{package}/edit', App\Http\Controllers\Admin\Packages\EditController::class)->name('edit');
+            Route::post('/{package}/toggle-status', App\Http\Controllers\Admin\Packages\ToggleStatusController::class)->name('toggle-status');
+            Route::delete('/{package}', App\Http\Controllers\Admin\Packages\DeleteController::class)->name('delete');
         });
 
         // Ticket management routes

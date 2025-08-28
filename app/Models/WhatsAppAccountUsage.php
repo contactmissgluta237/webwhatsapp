@@ -11,11 +11,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
+ * == Properties ==
+ *
  * @property int $id
  * @property int|null $user_subscription_id
- * @property int $whats_app_account_id
+ * @property int $whatsapp_account_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ *
+ * == Accessors ==
+ * @property-read int $messages_used
+ * @property-read float $overage_cost_paid_xaf
+ * @property-read int $media_messages_count
+ * @property-read int $overage_messages_used
+ * @property-read Carbon|null $last_message_at
+ * @property-read Carbon|null $last_overage_payment_at
+ * @property-read float $estimated_cost_xaf
+ *
+ * == Relationships ==
  * @property-read UserSubscription|null $subscription
  * @property-read WhatsAppAccount $whatsAppAccount
  * @property-read \Illuminate\Database\Eloquent\Collection|MessageUsageLog[] $messageUsageLogs

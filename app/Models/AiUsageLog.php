@@ -7,7 +7,49 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * == Properties ==
+ *
+ * @property int $id
+ * @property int $user_id
+ * @property int $whatsapp_account_id
+ * @property int $whatsapp_conversation_id
+ * @property int $whatsapp_message_id
+ * @property string $ai_model
+ * @property string $provider
+ * @property int $prompt_tokens
+ * @property int $completion_tokens
+ * @property int $total_tokens
+ * @property int $cached_tokens
+ * @property float $prompt_cost_usd
+ * @property float $completion_cost_usd
+ * @property float $cached_cost_usd
+ * @property float $total_cost_usd
+ * @property float $total_cost_xaf
+ * @property int $request_length
+ * @property int $response_length
+ * @property int $api_attempts
+ * @property int $response_time_ms
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ *
+ * == Relationships ==
+ * @property-read User $user
+ * @property-read WhatsAppAccount $whatsappAccount
+ * @property-read WhatsAppConversation $conversation
+ * @property-read WhatsAppMessage $message
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byUser(int $userId)
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byAccount(int $accountId)
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byConversation(int $conversationId)
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byDateRange($startDate, $endDate)
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byProvider(string $provider)
+ * @method static \Illuminate\Database\Eloquent\Builder|AiUsageLog byModel(string $model)
+ */
 final class AiUsageLog extends Model
 {
     use HasFactory;

@@ -21,7 +21,12 @@ use Illuminate\Support\Carbon;
  * @property int $package_id
  * @property Carbon $starts_at
  * @property Carbon $ends_at
+ * @property Carbon|null $next_billing_date
  * @property string $status
+ * @property int $messages_limit
+ * @property int $context_limit
+ * @property int $accounts_limit
+ * @property int $products_limit
  * @property float|null $amount_paid
  * @property string|null $payment_method
  * @property string|null $transaction_id
@@ -35,6 +40,12 @@ use Illuminate\Support\Carbon;
  * @property-read User $user
  * @property-read Package $package
  * @property-read \Illuminate\Database\Eloquent\Collection|WhatsAppAccountUsage[] $accountUsages
+ *
+ * == Scopes ==
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder|UserSubscription active()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserSubscription expired()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserSubscription current()
  */
 class UserSubscription extends Model
 {

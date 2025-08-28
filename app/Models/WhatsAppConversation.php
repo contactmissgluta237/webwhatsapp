@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string $chat_id
  * @property string $contact_phone
  * @property string|null $contact_name
+ * @property string|null $public_name
  * @property bool $is_group
  * @property Carbon|null $last_message_at
  * @property int $unread_count
