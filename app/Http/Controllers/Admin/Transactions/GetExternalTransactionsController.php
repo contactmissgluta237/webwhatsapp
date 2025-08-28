@@ -1,23 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\Transactions;
 
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
-class GetExternalTransactionsController extends Controller
+final class GetExternalTransactionsController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:'.PermissionEnum::TRANSACTIONS_VIEW_EXTERNAL()->value);
-    }
-
     /**
-     * Display a listing of the external transactions.
+     * Display external transactions listing page.
      *
-     * Route: GET /admin/transactions
-     * Name: admin.transactions.index
+     * @endpoint GET /admin/transactions
      */
     public function __invoke(): View
     {

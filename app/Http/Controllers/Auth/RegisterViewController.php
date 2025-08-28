@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -8,7 +10,9 @@ use Illuminate\View\View;
 final class RegisterViewController extends Controller
 {
     /**
-     * Handle the incoming request to display the registration form.
+     * Display the registration form.
+     *
+     * @endpoint GET /register
      */
     public function __invoke(): View
     {

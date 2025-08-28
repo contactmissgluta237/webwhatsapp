@@ -11,18 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 final class HeartbeatController extends Controller
 {
-    public function __construct(
-        private readonly UserPresenceService $userPresenceService
-    ) {}
-
     /**
      * Mark the authenticated user as online (heartbeat).
      *
      * @endpoint POST /api/user/heartbeat
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(UserPresenceService $userPresenceService): JsonResponse
     {
-        $this->userPresenceService->markUserOnline(Auth::id());
+        $userPresenceService->markUserOnline(Auth::id());
 
         return response()->json([
             'message' => 'Heartbeat recorded.',

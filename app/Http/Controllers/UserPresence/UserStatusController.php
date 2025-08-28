@@ -11,18 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 final class UserStatusController extends Controller
 {
-    public function __construct(
-        private readonly UserPresenceService $userPresenceService
-    ) {}
-
     /**
      * Get the authenticated user's online status.
      *
      * @endpoint GET /api/user/status
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(UserPresenceService $userPresenceService): JsonResponse
     {
-        $isOnline = $this->userPresenceService->isUserOnline(Auth::id());
+        $isOnline = $userPresenceService->isUserOnline(Auth::id());
 
         return response()->json([
             'is_online' => $isOnline,

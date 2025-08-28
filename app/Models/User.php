@@ -38,6 +38,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $last_login_at
  * @property bool $is_active
  * @property string|null $affiliation_code
+ * @property float $referral_commission_percentage
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -58,6 +59,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read UserSubscription|null $activeSubscription
  * @property-read Collection|UserProduct[] $userProducts
  * @property-read Collection|WhatsAppAccount[] $whatsappAccounts
+ * @property-read Collection|ReferralEarning[] $referralEarnings
+ * @property-read Collection|CouponUsage[] $couponUsages
  *
  * @method MorphMany|PushSubscription active()
  */
@@ -87,6 +90,7 @@ class User extends Authenticatable implements HasMedia
         'country_id',
         'currency',
         'referrer_id',
+        'referral_commission_percentage',
         'locale',
     ];
 
@@ -111,6 +115,7 @@ class User extends Authenticatable implements HasMedia
         'last_login_at' => 'datetime',
         'is_active' => 'boolean',
         'password' => 'hashed',
+        'referral_commission_percentage' => 'decimal:2',
     ];
 
     protected static function boot(): void
@@ -231,6 +236,16 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(\App\Models\MessageUsageLog::class);
     }
 
+    public function referralEarnings(): HasMany
+    {
+        return $this->hasMany(\App\Models\ReferralEarning::class, 'referrer_id');
+    }
+
+    public function couponUsages(): HasMany
+    {
+        return $this->hasMany(\App\Models\CouponUsage::class);
+    }
+
     // ================================================================================
     // TRAIT METHODS
     // ================================================================================
@@ -325,7 +340,7 @@ class User extends Authenticatable implements HasMedia
 
     public function totalReferralEarnings(): float
     {
-        return 0.0;
+        return (float) $this->referralEarnings()->sum('commission_amount') ?: 0.0;
     }
 
     /**

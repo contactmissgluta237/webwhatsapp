@@ -1,28 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\Users;
 
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
-class CreateUserController extends Controller
+final class CreateUserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:'.PermissionEnum::USERS_CREATE()->value);
-    }
-
     /**
-     * Show the form for creating a new user.
+     * Display user creation form.
      *
-     * Route: GET /admin/users/create
-     * Name: admin.users.create
+     * @endpoint GET /admin/users/create
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
-        // You might want to add authorization here, e.g., $this->authorize('users.create');
-
         return view('admin.users.create');
     }
 }

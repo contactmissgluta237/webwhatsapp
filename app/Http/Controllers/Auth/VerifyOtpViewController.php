@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\VerificationType;
@@ -10,7 +12,9 @@ use Illuminate\View\View;
 final class VerifyOtpViewController extends Controller
 {
     /**
-     * Handle the incoming request to display the OTP verification form.
+     * Display the OTP verification form.
+     *
+     * @endpoint GET /verify-otp
      */
     public function __invoke(Request $request): View
     {

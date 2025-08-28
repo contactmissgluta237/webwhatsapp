@@ -34,6 +34,25 @@ final class PackagesDataTable extends BaseDataTable
     public function builder(): Builder
     {
         return Package::query()
+            ->select([
+                'id',
+                'name',
+                'display_name',
+                'description',
+                'price',
+                'promotional_price',
+                'promotion_starts_at',
+                'promotion_ends_at',
+                'promotion_is_active',
+                'currency',
+                'messages_limit',
+                'context_limit',
+                'accounts_limit',
+                'products_limit',
+                'is_active',
+                'sort_order',
+                'created_at',
+            ])
             ->with(['subscriptions'])
             ->orderBy('sort_order')
             ->orderBy('price');
@@ -80,14 +99,10 @@ final class PackagesDataTable extends BaseDataTable
             Column::make('Limites', 'id')
                 ->html()
                 ->format(function ($value, $row) {
-                    // Debug: Let's see what we get
-                    $debug = "ID:{$row->id} - M:{$row->messages_limit} - A:{$row->accounts_limit} - P:{$row->products_limit}";
-
                     return '<div class="small">
-                        <div><i class="la la-comment text-whatsapp mr-1"></i> '.number_format((int) $row->messages_limit).' messages</div>
-                        <div><i class="la la-whatsapp text-whatsapp mr-1"></i> '.number_format((int) $row->accounts_limit).' compte'.((int) $row->accounts_limit > 1 ? 's' : '').'</div>
-                        <div><i class="la la-shopping-bag text-whatsapp mr-1"></i> '.number_format((int) $row->products_limit).' produit'.((int) $row->products_limit > 1 ? 's' : '').'</div>
-                        <div class="text-muted small">'.$debug.'</div>
+                        <div><i class="la la-comment text-whatsapp mr-1"></i> '.number_format($row->messages_limit).' messages</div>
+                        <div><i class="la la-whatsapp text-whatsapp mr-1"></i> '.number_format($row->accounts_limit).' compte'.($row->accounts_limit > 1 ? 's' : '').'</div>
+                        <div><i class="la la-shopping-bag text-whatsapp mr-1"></i> '.number_format($row->products_limit).' produit'.($row->products_limit > 1 ? 's' : '').'</div>
                     </div>';
                 }),
 

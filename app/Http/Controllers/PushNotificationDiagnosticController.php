@@ -9,10 +9,16 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 final class PushNotificationDiagnosticController extends Controller
 {
+    /**
+     * Display push notification diagnostics page or return diagnostic data as JSON.
+     *
+     * @endpoint GET /push/diagnostic
+     */
     public function __invoke(Request $request): JsonResponse|View
     {
         $diagnostics = $this->runDiagnostics();
@@ -80,7 +86,7 @@ final class PushNotificationDiagnosticController extends Controller
     private function checkDatabase(): array
     {
         /** @var User|null $user */
-        $user = auth()->user();
+        $user = Auth::user();
 
         if (! $user) {
             return [

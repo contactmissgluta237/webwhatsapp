@@ -1,25 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\Users;
 
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
-class IndexUserController extends Controller
+final class IndexUserController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:'.PermissionEnum::USERS_VIEW()->value);
-    }
-
     /**
-     * Display a listing of the users.
+     * Display users listing page.
      *
-     * Route: GET /admin/users
-     * Name: admin.users.index
+     * @endpoint GET /admin/users
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
         return view('admin.users.index');
     }

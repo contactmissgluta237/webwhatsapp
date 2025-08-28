@@ -1,23 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\Transactions;
 
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
 
-class GetInternalTransactionsController extends Controller
+final class GetInternalTransactionsController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:'.PermissionEnum::TRANSACTIONS_VIEW_INTERNAL()->value);
-    }
-
     /**
-     * Display a listing of the internal transactions.
+     * Display internal transactions listing page.
      *
-     * Route: GET /admin/transactions/internal
-     * Name: admin.transactions.internal
+     * @endpoint GET /admin/transactions/internal
      */
     public function __invoke(): View
     {

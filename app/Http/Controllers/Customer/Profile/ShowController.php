@@ -1,25 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Customer\Profile;
 
-use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
-class ShowController extends Controller
+final class ShowController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('can:'.PermissionEnum::PROFILE_VIEW()->value);
-    }
-
     /**
-     * Display the customer's profile.
+     * Display customer profile page.
      *
-     * Route: GET /customer/profile
-     * Name: customer.profile.show
+     * @endpoint GET /customer/profile
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
         return view('customer.profile.show');
     }

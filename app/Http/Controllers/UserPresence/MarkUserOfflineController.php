@@ -11,18 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 final class MarkUserOfflineController extends Controller
 {
-    public function __construct(
-        private readonly UserPresenceService $userPresenceService
-    ) {}
-
     /**
      * Mark the authenticated user as offline.
      *
      * @endpoint POST /api/user/offline
      */
-    public function __invoke(): JsonResponse
+    public function __invoke(UserPresenceService $userPresenceService): JsonResponse
     {
-        $this->userPresenceService->markUserOffline(Auth::id());
+        $userPresenceService->markUserOffline(Auth::id());
 
         return response()->json(['message' => 'User marked as offline.']);
     }

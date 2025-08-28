@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -11,6 +13,11 @@ use Illuminate\View\View;
 
 final class ActivateAccountViewController extends Controller
 {
+    /**
+     * Display account activation form or process activation with code.
+     *
+     * @endpoint GET /activate-account
+     */
     public function __invoke(Request $request): RedirectResponse|View
     {
         $identifier = $request->get('identifier');

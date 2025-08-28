@@ -10,6 +10,11 @@ use Illuminate\View\View;
 
 final class IndexController extends Controller
 {
+    /**
+     * Display customer products listing page.
+     *
+     * @endpoint GET /customer/products
+     */
     public function __invoke(Request $request): View
     {
         return view('customer.products.index');
