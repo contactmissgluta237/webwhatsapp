@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customer\WhatsApp;
 
-use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\Enums\SimulatorMessageType;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;

@@ -68,7 +68,7 @@ class ExternalTransactionListTest extends TestCase
         ]);
 
         Livewire::actingAs($this->admin)
-            ->test(\App\Livewire\Admin\ExternalTransactionDataTable::class)
+            ->test(\App\Livewire\Admin\Transactions\DataTables\ExternalTransactionDataTable::class)
             ->assertSee('Recharge')
             ->assertSee('Retrait')
             ->assertSee('Terminé')
@@ -89,7 +89,7 @@ class ExternalTransactionListTest extends TestCase
         ]);
 
         $component = Livewire::actingAs($this->admin)
-            ->test(\App\Livewire\Admin\ExternalTransactionDataTable::class);
+            ->test(\App\Livewire\Admin\Transactions\DataTables\ExternalTransactionDataTable::class);
 
         // Vérifier que les deux types sont visibles initialement
         $component->assertSee('Recharge');
@@ -112,7 +112,7 @@ class ExternalTransactionListTest extends TestCase
         ]);
 
         $component = Livewire::actingAs($this->admin)
-            ->test(\App\Livewire\Admin\ExternalTransactionDataTable::class);
+            ->test(\App\Livewire\Admin\Transactions\DataTables\ExternalTransactionDataTable::class);
 
         // Vérifier que les deux statuts sont visibles initialement
         $component->assertSee('Terminé');
@@ -131,7 +131,7 @@ class ExternalTransactionListTest extends TestCase
         ]);
 
         Livewire::actingAs($this->admin)
-            ->test(\App\Livewire\Admin\ExternalTransactionDataTable::class)
+            ->test(\App\Livewire\Admin\Transactions\DataTables\ExternalTransactionDataTable::class)
             ->set('search', 'Jean')
             ->assertSee('Jean Dupont');
     }
@@ -147,7 +147,7 @@ class ExternalTransactionListTest extends TestCase
         ]);
 
         Livewire::actingAs($this->admin)
-            ->test(\App\Livewire\Admin\ExternalTransactionDataTable::class)
+            ->test(\App\Livewire\Admin\Transactions\DataTables\ExternalTransactionDataTable::class)
             ->assertSee('Approuver')
             ->assertSee('Annuler')
             ->assertSee('Détails')

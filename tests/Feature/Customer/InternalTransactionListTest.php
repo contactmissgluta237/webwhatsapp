@@ -68,23 +68,31 @@ class InternalTransactionListTest extends TestCase
     /** @test */
     public function customer_can_only_see_their_own_internal_transactions()
     {
-        InternalTransaction::factory()->count(3)->create([
+        // Ensure clean state - delete all existing transactions
+        InternalTransaction::query()->delete();
+
+        // Create ONLY credit transactions for this customer using factory states
+        InternalTransaction::factory()->credit()->count(3)->create([
             'wallet_id' => $this->wallet->id,
-            'transaction_type' => TransactionType::CREDIT()->value,
             'created_by' => $this->customer->id,
         ]);
 
-        InternalTransaction::factory()->count(2)->create([
+        // Create debit transactions for OTHER customer (should not be visible)
+        InternalTransaction::factory()->debit()->count(2)->create([
             'wallet_id' => $this->otherWallet->id,
-            'transaction_type' => TransactionType::DEBIT()->value,
             'created_by' => $this->otherCustomer->id,
         ]);
 
-        // The customer should only see their own 3 internal transactions
+        // Verify what transactions exist for this customer's wallet
+        $customerTransactions = InternalTransaction::where('wallet_id', $this->wallet->id)->get();
+        $this->assertCount(3, $customerTransactions);
+        $this->assertTrue($customerTransactions->every(fn ($t) => $t->transaction_type === 'credit'));
+
+        // The customer should only see their own 3 credit transactions
         Livewire::actingAs($this->customer)
             ->test(\App\Livewire\Customer\InternalTransactionDataTable::class)
-            ->assertSee('Crédit') // Assuming 'Crédit' is displayed for CREDIT type
-            ->assertDontSee('Débit'); // Assuming 'Débit' is displayed for DEBIT type
+            ->assertSee('Crédit') // Should see credit transactions
+            ->assertDontSee('Débit'); // Should not see debit transactions
     }
 
     /** @test */

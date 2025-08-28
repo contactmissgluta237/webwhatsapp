@@ -2,23 +2,23 @@
     <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown" 
             aria-haspopup="true" aria-expanded="false" title="Actions"
             data-boundary="window">
-        <i class="la la-ellipsis-v"></i>
+        <i class="la la-cog"></i>
     </button>
     <div class="dropdown-menu dropdown-menu-right" style="position: absolute; z-index: 1050; min-width: 220px;">
-        {{-- Voir détails du compte --}}
-        <a class="dropdown-item py-2" href="{{ route('admin.whatsapp.accounts.show', $account->id) }}">
-            <i class="la la-eye text-info mr-2"></i>
-            Voir détails
+        {{-- Éditer (ouvrir la page customer) --}}
+        <a class="dropdown-item py-2" href="{{ route('whatsapp.configure-ai', $account->id) }}">
+            <i class="la la-edit text-primary mr-2"></i>
+            Éditer
         </a>
         
         {{-- Voir statistiques --}}
         <a class="dropdown-item py-2" href="{{ route('admin.whatsapp.accounts.statistics', $account->id) }}">
-            <i class="la la-chart-bar text-primary mr-2"></i>
+            <i class="la la-chart-bar text-info mr-2"></i>
             Statistiques
         </a>
         
         {{-- Voir conversations --}}
-        <a class="dropdown-item py-2" href="{{ route('admin.whatsapp.conversations.index') }}?filters[whatsapp_account_id]={{ $account->id }}">
+        <a class="dropdown-item py-2" href="{{ route('customer.whatsapp.conversations.index', $account->id) }}">
             <i class="la la-comments text-success mr-2"></i>
             Conversations
             <span class="badge badge-secondary ml-1">{{ $account->conversations()->count() }}</span>
@@ -27,7 +27,12 @@
         <div class="dropdown-divider"></div>
         
         {{-- Toggle Agent IA --}}
-        @if ($account->agent_enabled)
+        @php
+            // Get fresh data to bypass cache issues
+            $freshAccount = \App\Models\WhatsAppAccount::find($account->id);
+            $isAgentActive = $freshAccount->agent_enabled && $freshAccount->ai_model_id;
+        @endphp
+        @if ($isAgentActive)
             <form method="POST" action="{{ route('admin.whatsapp.accounts.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
                 @csrf
                 <input type="hidden" name="enable" value="0">
@@ -54,8 +59,8 @@
         <div class="dropdown-divider"></div>
         
         {{-- Voir utilisateur --}}
-        @if(isset($user) || $account->user)
-            <a class="dropdown-item py-2" href="{{ route('admin.users.show', $user ?? $account->user) }}">
+        @if($account->user)
+            <a class="dropdown-item py-2" href="{{ route('admin.customers.show', $account->user) }}">
                 <i class="la la-user text-secondary mr-2"></i>
                 Voir utilisateur
             </a>
@@ -74,3 +79,41 @@
         </form>
     </div>
 </div>
+
+{{-- Style pour éviter les problèmes de scroll et améliorer l'ergonomie --}}
+<style>
+.dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #dee2e6 !important;
+}
+
+.dropdown-item {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+}
+
+.dropdown-item button {
+    cursor: pointer;
+}
+
+.dropdown-item button:hover,
+.dropdown-item button:focus {
+    background-color: transparent !important;
+}
+
+/* Empêcher les problèmes de scroll avec les DataTables */
+.dataTables_wrapper .dropdown {
+    position: static !important;
+}
+
+.dataTables_wrapper .dropdown-menu {
+    position: absolute !important;
+    transform: none !important;
+}
+</style>

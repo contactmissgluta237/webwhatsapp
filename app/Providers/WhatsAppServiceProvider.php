@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Contracts\WhatsApp\AIProviderServiceInterface;
-use App\Contracts\WhatsApp\MessageBuildServiceInterface;
-use App\Contracts\WhatsApp\ResponseFormatterServiceInterface;
-use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\Services\WhatsApp\AIProviderService;
+use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
+use App\Services\WhatsApp\Contracts\MessageBuildServiceInterface;
+use App\Services\WhatsApp\Contracts\ResponseFormatterServiceInterface;
+use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
 use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use App\Services\WhatsApp\MessageBuildService;

@@ -68,7 +68,7 @@ class WhatsAppAccountDataTable extends CustomerAccountDataTable
 
                 $fullName = $user->first_name.' '.$user->last_name;
 
-                $userUrl = route('admin.users.show', $user);
+                $userUrl = route('admin.customers.show', $user);
 
                 return '<div class="d-flex flex-column" style="line-height: 1.2;">
                     <a href="'.$userUrl.'" class="fw-bold text-primary mb-0 text-decoration-none">

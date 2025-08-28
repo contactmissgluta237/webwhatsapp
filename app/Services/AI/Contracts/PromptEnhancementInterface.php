@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Contracts;
+namespace App\Services\AI\Contracts;
 
 use App\Models\WhatsAppAccount;
 

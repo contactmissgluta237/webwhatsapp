@@ -61,7 +61,7 @@ class ForgotPasswordTest extends TestCase
 
         Livewire::test(ForgotPasswordForm::class)
             ->set('email', 'test@example.com')
-            ->set('resetMethod', LoginChannel::EMAIL())
+            ->set('resetMethod', LoginChannel::EMAIL()->value)
             ->call('sendResetLink')
             ->assertRedirect(route('password.verify.otp', [
                 'email' => 'test@example.com',
@@ -87,7 +87,7 @@ class ForgotPasswordTest extends TestCase
                 'country_id' => 1,
                 'phone_number' => '655332183',
             ])
-            ->set('resetMethod', LoginChannel::PHONE())
+            ->set('resetMethod', LoginChannel::PHONE()->value)
             ->call('sendResetLink')
             ->assertRedirect(route('password.verify.otp', [
                 'phoneNumber' => '+237655332183',
@@ -100,7 +100,7 @@ class ForgotPasswordTest extends TestCase
     {
         Livewire::test(ForgotPasswordForm::class)
             ->set('email', 'invalid-email')
-            ->set('resetMethod', LoginChannel::EMAIL())
+            ->set('resetMethod', LoginChannel::EMAIL()->value)
             ->call('sendResetLink')
             ->assertHasErrors(['email']);
     }
@@ -110,7 +110,7 @@ class ForgotPasswordTest extends TestCase
     {
         Livewire::test(ForgotPasswordForm::class)
             ->set('email', 'nonexistent@example.com')
-            ->set('resetMethod', LoginChannel::EMAIL())
+            ->set('resetMethod', LoginChannel::EMAIL()->value)
             ->call('sendResetLink')
             ->assertHasErrors(['email']);
     }
@@ -125,7 +125,7 @@ class ForgotPasswordTest extends TestCase
                 'country_id' => 1,
                 'phone_number' => '699999999',
             ])
-            ->set('resetMethod', LoginChannel::PHONE())
+            ->set('resetMethod', LoginChannel::PHONE()->value)
             ->call('sendResetLink')
             ->assertHasErrors(['phoneNumber']);
     }
@@ -142,7 +142,7 @@ class ForgotPasswordTest extends TestCase
 
         Livewire::test(ForgotPasswordForm::class)
             ->set('email', 'test@example.com')
-            ->set('resetMethod', LoginChannel::EMAIL())
+            ->set('resetMethod', LoginChannel::EMAIL()->value)
             ->call('sendResetLink')
             ->assertSet('error', 'Une erreur est survenue. Veuillez réessayer plus tard.');
     }

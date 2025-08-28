@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Customer\WhatsApp;
 
-use App\Contracts\PromptEnhancementInterface;
 use App\Enums\AgentType;
 use App\Enums\ResponseTime;
 use App\Http\Requests\Customer\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
 use App\Rules\PromptLengthRule;
+use App\Services\AI\Contracts\PromptEnhancementInterface;
 use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;

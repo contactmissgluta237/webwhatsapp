@@ -43,7 +43,7 @@ class InternalTransactionFactory extends Factory
     public function credit(): static
     {
         return $this->state(fn (array $attributes) => [
-            'transaction_type' => TransactionType::CREDIT(),
+            'transaction_type' => TransactionType::CREDIT()->value,
         ]);
     }
 
@@ -53,7 +53,7 @@ class InternalTransactionFactory extends Factory
     public function debit(): static
     {
         return $this->state(fn (array $attributes) => [
-            'transaction_type' => TransactionType::DEBIT(),
+            'transaction_type' => TransactionType::DEBIT()->value,
         ]);
     }
 

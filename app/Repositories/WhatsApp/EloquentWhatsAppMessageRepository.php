@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\WhatsApp;
 
 use App\DTOs\WhatsApp\MessageExchangeResult;
 use App\DTOs\WhatsApp\ProductDataDTO;
@@ -14,6 +14,7 @@ use App\Enums\MessageType;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
+use App\Repositories\WhatsApp\Contracts\WhatsAppMessageRepositoryInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;

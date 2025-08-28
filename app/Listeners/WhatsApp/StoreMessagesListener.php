@@ -14,7 +14,7 @@ use App\Models\UserSubscription;
 use App\Models\WhatsAppAccountUsage;
 use App\Notifications\WhatsApp\LowQuotaNotification;
 use App\Notifications\WhatsApp\WalletDebitedNotification;
-use App\Repositories\WhatsAppMessageRepositoryInterface;
+use App\Repositories\WhatsApp\Contracts\WhatsAppMessageRepositoryInterface;
 use App\Services\WhatsApp\Helpers\MessageBillingHelper;
 use Illuminate\Support\Facades\Log;
 

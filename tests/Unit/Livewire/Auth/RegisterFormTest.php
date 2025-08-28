@@ -171,7 +171,7 @@ class RegisterFormTest extends TestCase
             ->set('password_confirmation', 'password123')
             ->set('terms', true)
             ->call('register')
-            ->assertSet('error', 'Une erreur est survenue lors de la création du compte. Veuillez réessayer.')
+            ->assertSet('error', 'An error occurred while creating the account. Please try again.')
             ->assertSet('loading', false)
             ->assertSet('password', '')
             ->assertSet('password_confirmation', '');

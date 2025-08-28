@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace App\Contracts\WhatsApp;
+namespace App\Services\WhatsApp\Contracts;
 
 interface ResponseFormatterServiceInterface {}

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp;
 
-use App\Contracts\WhatsApp\MessageBuildServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\Helpers\AgentPromptHelper;
+use App\Services\WhatsApp\Contracts\MessageBuildServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp;
 
-use App\Contracts\WhatsApp\AIProviderServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 

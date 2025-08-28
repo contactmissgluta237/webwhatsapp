@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Customer\WhatsApp\Webhook;
 
-use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Events\WhatsApp\MessageProcessedEvent;
@@ -13,7 +12,8 @@ use App\Exceptions\NonTextMessageException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WhatsApp\Webhook\IncomingMessageRequest;
 use App\Models\WhatsAppAccount;
-use App\Repositories\WhatsAppAccountRepositoryInterface;
+use App\Repositories\WhatsApp\Contracts\WhatsAppAccountRepositoryInterface;
+use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use App\Services\WhatsApp\ConversationHistoryService;
 use App\Services\WhatsApp\Helpers\MessageTypeValidator;
 use Exception;

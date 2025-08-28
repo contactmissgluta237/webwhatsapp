@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
 use App\Livewire\Auth\LoginForm;
@@ -9,6 +11,7 @@ use App\Services\Auth\Contracts\AccountActivationServiceInterface;
 use App\Services\SMS\SmsServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -42,42 +45,34 @@ class AuthFlowTest extends TestCase
         $this->app->instance(SmsServiceInterface::class, $mockSmsService);
     }
 
-    /**
-     * Test that the login page can be rendered.
-     */
+    #[Test]
     public function test_login_page_can_be_rendered(): void
     {
         $response = $this->get('/login');
 
         $response->assertStatus(200);
-        $response->assertSee('Connexion');
+        $response->assertSeeLivewire(LoginForm::class);
     }
 
-    /**
-     * Test that the registration page can be rendered.
-     */
+    #[Test]
     public function test_registration_page_can_be_rendered(): void
     {
         $response = $this->get('/register');
 
         $response->assertStatus(200);
-        $response->assertSee('Inscription');
+        $response->assertSeeLivewire(RegisterForm::class);
     }
 
-    /**
-     * Test that the forgot password page can be rendered.
-     */
+    #[Test]
     public function test_forgot_password_page_can_be_rendered(): void
     {
         $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
-        $response->assertSee('Mot de passe oublié');
+        $response->assertViewIs('auth.forgot-password');
     }
 
-    /**
-     * Test user registration.
-     */
+    #[Test]
     public function test_user_can_register(): void
     {
         // Mock du service d'activation
@@ -100,9 +95,7 @@ class AuthFlowTest extends TestCase
         ]);
     }
 
-    /**
-     * Test user registration with invalid data.
-     */
+    #[Test]
     public function test_user_cannot_register_with_invalid_data(): void
     {
         Livewire::test(RegisterForm::class)
@@ -120,9 +113,7 @@ class AuthFlowTest extends TestCase
         ]);
     }
 
-    /**
-     * Test user login.
-     */
+    #[Test]
     public function test_user_can_login(): void
     {
         $user = User::factory()->create([
@@ -144,9 +135,7 @@ class AuthFlowTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /**
-     * Test user login with incorrect credentials.
-     */
+    #[Test]
     public function test_user_cannot_login_with_incorrect_credentials(): void
     {
         User::factory()->create([
@@ -162,5 +151,119 @@ class AuthFlowTest extends TestCase
             ->assertSet('error', 'Identifiants incorrects. Veuillez réessayer.');
 
         $this->assertGuest();
+    }
+
+    #[Test]
+    public function user_with_phone_number_can_be_created(): void
+    {
+        $user = User::factory()->create([
+            'phone_number' => '+237655332183',
+            'password' => bcrypt('password'),
+        ]);
+
+        $user->assignRole('customer');
+
+        // Vérifier que l'utilisateur avec numéro de téléphone est bien créé
+        $this->assertNotNull($user);
+        $this->assertEquals('+237655332183', $user->phone_number);
+        $this->assertTrue($user->hasRole('customer'));
+    }
+
+    #[Test]
+    public function authenticated_user_is_redirected_from_auth_pages(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('customer');
+        $this->actingAs($user);
+
+        // Vérifier la redirection depuis les pages d'auth
+        $this->get('/login')->assertRedirect('/');
+        $this->get('/register')->assertRedirect('/');
+        $this->get('/forgot-password')->assertRedirect('/');
+    }
+
+    #[Test]
+    public function user_can_logout(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('customer');
+        $this->actingAs($user);
+
+        $response = $this->post(route('logout'));
+
+        $response->assertRedirect('/');
+        $this->assertGuest();
+    }
+
+    #[Test]
+    public function login_rate_limiting_works(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        // Faire plusieurs tentatives échouées
+        for ($i = 0; $i < 5; $i++) {
+            Livewire::test(LoginForm::class)
+                ->set('email', 'test@example.com')
+                ->set('password', 'wrong-password')
+                ->set('loginMethod', 'email')
+                ->call('login');
+        }
+
+        // La prochaine tentative devrait être limitée
+        Livewire::test(LoginForm::class)
+            ->set('email', 'test@example.com')
+            ->set('password', 'password') // Bon mot de passe cette fois
+            ->set('loginMethod', 'email')
+            ->call('login')
+            ->assertSet('error', 'Une erreur est survenue. Veuillez réessayer.');
+    }
+
+    #[Test]
+    public function registration_creates_user_correctly(): void
+    {
+        $activationService = $this->createMock(AccountActivationServiceInterface::class);
+        $activationService->expects($this->once())->method('sendActivationCode');
+        $this->app->instance(AccountActivationServiceInterface::class, $activationService);
+
+        Livewire::test(RegisterForm::class)
+            ->set('first_name', 'Test')
+            ->set('last_name', 'User')
+            ->set('email', 'test@example.com')
+            ->set('password', 'password123')
+            ->set('password_confirmation', 'password123')
+            ->set('terms', true)
+            ->call('register');
+
+        $user = User::where('email', 'test@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertEquals('Test', $user->first_name);
+        $this->assertEquals('User', $user->last_name);
+    }
+
+    #[Test]
+    public function user_registration_with_valid_data_completes_successfully(): void
+    {
+        $activationService = $this->createMock(AccountActivationServiceInterface::class);
+        $activationService->expects($this->once())->method('sendActivationCode');
+        $this->app->instance(AccountActivationServiceInterface::class, $activationService);
+
+        Livewire::test(RegisterForm::class)
+            ->set('first_name', 'Test')
+            ->set('last_name', 'User')
+            ->set('email', 'test@example.com')
+            ->set('password', 'password123')
+            ->set('password_confirmation', 'password123')
+            ->set('terms', true)
+            ->call('register')
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'first_name' => 'Test',
+            'last_name' => 'User',
+        ]);
     }
 }

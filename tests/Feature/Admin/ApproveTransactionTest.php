@@ -4,13 +4,11 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\ExternalTransactionType;
 use App\Enums\TransactionStatus;
-use App\Events\ExternalTransactionApprovedEvent;
 use App\Mail\ExternalTransactionApprovedMail;
 use App\Models\ExternalTransaction;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -29,8 +27,11 @@ class ApproveTransactionTest extends TestCase
         \Spatie\Permission\Models\Role::create(['name' => 'admin']);
         \Spatie\Permission\Models\Role::create(['name' => 'customer']);
 
+        \Spatie\Permission\Models\Permission::create(['name' => 'transactions.approve_withdrawal']);
+
         $this->admin = User::factory()->create();
         $this->admin->assignRole('admin');
+        $this->admin->givePermissionTo('transactions.approve_withdrawal');
 
         $this->customer = User::factory()->create();
         $this->customer->assignRole('customer');
@@ -41,8 +42,11 @@ class ApproveTransactionTest extends TestCase
     /** @test */
     public function admin_can_approve_a_pending_withdrawal_transaction()
     {
+        // Forcer les queues à être traitées synchronément pour les tests
+        config(['queue.default' => 'sync']);
+
         Mail::fake();
-        Event::fake();
+        \App\Listeners\BaseListener::clearProcessedEvents();
 
         $transaction = ExternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
@@ -62,10 +66,6 @@ class ApproveTransactionTest extends TestCase
             'status' => TransactionStatus::COMPLETED()->value,
             'approved_by' => $this->admin->id,
         ]);
-
-        Event::assertDispatched(ExternalTransactionApprovedEvent::class, function ($event) use ($transaction) {
-            return $event->transaction->id === $transaction->id;
-        });
 
         Mail::assertSent(ExternalTransactionApprovedMail::class, function ($mail) use ($transaction) {
             return $mail->hasTo($transaction->wallet->user->email);

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\WhatsApp;
 
 use App\Models\WhatsAppAccount;
+use App\Repositories\WhatsApp\Contracts\WhatsAppAccountRepositoryInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Contracts\WhatsApp;
+namespace App\Services\WhatsApp\Contracts;
 
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;

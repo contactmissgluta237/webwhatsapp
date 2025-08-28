@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp;
 
-use App\Contracts\WhatsApp\AIProviderServiceInterface;
-use App\Contracts\WhatsApp\MessageBuildServiceInterface;
-use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppAIStructuredResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
@@ -14,6 +11,9 @@ use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Events\WhatsApp\AiResponseGenerated;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
+use App\Services\WhatsApp\Contracts\MessageBuildServiceInterface;
+use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
 use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use Exception;

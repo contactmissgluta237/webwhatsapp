@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
-use App\Contracts\PromptEnhancementInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Services\AI\Contracts\PromptEnhancementInterface;
 use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Support\Facades\Log;
 
@@ -29,10 +29,6 @@ RÈGLES DE RÉPONSE ABSOLUES :
 - AUCUNE section (Rôle:, Comportement:, etc.)
 - Juste le prompt directement utilisable";
 
-    public function __construct(
-        private readonly AiServiceInterface $aiService
-    ) {}
-
     public function enhancePrompt(WhatsAppAccount $account, string $originalPrompt): string
     {
         $model = $this->getEnhancementModel($account);
@@ -44,7 +40,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         Log::info('🚀 Amélioration de prompt demandée', [
             'account_id' => $account->id,
             'model_id' => $model->id,
-            'model_provider' => $model->provider->value, // ← Correction
+            'model_provider' => $model->provider->value,
             'original_length' => strlen($originalPrompt),
         ]);
 
@@ -70,7 +66,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         string $originalPrompt
     ): string {
         try {
-            $response = $this->aiService->chat($primaryModel, $request);
+            $response = $primaryModel->getService()->chat($primaryModel, $request);
 
             Log::info('✅ Prompt amélioré avec succès', [
                 'account_id' => $account->id,
@@ -113,7 +109,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
                     'provider' => $model->provider->value, // ← Correction
                 ]);
 
-                $response = $this->aiService->chat($model, $request);
+                $response = $model->getService()->chat($model, $request);
 
                 Log::info('✅ Amélioration réussie avec fallback', [
                     'account_id' => $account->id,

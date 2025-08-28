@@ -3,11 +3,11 @@
 namespace App\Providers;
 
 use App\Channels\PushNotificationChannel;
-use App\Contracts\PromptEnhancementInterface;
 use App\Models\Ticket;
 use App\Models\UserProduct;
 use App\Policies\TicketPolicy;
 use App\Policies\UserProductPolicy;
+use App\Services\AI\Contracts\PromptEnhancementInterface;
 use App\Services\AI\PromptEnhancementService;
 use App\Services\Shared\Media\MediaService;
 use App\Services\Shared\Media\MediaServiceInterface;

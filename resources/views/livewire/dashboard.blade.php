@@ -55,7 +55,7 @@
     <!-- Quick Actions -->
     <div class="row match-height">
         <div class="col-xl-3 col-lg-6 col-12">
-            <div class="card pull-up">
+            <div class="card pull-up border-gray-light shadow-none">
                 <div class="card-content">
                     <div class="card-body text-center">
                         <a href="{{ route('customer.transactions.recharge') }}" class="d-block text-decoration-none">
@@ -67,7 +67,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-lg-6 col-12">
-            <div class="card pull-up">
+            <div class="card pull-up border-gray-light shadow-none">
                 <div class="card-content">
                     <div class="card-body text-center">
                         <a href="{{ route('customer.transactions.withdrawal') }}" class="d-block text-decoration-none">
@@ -79,7 +79,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-lg-6 col-12">
-            <div class="card pull-up">
+            <div class="card pull-up border-gray-light shadow-none">
                 <div class="card-content">
                     <div class="card-body text-center">
                         <a href="{{ route('customer.transactions.index') }}" class="d-block text-decoration-none">
@@ -91,7 +91,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-lg-6 col-12">
-            <div class="card pull-up">
+            <div class="card pull-up border-gray-light shadow-none">
                 <div class="card-content">
                     <div class="card-body text-center">
                         <a href="{{ route('customer.referrals.index') }}" class="d-block text-decoration-none">
