@@ -21,14 +21,12 @@ class SubscribeController extends Controller
     {
         $user = $request->user();
 
-        // Check if user already has an active subscription
         if ($user->hasActiveSubscription()) {
             return redirect()
                 ->route('customer.packages.index')
                 ->with('error', 'Vous avez déjà un abonnement actif. Veuillez attendre son expiration ou le résilier avant de souscrire à un nouveau package.');
         }
 
-        // Check for trial package
         if ($package->isTrial()) {
             $hasUsedTrial = $user->subscriptions()
                 ->whereHas('package', fn (Builder $q): Builder => $q->where('name', 'trial'))
@@ -41,19 +39,16 @@ class SubscribeController extends Controller
             }
         }
 
-        // Check if package is active
         if (! $package->is_active) {
             return redirect()
                 ->route('customer.packages.index')
                 ->with('error', 'Ce package n\'est plus disponible.');
         }
 
-        // For trial package, no wallet verification needed
         if ($package->isTrial()) {
             return $this->createSubscription($user, $package);
         }
 
-        // Check wallet balance - utiliser le prix actuel (promotionnel si applicable)
         $currentPrice = $package->getCurrentPrice();
         $wallet = $user->wallet;
         if (! $wallet || $wallet->balance < $currentPrice) {
@@ -75,14 +70,12 @@ class SubscribeController extends Controller
             DB::transaction(function () use ($user, $package) {
                 $currentPrice = $package->getCurrentPrice();
 
-                // Debit wallet only if not trial
                 if (! $package->isTrial()) {
                     $description = "Souscription au package {$package->display_name}";
                     if ($package->hasActivePromotion()) {
                         $description .= " (promotion -{$package->getPromotionalDiscountPercentage()}%)";
                     }
 
-                    // Create debit transaction
                     InternalTransaction::create([
                         'wallet_id' => $user->wallet->id,
                         'amount' => $currentPrice,
@@ -95,11 +88,9 @@ class SubscribeController extends Controller
                         'completed_at' => now(),
                     ]);
 
-                    // Debit wallet balance
                     $user->wallet->decrement('balance', $currentPrice);
                 }
 
-                // Create subscription
                 UserSubscription::create([
                     'user_id' => $user->id,
                     'package_id' => $package->id,

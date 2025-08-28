@@ -36,7 +36,6 @@ class UpdatePackageRequest extends FormRequest
             'is_active' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0'],
 
-            // Champs promotionnels
             'promotional_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
             'promotion_starts_at' => ['nullable', 'date'],
             'promotion_ends_at' => ['nullable', 'date', 'after:promotion_starts_at'],

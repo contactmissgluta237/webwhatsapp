@@ -38,26 +38,45 @@
                         </h4>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h5 class="text-whatsapp mb-3">{{ $subscription->package->display_name }}</h5>
-                                <p class="text-muted mb-4">{{ $subscription->package->description }}</p>
-                                
-                                <div class="mb-3">
-                                    <strong>Limites du package :</strong>
-                                    <ul class="list-unstyled mt-2">
-                                        <li><i class="la la-message text-whatsapp mr-2"></i>{{ number_format($subscription->messages_limit) }} messages</li>
-                                        <li><i class="la la-whatsapp text-whatsapp mr-2"></i>{{ number_format($subscription->accounts_limit) }} comptes WhatsApp</li>
-                                        <li><i class="la la-box text-whatsapp mr-2"></i>{{ number_format($subscription->products_limit) }} produits</li>
-                                        <li><i class="la la-file text-whatsapp mr-2"></i>{{ number_format($subscription->context_limit) }} contextes</li>
-                                    </ul>
-                                </div>
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-whatsapp mb-2">{{ $subscription->package->display_name }}</h5>
+                                <p class="text-muted">{{ $subscription->package->description }}</p>
                             </div>
-                            <div class="col-md-6">
-                                <div class="subscription-stats">
-                                    <div class="stat-item mb-3 p-3 bg-light rounded">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted">Statut:</span>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold text-muted" style="width: 40%;">
+                                            <i class="la la-comment text-whatsapp mr-2"></i>Messages autorisés
+                                        </td>
+                                        <td class="text-dark">{{ number_format($subscription->messages_limit) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">
+                                            <i class="la la-whatsapp text-whatsapp mr-2"></i>Comptes WhatsApp
+                                        </td>
+                                        <td class="text-dark">{{ number_format($subscription->accounts_limit) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">
+                                            <i class="la la-shopping-bag text-whatsapp mr-2"></i>Produits
+                                        </td>
+                                        <td class="text-dark">{{ number_format($subscription->products_limit) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">
+                                            <i class="la la-file-text text-whatsapp mr-2"></i>Contextes
+                                        </td>
+                                        <td class="text-dark">{{ number_format($subscription->context_limit) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">
+                                            <i class="la la-check-circle text-whatsapp mr-2"></i>Statut
+                                        </td>
+                                        <td>
                                             @php
                                                 $status = $subscription->getCurrentStatus();
                                                 $badgeClass = match($status) {
@@ -68,29 +87,27 @@
                                                     default => 'light'
                                                 };
                                             @endphp
-                                            <span class="badge badge-{{ $badgeClass }} badge-lg">
+                                            <span class="badge badge-{{ $badgeClass }}">
                                                 {{ ucfirst($status === 'active' ? 'Actif' : ($status === 'expired' ? 'Expiré' : $status)) }}
                                             </span>
-                                        </div>
-                                    </div>
-
-                                    <div class="stat-item mb-3 p-3 bg-light rounded">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-muted">Montant payé:</span>
-                                            <strong class="text-whatsapp">{{ number_format($subscription->amount_paid ?? 0, 0, ',', ' ') }} XAF</strong>
-                                        </div>
-                                    </div>
-
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-muted">
+                                            <i class="la la-money text-whatsapp mr-2"></i>Montant payé
+                                        </td>
+                                        <td class="text-whatsapp fw-bold">{{ number_format($subscription->amount_paid ?? 0, 0, ',', ' ') }} XAF</td>
+                                    </tr>
                                     @if($subscription->payment_method)
-                                        <div class="stat-item mb-3 p-3 bg-light rounded">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-muted">Méthode de paiement:</span>
-                                                <span>{{ ucfirst($subscription->payment_method) }}</span>
-                                            </div>
-                                        </div>
+                                        <tr>
+                                            <td class="fw-bold text-muted">
+                                                <i class="la la-credit-card text-whatsapp mr-2"></i>Méthode de paiement
+                                            </td>
+                                            <td class="text-dark">{{ ucfirst($subscription->payment_method) }}</td>
+                                        </tr>
                                     @endif
-                                </div>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

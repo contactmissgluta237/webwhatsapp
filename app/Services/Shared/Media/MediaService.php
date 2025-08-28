@@ -30,12 +30,10 @@ class MediaService implements MediaServiceInterface
 
     private function processFile(mixed $file): ?UploadedFile
     {
-        // Si c'est déjà un UploadedFile standard, on le retourne tel quel
         if ($file instanceof UploadedFile && ! $file instanceof TemporaryUploadedFile) {
             return $file;
         }
 
-        // Si c'est un TemporaryUploadedFile de Livewire
         if ($file instanceof TemporaryUploadedFile) {
             return $this->convertTemporaryUploadedFile($file);
         }
@@ -56,7 +54,7 @@ class MediaService implements MediaServiceInterface
             $temporaryFile->getClientOriginalName(),
             $temporaryFile->getMimeType(),
             null,
-            true // test parameter set to true for temporary files
+            true
         );
     }
 

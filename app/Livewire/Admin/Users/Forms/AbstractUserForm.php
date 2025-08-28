@@ -25,7 +25,6 @@ abstract class AbstractUserForm extends Component
     public string|UploadedFile|null $image = null;
     public bool $showPassword = false;
 
-    // Propriétés pour le composant PhoneInput
     public ?int $country_id = 1;
     public string $phone_number_only = '';
     public string $full_phone_number = '';

@@ -35,14 +35,11 @@ class CreateCustomerRechargeRequest extends FormRequest
             ],
         ];
 
-        // Validation spécifique selon le type de paiement
         $paymentMethod = $this->input('payment_method');
 
         if (in_array($paymentMethod, [PaymentMethod::MOBILE_MONEY()->value, PaymentMethod::ORANGE_MONEY()->value])) {
-            // Pour les paiements mobiles, valider le format du numéro de téléphone
             $rules['sender_account'][] = 'regex:/^(\+237)?[0-9]{9}$/';
         } elseif ($paymentMethod === PaymentMethod::BANK_CARD()->value) {
-            // Pour les cartes, valider que c'est un numéro masqué
             $rules['sender_account'][] = 'regex:/^\d{4}\*+\d{6}$/';
         }
 
@@ -63,7 +60,6 @@ class CreateCustomerRechargeRequest extends FormRequest
             'sender_account.max' => 'Les informations de paiement ne peuvent pas dépasser 255 caractères.',
         ];
 
-        // Messages spécifiques selon le type de paiement
         $paymentMethod = $this->input('payment_method');
 
         if (in_array($paymentMethod, [PaymentMethod::MOBILE_MONEY()->value, PaymentMethod::ORANGE_MONEY()->value])) {

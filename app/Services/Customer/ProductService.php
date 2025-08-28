@@ -29,7 +29,6 @@ final class ProductService extends BaseService
         $data = $dto->toArray();
         $data['user_id'] = $dto->user_id ?? Auth::id();
 
-        // Transform media field to medias for BaseService compatibility
         if (isset($data['media'])) {
             Log::info('🔄 ProductService::createProduct() - Transforming media to medias', [
                 'media_count' => is_array($data['media']) ? count($data['media']) : 'not-array',
@@ -59,7 +58,6 @@ final class ProductService extends BaseService
     {
         $data = $dto->toArray();
 
-        // Transform media field to medias for BaseService compatibility
         if (isset($data['media'])) {
             $data['medias'] = $data['media'];
             unset($data['media']);

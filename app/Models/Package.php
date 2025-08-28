@@ -168,7 +168,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format($this->price, 0, ',', ' ').' '.$this->currency;
+        return number_format((float) $this->price, 0, ',', ' ').' '.$this->currency;
     }
 
     // ================================================================================
@@ -230,7 +230,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format($currentPrice, 0, ',', ' ').' '.$this->currency;
+        return number_format((float) $currentPrice, 0, ',', ' ').' '.$this->currency;
     }
 
     public function getFormattedPromotionalPrice(): string
@@ -243,7 +243,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format($this->promotional_price, 0, ',', ' ').' '.$this->currency;
+        return number_format((float) $this->promotional_price, 0, ',', ' ').' '.$this->currency;
     }
 
     public function getDisplayFeatures(): array

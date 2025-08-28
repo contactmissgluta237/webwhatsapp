@@ -10,20 +10,17 @@ class PhoneInput extends Component
 {
     private const DEFAULT_COUNTRY_CODE = 'CM';
 
-    // Props from parent
     public string $name = 'phone_number';
     public string $label = 'Téléphone';
     public bool $required = false;
     public ?string $error = null;
 
-    // Internal state
     public ?int $selectedCountryId = null;
     public string $phoneNumber = '';
     public string $fullPhoneNumber = '';
     public bool $showDropdown = false;
     public string $searchCountry = '';
 
-    // Collections
     public Collection $countries;
     public Collection $filteredCountries;
 

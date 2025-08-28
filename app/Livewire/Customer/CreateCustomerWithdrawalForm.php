@@ -15,11 +15,9 @@ class CreateCustomerWithdrawalForm extends Component
     public $payment_method = '';
     public $receiver_account = '';
 
-    // Données pour le téléphone
     public $phone_number = '';
     public $country_id = null;
 
-    // Données pour la carte
     public $card_number = '';
     public $masked_card_number = '';
     public $expiry_month = '';
@@ -53,7 +51,7 @@ class CreateCustomerWithdrawalForm extends Component
         if ($data['name'] === 'receiver_account') {
             $this->phone_number = $data['phone_number'];
             $this->country_id = $data['country_id'];
-            $this->receiver_account = $data['value']; // Le numéro complet avec indicatif
+            $this->receiver_account = $data['value'];
         }
     }
 
@@ -66,14 +64,12 @@ class CreateCustomerWithdrawalForm extends Component
             $this->expiry_year = $data['expiry_year'];
             $this->card_is_valid = $data['is_valid'];
 
-            // Pour les cartes, on stocke seulement le numéro masqué
             $this->receiver_account = $this->masked_card_number;
         }
     }
 
     public function updatedPaymentMethod()
     {
-        // Réinitialiser les données quand on change de méthode de paiement
         $this->resetPaymentData();
     }
 
@@ -91,7 +87,6 @@ class CreateCustomerWithdrawalForm extends Component
 
     private function validatePaymentData()
     {
-        // Validation des champs requis
         if (empty($this->amount)) {
             throw new \Exception('Veuillez sélectionner un montant.');
         }
@@ -104,14 +99,11 @@ class CreateCustomerWithdrawalForm extends Component
             throw new \Exception('Les informations de paiement sont requises.');
         }
 
-        // Validation spécifique selon le type de paiement
         if (in_array($this->payment_method, [PaymentMethod::MOBILE_MONEY()->value, PaymentMethod::ORANGE_MONEY()->value])) {
-            // Pour les paiements mobiles, vérifier que le numéro est complet
             if (empty($this->phone_number)) {
                 throw new \Exception('Veuillez saisir un numéro de téléphone valide.');
             }
         } elseif ($this->payment_method === PaymentMethod::BANK_CARD()->value) {
-            // Pour les cartes, vérifier que la validation a été faite
             if (! $this->card_is_valid) {
                 throw new \Exception('Veuillez saisir des informations de carte valides.');
             }
@@ -124,7 +116,6 @@ class CreateCustomerWithdrawalForm extends Component
         $this->loading = true;
 
         try {
-            // Validation personnalisée selon le type de paiement
             $this->validatePaymentData();
 
             $validated = [

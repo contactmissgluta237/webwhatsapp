@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Log;
 
 final class DeepSeekService implements AiServiceInterface
 {
+    private const DEFAULT_ENDPOINT = 'https://api.deepseek.com';
+    private const COST_PER_1M_PROMPT = 0.14;
+    private const COST_PER_1M_COMPLETION = 0.28;
+    private const COST_PER_1M_CACHED = 0.014;
+    private const USD_TO_XAF_RATE = 650;
+
     public function chat(AiModel $model, AiRequestDTO $request): AiResponseDTO
     {
         return $this->generate($request, $model);
@@ -24,7 +30,7 @@ final class DeepSeekService implements AiServiceInterface
         $messages = $this->prepareMessages($request->systemPrompt, $request->userMessage);
 
         Log::info('🔄 DeepSeek API Call', [
-            'endpoint' => $model->endpoint_url ?? 'https://api.deepseek.com',
+            'endpoint' => $model->endpoint_url ?? self::DEFAULT_ENDPOINT,
             'model_identifier' => $model->model_identifier,
             'message_count' => count($messages),
             'system_prompt_length' => strlen($request->systemPrompt),
@@ -56,7 +62,7 @@ final class DeepSeekService implements AiServiceInterface
 
     private function executeWithRetry(AiModel $model, array $payload, int $timeout, int $maxRetries = 2): AiResponseDTO
     {
-        $baseUrl = rtrim($model->endpoint_url ?? 'https://api.deepseek.com', '/');
+        $baseUrl = rtrim($model->endpoint_url ?? self::DEFAULT_ENDPOINT, '/');
         $endpoint = $baseUrl.'/chat/completions';
         $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
@@ -79,33 +85,18 @@ final class DeepSeekService implements AiServiceInterface
                 $content = $data['choices'][0]['message']['content'] ?? '';
                 $usage = $data['usage'] ?? [];
 
-                // Calculate costs based on DeepSeek pricing
                 $promptTokens = $usage['prompt_tokens'] ?? 0;
                 $completionTokens = $usage['completion_tokens'] ?? 0;
                 $cachedTokens = $usage['prompt_cache_hit_tokens'] ?? 0;
 
-                // DeepSeek pricing per 1M tokens
-                $promptCostPer1M = 0.14;     // $0.14 per 1M prompt tokens
-                $completionCostPer1M = 0.28; // $0.28 per 1M completion tokens
-                $cachedCostPer1M = 0.014;    // $0.014 per 1M cached tokens (90% discount)
-
-                $promptCost = ($promptTokens - $cachedTokens) * $promptCostPer1M / 1000000;
-                $completionCost = $completionTokens * $completionCostPer1M / 1000000;
-                $cachedCost = $cachedTokens * $cachedCostPer1M / 1000000;
-                $totalCostUSD = $promptCost + $completionCost + $cachedCost;
+                $costs = $this->calculateCosts($promptTokens, $completionTokens, $cachedTokens);
 
                 Log::info('✅ DeepSeek Response Received', [
                     'attempt' => $attempt,
                     'model' => $data['model'] ?? $model->model_identifier,
                     'usage' => $usage,
                     'content_length' => strlen($content),
-                    'costs' => [
-                        'prompt_cost_usd' => round($promptCost, 6),
-                        'completion_cost_usd' => round($completionCost, 6),
-                        'cached_cost_usd' => round($cachedCost, 6),
-                        'total_cost_usd' => round($totalCostUSD, 6),
-                        'total_cost_xaf' => round($totalCostUSD * 650, 2), // ~650 XAF per USD
-                    ],
+                    'costs' => $costs,
                 ]);
 
                 return new AiResponseDTO(
@@ -118,13 +109,7 @@ final class DeepSeekService implements AiServiceInterface
                         'usage' => $usage,
                         'confidence' => 1.0,
                         'attempts' => $attempt,
-                        'costs' => [
-                            'prompt_cost_usd' => round($promptCost, 6),
-                            'completion_cost_usd' => round($completionCost, 6),
-                            'cached_cost_usd' => round($cachedCost, 6),
-                            'total_cost_usd' => round($totalCostUSD, 6),
-                            'total_cost_xaf' => round($totalCostUSD * 650, 2),
-                        ],
+                        'costs' => $costs,
                     ]
                 );
 
@@ -203,7 +188,7 @@ final class DeepSeekService implements AiServiceInterface
     {
         try {
             $this->validateConfiguration($model);
-            $baseUrl = rtrim($model->endpoint_url ?? 'https://api.deepseek.com', '/');
+            $baseUrl = rtrim($model->endpoint_url ?? self::DEFAULT_ENDPOINT, '/');
             $endpoint = $baseUrl.'/chat/completions';
             $apiKey = $model->api_key ?? config('services.deepseek.api_key');
 
@@ -259,18 +244,32 @@ final class DeepSeekService implements AiServiceInterface
     {
         $messages = [];
 
-        // Add system message with conversation context already included
         $messages[] = [
             'role' => 'system',
-            'content' => $systemPrompt, // SystemPrompt contains formatted conversation history
+            'content' => $systemPrompt,
         ];
 
-        // Add current user message
         $messages[] = [
             'role' => 'user',
             'content' => $userMessage,
         ];
 
         return $messages;
+    }
+
+    private function calculateCosts(int $promptTokens, int $completionTokens, int $cachedTokens): array
+    {
+        $promptCost = ($promptTokens - $cachedTokens) * self::COST_PER_1M_PROMPT / 1000000;
+        $completionCost = $completionTokens * self::COST_PER_1M_COMPLETION / 1000000;
+        $cachedCost = $cachedTokens * self::COST_PER_1M_CACHED / 1000000;
+        $totalCostUSD = $promptCost + $completionCost + $cachedCost;
+
+        return [
+            'prompt_cost_usd' => round($promptCost, 6),
+            'completion_cost_usd' => round($completionCost, 6),
+            'cached_cost_usd' => round($cachedCost, 6),
+            'total_cost_usd' => round($totalCostUSD, 6),
+            'total_cost_xaf' => round($totalCostUSD * self::USD_TO_XAF_RATE, 2),
+        ];
     }
 }

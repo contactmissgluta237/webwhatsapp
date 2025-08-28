@@ -157,17 +157,15 @@ final class OllamaService implements AiServiceInterface
             return [];
         }
 
-        // Si c'est déjà un array, on le retourne
         if (is_array($model->model_config)) {
             return $model->model_config;
         }
 
-        // Si c'est une string, on la décode
         if (is_string($model->model_config)) {
             $decoded = json_decode($model->model_config, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                Log::warning('Configuration JSON invalide pour le modèle', [
+                Log::warning('Invalid JSON configuration for model', [
                     'model_id' => $model->id,
                     'json_error' => json_last_error_msg(),
                     'raw_config' => $model->model_config,

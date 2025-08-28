@@ -62,9 +62,8 @@ final class EditProductForm extends AbstractProductForm
         if (isset($this->allMediaFiles[$index])) {
             $file = $this->allMediaFiles[$index];
 
-            // Si c'est un média existant, le marquer pour suppression
             if (is_object($file) && property_exists($file, 'is_existing') && $file->is_existing) {
-                Log::info('�️ Existing media marked for removal', [
+                Log::info('🗑️ Existing media marked for removal', [
                     'media_id' => $file->media_id,
                     'file_name' => $file->file_name,
                 ]);
@@ -90,7 +89,6 @@ final class EditProductForm extends AbstractProductForm
             $this->validate();
             Log::info('✅ Validation successful');
 
-            // Séparer les fichiers nouveaux des existants
             $newFiles = [];
             $existingMediaIds = [];
 
@@ -109,7 +107,6 @@ final class EditProductForm extends AbstractProductForm
                 'existing_media_ids' => $existingMediaIds,
             ]);
 
-            // Supprimer les médias qui ne sont plus dans la liste
             $currentMediaIds = $this->product->getMedia('medias')->pluck('id')->toArray();
             $mediasToDelete = array_diff($currentMediaIds, $existingMediaIds);
 
@@ -118,13 +115,12 @@ final class EditProductForm extends AbstractProductForm
                 Log::info('🗑️ Media deleted', ['media_id' => $mediaId]);
             }
 
-            // Mettre à jour les données du produit
             $dto = new UpdateProductDTO(
                 title: $this->title,
                 description: $this->description,
                 price: $this->price,
                 is_active: $this->is_active,
-                media: $newFiles // Seulement les nouveaux fichiers
+                media: $newFiles
             );
 
             $this->product = $this->productService->updateProduct($this->product, $dto);

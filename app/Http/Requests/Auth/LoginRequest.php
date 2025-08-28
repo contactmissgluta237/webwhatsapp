@@ -66,11 +66,4 @@ class LoginRequest extends FormRequest
             'country_id.exists' => 'L\'indicateur pays sélectionné n\'existe pas.',
         ];
     }
-
-    protected function prepareForValidation()
-    {
-        // Dans un contexte Livewire, les propriétés sont déjà disponibles
-        // Pas besoin de prepareForValidation car Livewire gère déjà la validation
-        // Cette méthode ne doit rien faire dans le contexte Livewire
-    }
 }

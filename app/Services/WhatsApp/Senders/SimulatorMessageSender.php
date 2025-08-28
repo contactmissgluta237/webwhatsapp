@@ -39,27 +39,23 @@ final class SimulatorMessageSender extends AbstractMessageSender
             'typing_duration' => $response->typingDurationSeconds,
         ]);
 
-        // Programmer l'affichage avec timing réaliste (divisé par 10 pour simulation)
         $this->scheduleMessagesDisplay($response);
     }
 
     /**
-     * Programme l'affichage des messages avec timing réaliste
+     * Schedule message display with realistic timing
      */
     private function scheduleMessagesDisplay(WhatsAppMessageResponseDTO $response): void
     {
-        // Convertir les timings backend en millisecondes pour le frontend (divisé par 10 pour la simulation)
-        $waitTimeMs = $response->waitTimeSeconds * 100; // Simulation plus rapide
+        $waitTimeMs = $response->waitTimeSeconds * 100;
         $typingDurationMs = $response->typingDurationSeconds * 100;
 
-        // Émettre l'événement de timing pour le JavaScript
         $this->livewireComponent->dispatch('simulate-response-timing', [
             'waitTimeMs' => $waitTimeMs,
             'typingDurationMs' => $typingDurationMs,
             'responseMessage' => $response->aiResponse,
         ]);
 
-        // Si il y a des produits, programmer leur envoi après le message principal
         if (! empty($response->products)) {
             $this->scheduleProductsDisplay($response->products, $waitTimeMs + $typingDurationMs + 2000);
         }
@@ -75,7 +71,6 @@ final class SimulatorMessageSender extends AbstractMessageSender
             'delay_ms' => $delayMs,
         ]);
 
-        // Préparer les produits formatés pour le simulateur
         $formattedProducts = [];
         foreach ($products as $product) {
             /** @var ProductDataDTO $product */
@@ -85,7 +80,6 @@ final class SimulatorMessageSender extends AbstractMessageSender
             ];
         }
 
-        // Émettre événement pour l'affichage des produits après délai
         $this->livewireComponent->dispatch('simulate-products-display', [
             'products' => $formattedProducts,
             'delayAfterMessage' => $delayMs,
@@ -93,13 +87,13 @@ final class SimulatorMessageSender extends AbstractMessageSender
     }
 
     /**
-     * Formate les produits pour l'affichage dans le simulateur
+     * Format products for simulator display
      */
     private function formatProductsForDisplay(array $products): array
     {
         return array_map(function (ProductDataDTO $product, int $index): array {
             return [
-                'id' => $index + 1, // Utiliser l'index comme ID
+                'id' => $index + 1,
                 'formatted_message' => $product->formattedProductMessage,
                 'media_links' => $product->mediaUrls,
             ];
@@ -107,7 +101,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
     }
 
     /**
-     * Formate un message produit pour l'affichage
+     * Format a single product message for display
      */
     private function formatSingleProductMessage(ProductDataDTO $product): string
     {
@@ -139,7 +133,6 @@ final class SimulatorMessageSender extends AbstractMessageSender
             'time' => Carbon::now()->format('H:i:s'),
         ];
 
-        // Limiter le nombre de messages
         if (count($this->livewireComponent->simulationMessages) > $this->livewireComponent->maxMessages) {
             array_shift($this->livewireComponent->simulationMessages);
         }
@@ -148,7 +141,7 @@ final class SimulatorMessageSender extends AbstractMessageSender
     }
 
     /**
-     * Ajoute un message produit formaté
+     * Add a formatted product message
      */
     public function addProductMessage(ProductDataDTO $product): void
     {
@@ -169,7 +162,6 @@ final class SimulatorMessageSender extends AbstractMessageSender
         string $sessionId,
         string $phoneNumber
     ): void {
-        // Pour le simulateur, on ajoute simplement le message à l'interface
         $this->addProductMessage($product);
     }
 }

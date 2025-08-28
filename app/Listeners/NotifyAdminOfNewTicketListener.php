@@ -7,7 +7,6 @@ use App\Notifications\AdminNewTicketNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Support\Facades\Notification;
 
 class NotifyAdminOfNewTicketListener extends BaseListener implements ShouldQueue
 {
@@ -32,12 +31,10 @@ class NotifyAdminOfNewTicketListener extends BaseListener implements ShouldQueue
      */
     protected function handleEvent($event): void
     {
-        // Récupérer tous les administrateurs
         $admins = User::whereHas('roles', function (Builder $query): void {
             $query->where('name', 'admin');
         })->get();
 
-        // Envoyer un e-mail et une notification à chaque administrateur
         foreach ($admins as $admin) {
             $admin->notify(new AdminNewTicketNotification($event->ticket));
         }
