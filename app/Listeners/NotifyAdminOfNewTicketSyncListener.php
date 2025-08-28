@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\AdminNewTicketSyncNotification;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,7 +45,7 @@ final class NotifyAdminOfNewTicketSyncListener extends BaseListener
     {
         try {
             return User::whereHas('roles', function (Builder $query): void {
-                $query->where('name', 'admin');
+                $query->where('name', UserRole::ADMIN()->value);
             })->get() ?? new Collection;
 
         } catch (\Exception $queryException) {

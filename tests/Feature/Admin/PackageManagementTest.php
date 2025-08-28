@@ -20,10 +20,14 @@ class PackageManagementTest extends TestCase
     {
         parent::setUp();
 
+        // Create necessary roles
+        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::create(['name' => 'customer']);
+
         // Seed packages
         $this->artisan('db:seed', ['--class' => 'PackagesSeeder']);
 
-        $this->admin = User::factory()->create(['role' => 'admin']);
+        $this->admin = User::factory()->admin()->create();
     }
 
     public function test_admin_can_view_packages_page(): void
@@ -62,7 +66,7 @@ class PackageManagementTest extends TestCase
 
         // Vérifier les limites
         $response->assertSee('200'); // Messages starter
-        $response->assertSee('3 000'); // Contexte starter
+        $response->assertSee('3,000'); // Contexte starter formaté
         $response->assertSee('1'); // Compte starter
 
         // Vérifier les badges de fonctionnalités

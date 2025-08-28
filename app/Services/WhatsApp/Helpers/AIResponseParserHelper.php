@@ -8,7 +8,7 @@ use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppAIStructuredResponseDTO;
 use Illuminate\Support\Facades\Log;
 
-final class AIResponseParserHelper
+class AIResponseParserHelper
 {
     public function parseStructuredResponse(WhatsAppAIResponseDTO $aiResponse): WhatsAppAIStructuredResponseDTO
     {

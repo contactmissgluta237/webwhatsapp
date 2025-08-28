@@ -91,11 +91,11 @@
                                                             @foreach($mediaUrls as $mediaUrl)
                                                                 @php
                                                                     // Detect media type using helper
-                                                                    $mediaType = \App\Services\WhatsApp\MediaTypeDetector::getMediaType($mediaUrl);
+                                                                    $mediaType = \App\Services\WhatsApp\Helpers\MediaTypeHelper::getMediaType($mediaUrl);
                                                                     $extension = strtolower(pathinfo(parse_url($mediaUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
                                                                 @endphp
                                                                 
-                                                                @if($mediaType === 'image')
+                                                                @if($mediaType->value === 'image')
                                                                     <div class="media-item" style="border-radius: 4px; overflow: hidden; position: relative; background-color: #f5f5f5;">
                                                                         <img src="{{ $mediaUrl }}" 
                                                                              alt="Product media" 
@@ -112,7 +112,7 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                @elseif($mediaType === 'video')
+                                                                @elseif($mediaType->value === 'video')
                                                                     <div class="media-item" style="border-radius: 4px; overflow: hidden; position: relative; background-color: #f5f5f5;">
                                                                         <video style="width: 100%; height: 100px; object-fit: cover; cursor: pointer;" 
                                                                                onclick="window.open('{{ $mediaUrl }}', '_blank')"
@@ -131,7 +131,7 @@
                                                                             <i class="la la-play-circle" style="font-size: 32px; color: rgba(255,255,255,0.9); text-shadow: 0 0 4px rgba(0,0,0,0.5);"></i>
                                                                         </div>
                                                                     </div>
-                                                                @elseif($mediaType === 'audio')
+                                                                @elseif($mediaType->value === 'audio')
                                                                     <div class="media-item" style="border-radius: 4px; overflow: hidden; position: relative; background-color: #f5f5f5; padding: 10px;">
                                                                         <audio controls style="width: 100%; height: 35px; cursor: pointer;">
                                                                             <source src="{{ $mediaUrl }}" type="audio/{{ $extension }}">

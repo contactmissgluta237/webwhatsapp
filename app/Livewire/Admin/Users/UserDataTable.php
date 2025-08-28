@@ -20,8 +20,11 @@ class UserDataTable extends BaseDataTable
 
     public function configure(): void
     {
-        parent::configure();
-        $this->setDefaultSort(self::DEFAULT_SORT_FIELD, self::DEFAULT_SORT_DIRECTION);
+        $this->setPrimaryKey('id')
+            ->setTableWrapperAttributes([
+                'class' => 'table-responsive',
+            ])
+            ->setEmptyMessage('<div class="text-center py-4"><i class="la la-users la-3x text-muted mb-3 d-block"></i><p class="text-muted">Aucun utilisateur trouvé</p></div>');
     }
 
     protected function getExportFileName(): string
@@ -34,7 +37,7 @@ class UserDataTable extends BaseDataTable
         return User::query()
             ->select('users.*')
             ->with('roles', 'country')
-            ->orderBy('created_at', 'desc');
+            ->orderBy(self::DEFAULT_SORT_FIELD, self::DEFAULT_SORT_DIRECTION);
     }
 
     public function columns(): array
@@ -44,18 +47,23 @@ class UserDataTable extends BaseDataTable
                 ->sortable()
                 ->deselected(),
 
-            Column::make('Nom Complet')
-                ->label(function ($row) {
-                    return $row->full_name;
+            Column::make('Nom Complet', 'first_name')
+                ->sortable()
+                ->searchable()
+                ->format(function ($value, $row) {
+                    $editUrl = route('admin.users.edit', $row->id);
+
+                    return '<div>
+                        <a href="'.$editUrl.'" class="text-decoration-none">
+                            <span class="text-whatsapp fw-bold">
+                                '.$row->full_name.'
+                            </span>
+                        </a>
+                        <br>
+                        <small class="text-muted mt-1 d-block">'.$row->email.'</small>
+                    </div>';
                 })
-                ->sortable(function (Builder $query, string $direction) {
-                    return $query->orderBy('first_name', $direction)
-                        ->orderBy('last_name', $direction);
-                })
-                ->searchable(function (Builder $query, string $searchTerm) {
-                    $query->where('first_name', 'like', "%{$searchTerm}%")
-                        ->orWhere('last_name', 'like', "%{$searchTerm}%");
-                }),
+                ->html(),
 
             Column::make('Email', 'email')
                 ->sortable()
@@ -69,30 +77,28 @@ class UserDataTable extends BaseDataTable
                 ->sortable()
                 ->html()
                 ->format(function ($value) {
-                    $badgeClass = $value ? 'success' : 'danger';
-                    $text = $value ? 'Actif' : 'Inactif';
-
-                    return '<span class="badge text-outline-'.$badgeClass.'">'.$text.'</span>';
+                    return $value
+                        ? '<span class="badge badge-success">Actif</span>'
+                        : '<span class="badge badge-secondary">Inactif</span>';
                 }),
 
             Column::make('Rôles')
                 ->label(function (User $row) {
-                    return $row->roles->map(fn (\Spatie\Permission\Models\Role $role) => '<span class="badge text-outline-primary">'.$role->name.'</span>')->implode(' ');
+                    return $row->roles->map(fn (\Spatie\Permission\Models\Role $role) => '<span class="badge badge-primary">'.$role->name.'</span>')->implode(' ');
                 })
                 ->html(),
 
             Column::make('Dernière connexion', 'last_login_at')
                 ->sortable()
-                ->format(fn ($value) => $value ? $value->format('j F Y H:i:s') : '-'),
+                ->format(fn ($value) => $value ? $value->format('j M Y H:i') : '<span class="text-muted">Jamais</span>')
+                ->html(),
 
-            Column::make('Date de création', 'created_at')
+            Column::make('Créé le', 'created_at')
                 ->sortable()
-                ->format(fn ($value) => $value->format('j F Y H:i:s')),
+                ->format(fn ($value) => $value->format('j M Y H:i')),
 
             Column::make('Actions')
-                ->label(function (User $row) {
-                    return view('partials.admin.users.actions', ['user' => $row]);
-                })
+                ->label(fn (User $row) => view('partials.admin.users.actions', ['user' => $row])->render())
                 ->html(),
         ];
     }
@@ -106,18 +112,14 @@ class UserDataTable extends BaseDataTable
                     '1' => 'Actif',
                     '0' => 'Inactif',
                 ])
-                ->filter(function (Builder $builder, string $value) {
-                    return $value === '' ? $builder : $builder->where('is_active', (bool) $value);
-                }),
+                ->filter(fn (Builder $builder, string $value) => $value === '' ? $builder : $builder->where('is_active', $value)),
 
             SelectFilter::make('Pays', 'country_id')
                 ->options(
                     ['' => 'Tous les pays'] +
                     Country::orderBy('name')->pluck('name', 'id')->toArray()
                 )
-                ->filter(function (Builder $builder, string $value) {
-                    return $value === '' ? $builder : $builder->where('country_id', $value);
-                }),
+                ->filter(fn (Builder $builder, string $value) => $value === '' ? $builder : $builder->where('country_id', $value)),
 
             SelectFilter::make('Rôle', 'role')
                 ->options(
@@ -125,26 +127,16 @@ class UserDataTable extends BaseDataTable
                     Role::orderBy('name')->pluck('name', 'name')->toArray()
                 )
                 ->filter(function (Builder $builder, string $value) {
-                    return $value === '' ? $builder : $builder->whereHas('roles', fn ($query) => $query->where('name', 'value'));
+                    return $value === '' ? $builder : $builder->whereHas('roles', fn ($query) => $query->where('name', $value));
                 }),
 
             DateFilter::make('Créé après', 'created_at')
-                ->config([
-                    'placeholder' => 'Date de création minimum',
-                    'locale' => 'fr',
-                ])
-                ->filter(function (Builder $builder, string $value) {
-                    $builder->whereDate('created_at', '>=', $value);
-                }),
+                ->config(['placeholder' => 'Date de création minimum', 'locale' => 'fr'])
+                ->filter(fn (Builder $builder, string $value) => $builder->whereDate('created_at', '>=', $value)),
 
             DateFilter::make('Dernière connexion après', 'last_login_at')
-                ->config([
-                    'placeholder' => 'Date de dernière connexion minimum',
-                    'locale' => 'fr',
-                ])
-                ->filter(function (Builder $builder, string $value) {
-                    $builder->whereDate('last_login_at', '>=', $value);
-                }),
+                ->config(['placeholder' => 'Date de dernière connexion minimum', 'locale' => 'fr'])
+                ->filter(fn (Builder $builder, string $value) => $builder->whereDate('last_login_at', '>=', $value)),
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Withdrawal;
 
 use App\Enums\PaymentMethod;
+use App\Enums\UserRole;
 use App\Http\Requests\Admin\Withdrawal\AutomaticWithdrawalRequest;
 use App\Models\User;
 use Livewire\Component;
@@ -176,7 +177,7 @@ class AutomaticWithdrawalForm extends Component
     private function getCustomers()
     {
         return User::whereHas('roles', function ($query) {
-            $query->where('name', 'customer');
+            $query->where('name', UserRole::CUSTOMER()->value);
         })->get(['id', 'first_name', 'last_name', 'email']);
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Casts\SpatieEnumCast;
+use App\Enums\MessageDirection;
 use App\Enums\WhatsAppStatus;
 use App\Traits\HasMediaCollections;
 use Illuminate\Database\Eloquent\Builder;
@@ -224,7 +225,7 @@ final class WhatsAppAccount extends Model implements HasMedia
         foreach ($conversations as $conversation) {
             /** @var \App\Models\WhatsAppMessage $message */
             foreach ($conversation->messages as $message) {
-                if ($message->direction === 'inbound') {
+                if ($message->direction === MessageDirection::INBOUND()->value) {
                     $inbound++;
                 } else {
                     $outbound++;

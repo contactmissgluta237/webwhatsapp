@@ -17,7 +17,7 @@ class PromptEnhancementService implements PromptEnhancementInterface
 
 Améliore le prompt fourni en respectant ces règles :
 - Conserve le sens et l'intention originale
-- Améliore la clarté et la structure
+- Améliore la clarité et la structure
 - Adapte le ton pour WhatsApp (naturel et direct)
 - Limite à 200 mots maximum
 - Assure-toi que l'agent se comporte comme un humain (jamais mentionner qu'il est une IA)
@@ -29,12 +29,16 @@ RÈGLES DE RÉPONSE ABSOLUES :
 - AUCUNE section (Rôle:, Comportement:, etc.)
 - Juste le prompt directement utilisable";
 
+    public function __construct(
+        private readonly AiServiceInterface $aiService
+    ) {}
+
     public function enhancePrompt(WhatsAppAccount $account, string $originalPrompt): string
     {
         $model = $this->getEnhancementModel($account);
 
         if (! $model) {
-            throw new \Exception('Aucun modèle IA disponible pour l\'amélioration du prompt');
+            throw new \Exception(__('No AI model available for prompt enhancement'));
         }
 
         Log::info('🚀 Amélioration de prompt demandée', [
@@ -66,8 +70,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
         string $originalPrompt
     ): string {
         try {
-            $service = $primaryModel->provider->createService();
-            $response = $service->chat($primaryModel, $request);
+            $response = $this->aiService->chat($primaryModel, $request);
 
             Log::info('✅ Prompt amélioré avec succès', [
                 'account_id' => $account->id,
@@ -76,7 +79,13 @@ RÈGLES DE RÉPONSE ABSOLUES :
                 'provider' => $primaryModel->provider->value, // ← Correction
             ]);
 
-            return $this->cleanEnhancedPrompt($response->content);
+            $cleanedPrompt = $this->cleanEnhancedPrompt($response->content);
+
+            if (empty(trim($cleanedPrompt))) {
+                throw new \Exception(__('AI could not enhance the prompt'));
+            }
+
+            return $cleanedPrompt;
         } catch (\Exception $e) {
             Log::warning('⚠️ Échec amélioration avec modèle principal', [
                 'account_id' => $account->id,
@@ -104,8 +113,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
                     'provider' => $model->provider->value, // ← Correction
                 ]);
 
-                $service = $model->provider->createService();
-                $response = $service->chat($model, $request);
+                $response = $this->aiService->chat($model, $request);
 
                 Log::info('✅ Amélioration réussie avec fallback', [
                     'account_id' => $account->id,
@@ -114,7 +122,13 @@ RÈGLES DE RÉPONSE ABSOLUES :
                     'provider' => $model->provider->value, // ← Correction
                 ]);
 
-                return $this->cleanEnhancedPrompt($response->content);
+                $cleanedPrompt = $this->cleanEnhancedPrompt($response->content);
+
+                if (empty(trim($cleanedPrompt))) {
+                    throw new \Exception(__('AI could not enhance the prompt'));
+                }
+
+                return $cleanedPrompt;
             } catch (\Exception $e) {
                 Log::warning('⚠️ Échec fallback', [
                     'account_id' => $account->id,
@@ -130,7 +144,7 @@ RÈGLES DE RÉPONSE ABSOLUES :
             'attempted_models' => $fallbackModels->pluck('name')->toArray(),
         ]);
 
-        throw new \Exception('Impossible d\'améliorer le prompt : tous les services IA sont indisponibles');
+        throw new \Exception(__('Unable to enhance prompt: all AI services are unavailable'));
     }
 
     /**

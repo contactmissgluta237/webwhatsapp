@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Enums\MediaConversionSize;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -38,7 +39,7 @@ trait HasMediaCollections
                         'application/pdf',
                         'application/msword',
                         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                        'application/x-empty', // Pour les tests fake files
+                        'application/x-empty', // For fake test files
                     ]);
             } elseif ($collectionName === 'avatar') {
                 $this->addMediaCollection('avatar')
@@ -60,9 +61,9 @@ trait HasMediaCollections
             return;
         }
 
-        $this->registerConversionForCollections('thumb', 150, 150, $collections);
-        $this->registerConversionForCollections('medium', 500, 500, $collections);
-        $this->registerConversionForCollections('large', 1200, 1200, $collections);
+        $this->registerConversionForCollections('thumb', MediaConversionSize::THUMBNAIL()->width(), MediaConversionSize::THUMBNAIL()->height(), $collections);
+        $this->registerConversionForCollections('medium', MediaConversionSize::MEDIUM()->width(), MediaConversionSize::MEDIUM()->height(), $collections);
+        $this->registerConversionForCollections('large', MediaConversionSize::LARGE()->width(), MediaConversionSize::LARGE()->height(), $collections);
     }
 
     /**

@@ -36,21 +36,26 @@
 
     <div class="row">
         <div class="col-12">
-            <h5 class="mb-2">{{ __('Transaction Actions') }}</h5>
+            <h5 class="mb-2">{{ __('Actions') }}</h5>
         </div>
-        <div class="col-md-4 col-sm-12 mb-2">
+        <div class="col-md-3 col-sm-12 mb-2">
             <a href="{{ route('admin.transactions.index', ['table-filters' => ['transaction_type' => 'recharge', 'customer_id' => $customer->id]]) }}" class="btn btn-whatsapp w-100">
                 <i class="ti ti-arrow-right"></i> {{ __('View Recharges') }}
             </a>
         </div>
-        <div class="col-md-4 col-sm-12 mb-2">
+        <div class="col-md-3 col-sm-12 mb-2">
             <a href="{{ route('admin.transactions.index', ['table-filters' => ['transaction_type' => 'withdrawal', 'customer_id' => $customer->id]]) }}" class="btn btn-danger w-100">
                 <i class="ti ti-arrow-left"></i> {{ __('View Withdrawals') }}
             </a>
         </div>
-        <div class="col-md-4 col-sm-12 mb-2">
+        <div class="col-md-3 col-sm-12 mb-2">
             <a href="{{ route('admin.transactions.index', ['table-filters' => ['customer_id' => $customer->id]]) }}" class="btn btn-info w-100">
-                <i class="ti ti-list"></i> {{ __('View All Transactions') }}
+                <i class="ti ti-list"></i> {{ __('All Transactions') }}
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-12 mb-2">
+            <a href="{{ route('admin.whatsapp.accounts.index') }}?user_id={{ $customer->id }}" class="btn btn-success w-100">
+                <i class="la la-whatsapp"></i> {{ __('WhatsApp Accounts') }}
             </a>
         </div>
     </div>

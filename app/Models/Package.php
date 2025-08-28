@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\PackageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -110,22 +111,22 @@ class Package extends Model
 
     public function isTrial(): bool
     {
-        return $this->name === 'trial';
+        return $this->name === PackageType::TRIAL()->value;
     }
 
     public function isStarter(): bool
     {
-        return $this->name === 'starter';
+        return $this->name === PackageType::STARTER()->value;
     }
 
     public function isBusiness(): bool
     {
-        return $this->name === 'business';
+        return $this->name === PackageType::BUSINESS()->value;
     }
 
     public function isPro(): bool
     {
-        return $this->name === 'pro';
+        return $this->name === PackageType::PRO()->value;
     }
 
     // ================================================================================

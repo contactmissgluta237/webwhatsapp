@@ -95,7 +95,7 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Scope pour les crédits
+     * Scope for credit transactions
      */
     public function scopeCredits($query)
     {
@@ -103,7 +103,7 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Scope pour les débits
+     * Scope for debit transactions
      */
     public function scopeDebits($query)
     {
@@ -111,7 +111,7 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Scope pour les transactions terminées
+     * Scope for completed transactions
      */
     public function scopeCompleted($query)
     {
@@ -119,7 +119,7 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Vérifier si la transaction est terminée
+     * Check if the transaction is completed
      */
     public function isCompleted(): bool
     {
@@ -127,7 +127,23 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Vérifier si c'est un crédit
+     * Check if the transaction is pending
+     */
+    public function isPending(): bool
+    {
+        return $this->status === TransactionStatus::PENDING();
+    }
+
+    /**
+     * Check if the transaction failed
+     */
+    public function isFailed(): bool
+    {
+        return $this->status === TransactionStatus::FAILED();
+    }
+
+    /**
+     * Check if it's a credit transaction
      */
     public function isCredit(): bool
     {
@@ -135,7 +151,7 @@ class InternalTransaction extends Model
     }
 
     /**
-     * Vérifier si c'est un débit
+     * Check if it's a debit transaction
      */
     public function isDebit(): bool
     {

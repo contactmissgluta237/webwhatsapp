@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+use App\Constants\TimeoutLimits;
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\AI\AiResponseDTO;
 use App\Models\AiModel;
@@ -45,8 +46,8 @@ final class OllamaService implements AiServiceInterface
             'stream' => false,
         ];
 
-        $response = Http::timeout(60)
-            ->connectTimeout(10)
+        $response = Http::timeout(TimeoutLimits::HTTP_LONG_TIMEOUT)
+            ->connectTimeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT)
             ->retry(2, 1000)
             ->post($model->endpoint_url.'/api/chat', $payload);
 
@@ -100,11 +101,11 @@ final class OllamaService implements AiServiceInterface
         try {
             Log::info('🔍 Test connexion Ollama', [
                 'endpoint' => $model->endpoint_url,
-                'timeout' => 10,
+                'timeout' => TimeoutLimits::HTTP_CONNECT_TIMEOUT,
             ]);
 
-            $response = Http::timeout(10)
-                ->connectTimeout(5)
+            $response = Http::timeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT)
+                ->connectTimeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT / 2)
                 ->get($model->endpoint_url.'/api/version');
 
             if (! $response->successful()) {

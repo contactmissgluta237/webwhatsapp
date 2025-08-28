@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\AdminNewTicketNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,7 +33,7 @@ class NotifyAdminOfNewTicketListener extends BaseListener implements ShouldQueue
     protected function handleEvent($event): void
     {
         $admins = User::whereHas('roles', function (Builder $query): void {
-            $query->where('name', 'admin');
+            $query->where('name', UserRole::ADMIN());
         })->get();
 
         foreach ($admins as $admin) {

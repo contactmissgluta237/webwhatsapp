@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\WhatsApp\Services;
 
 use App\DTOs\AI\AiRequestDTO;
-use App\DTOs\WhatsApp\ConversationContextDTO;
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\Models\WhatsAppAccount;
 use App\Services\AI\AiServiceInterface;
 use App\Services\WhatsApp\MessageBuildService;
 use Tests\TestCase;
@@ -27,39 +26,21 @@ class MessageBuildServiceTest extends TestCase
         $aiService = $this->createMock(AiServiceInterface::class);
         $service = new MessageBuildService($aiService);
 
-        $accountMetadata = new WhatsAppAccountMetadataDTO(
-            sessionId: 'session_123',
-            sessionName: 'Test Session',
-            accountId: 1,
-            agentEnabled: true
-        );
+        $account = WhatsAppAccount::factory()->create([
+            'agent_enabled' => true,
+            'agent_prompt' => 'Tu es un assistant WhatsApp professionnel.',
+        ]);
 
-        $conversationContext = new ConversationContextDTO(
-            conversationId: 1,
-            chatId: 'test@c.us',
-            contactPhone: '+237123456789',
-            isGroup: false,
-            recentMessages: [],
-            contextualInformation: 'Test context',
-            metadata: []
-        );
+        $conversationHistory = 'User: Bonjour\nBot: Bonjour ! Comment puis-je vous aider ?';
+        $userMessage = 'Je cherche des informations sur vos produits';
 
-        $userMessage = 'Bonjour';
+        // Act
+        $result = $service->buildAiRequest($account, $conversationHistory, $userMessage);
 
-        // Act & Assert - Test that method exists and can be called
-        $this->assertTrue(method_exists($service, 'buildAiRequest'));
-
-        // Basic structure test
-        $result = $service->buildAiRequest($accountMetadata, $conversationContext, $userMessage);
-
+        // Assert
         $this->assertInstanceOf(AiRequestDTO::class, $result);
-    }
-
-    public function test_service_has_required_methods(): void
-    {
-        $aiService = $this->createMock(AiServiceInterface::class);
-        $service = new MessageBuildService($aiService);
-
-        $this->assertTrue(method_exists($service, 'buildAiRequest'));
+        $this->assertEquals($userMessage, $result->userMessage);
+        $this->assertNotEmpty($result->systemPrompt);
+        $this->assertEquals($account, $result->account);
     }
 }

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin\Packages;
 
+use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePackageRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole('admin');
+        return $this->user()->hasRole(UserRole::ADMIN()->value);
     }
 
     public function rules(): array

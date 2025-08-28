@@ -19,22 +19,16 @@
         </div>
     </div>
     <div class="content-header-right col-md-6 col-12 text-right">
-        @if(isset($user))
-            <a href="{{ route('admin.users.show', $user) }}" class="btn btn-info rounded mr-1">
-                <i class="la la-user mr-1"></i> Voir utilisateur
-            </a>
-        @endif
-        <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-whatsapp rounded">
+        <a href="{{ route('admin.whatsapp.dashboard') }}" class="btn btn-whatsapp rounded btn-glow">
             <i class="la la-chart-bar mr-1"></i> Dashboard
         </a>
     </div>
 </div>
 
 <!-- Statistiques rapides -->
-@if(!isset($user))
 <div class="row">
     <div class="col-lg-3 col-md-6 col-12">
-        <div class="card border-left-primary">
+        <div class="card shadow-none border-gray-light border-left-primary">
             <div class="card-body">
                 <div class="media d-flex align-items-center">
                     <div class="align-self-center">
@@ -50,7 +44,7 @@
     </div>
     
     <div class="col-lg-3 col-md-6 col-12">
-        <div class="card border-left-success">
+        <div class="card shadow-none border-gray-light border-left-success">
             <div class="card-body">
                 <div class="media d-flex align-items-center">
                     <div class="align-self-center">
@@ -66,7 +60,7 @@
     </div>
     
     <div class="col-lg-3 col-md-6 col-12">
-        <div class="card border-left-warning">
+        <div class="card shadow-none border-gray-light border-left-warning">
             <div class="card-body">
                 <div class="media d-flex align-items-center">
                     <div class="align-self-center">
@@ -82,7 +76,7 @@
     </div>
     
     <div class="col-lg-3 col-md-6 col-12">
-        <div class="card border-left-info">
+        <div class="card shadow-none border-gray-light border-left-info">
             <div class="card-body">
                 <div class="media d-flex align-items-center">
                     <div class="align-self-center">
@@ -97,7 +91,6 @@
         </div>
     </div>
 </div>
-@endif
 
 <!-- WhatsApp Accounts List -->
 <div class="row">
@@ -106,12 +99,12 @@
             <div class="card-header bg-white border-bottom-0">
                 <h4 class="card-title text-whatsapp">
                     <i class="la la-whatsapp mr-1"></i>
-                    {{ isset($user) ? 'Comptes WhatsApp de ' . $user->full_name : 'Liste des Comptes WhatsApp' }}
+                    Liste des Comptes WhatsApp
                 </h4>
             </div>
             <div class="card-body">
                 <div class="app-scroll app-datatable-default">
-                    @livewire('admin.whats-app.whats-app-account-data-table', ['user' => $user ?? null])
+                    @livewire(\App\Livewire\Admin\WhatsApp\WhatsAppAccountDataTable::class)
                 </div>
             </div>  
         </div>

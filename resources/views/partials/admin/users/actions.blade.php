@@ -1,5 +1,5 @@
 <div class="dropdown" style="position: static;">
-    <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown" 
+    <button class="btn btn-sm btn-whatsapp dropdown-toggle" type="button" data-toggle="dropdown" 
             aria-haspopup="true" aria-expanded="false" title="Actions"
             data-boundary="window">
         <i class="la la-ellipsis-v"></i>
@@ -15,7 +15,7 @@
         
         {{-- Voir comptes WhatsApp --}}
         @if($user->whatsappAccounts()->exists())
-            <a href="{{ route('admin.whatsapp.accounts.index') }}?filters[user_id]={{ $user->id }}" class="dropdown-item py-2">
+            <a href="{{ route('admin.whatsapp.accounts.index') }}?user_id={{ $user->id }}" class="dropdown-item py-2">
                 <i class="la la-whatsapp text-success mr-2"></i>
                 Comptes WhatsApp
                 <span class="badge badge-secondary ml-1">{{ $user->whatsappAccounts()->count() }}</span>

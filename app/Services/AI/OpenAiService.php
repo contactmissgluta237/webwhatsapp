@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+use App\Constants\TimeoutLimits;
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\AI\AiResponseDTO;
 use App\Models\AiModel;
@@ -46,7 +47,7 @@ final class OpenAiService implements AiServiceInterface
             'presence_penalty' => $config['presence_penalty'],
         ];
 
-        $response = Http::timeout(30)
+        $response = Http::timeout(TimeoutLimits::HTTP_REQUEST_TIMEOUT)
             ->withHeaders([
                 'Authorization' => 'Bearer '.$model->api_key,
                 'Content-Type' => 'application/json',
@@ -78,7 +79,7 @@ final class OpenAiService implements AiServiceInterface
     public function testConnection(AiModel $model): bool
     {
         try {
-            $response = Http::timeout(5)
+            $response = Http::timeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT / 2)
                 ->withHeaders(['Authorization' => 'Bearer '.$model->api_key])
                 ->get($model->endpoint_url.'/models');
 

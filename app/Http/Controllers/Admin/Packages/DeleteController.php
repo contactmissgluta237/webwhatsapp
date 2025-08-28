@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Packages;
 
+use App\Enums\SubscriptionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,7 @@ class DeleteController extends Controller
     {
         // Check if package has active subscriptions
         $activeSubscriptionsCount = $package->subscriptions()
-            ->where('status', 'active')
+            ->where('status', SubscriptionStatus::ACTIVE()->value)
             ->count();
 
         if ($activeSubscriptionsCount > 0) {

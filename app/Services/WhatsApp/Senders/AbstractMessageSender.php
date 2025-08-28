@@ -6,21 +6,26 @@ namespace App\Services\WhatsApp\Senders;
 
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
+use App\Enums\MediaCollectionType;
 use App\Models\UserProduct;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
-
 /**
  * Abstract base class for WhatsApp message senders
  *
  * Provides common functionality for sending WhatsApp messages including
  * product formatting, data enrichment, and sequential sending capabilities.
  */
+use InvalidArgumentException;
+
 abstract class AbstractMessageSender
 {
     private const CURRENCY_SUFFIX = ' XAF';
-    private const MEDIA_COLLECTION = 'images';
+
+    private function getMediaCollection(): string
+    {
+        return MediaCollectionType::IMAGES()->value;
+    }
 
     /**
      * Send a WhatsApp response message
@@ -166,7 +171,7 @@ abstract class AbstractMessageSender
      */
     private function extractMediaLinks(UserProduct $product): array
     {
-        return $product->getMedia(self::MEDIA_COLLECTION)
+        return $product->getMedia($this->getMediaCollection())
             ->map(fn ($media) => $media->getFullUrl())
             ->toArray();
     }

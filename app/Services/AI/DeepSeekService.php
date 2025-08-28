@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+use App\Constants\ApplicationLimits;
+use App\Constants\TimeoutLimits;
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\AI\AiResponseDTO;
+use App\Enums\SimulatorMessageType;
 use App\Models\AiModel;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
@@ -157,10 +160,10 @@ final class DeepSeekService implements AiServiceInterface
         }
 
         if ($totalLength > 2000) {
-            return config('ai.deepseek.timeout.long_requests', 60);
+            return config('ai.deepseek.timeout.long_requests', TimeoutLimits::HTTP_LONG_TIMEOUT);
         }
 
-        return config('ai.deepseek.timeout.default', 30);
+        return config('ai.deepseek.timeout.default', TimeoutLimits::HTTP_REQUEST_TIMEOUT);
     }
 
     private function isPromptEnhancement(AiRequestDTO $request): bool
@@ -194,15 +197,15 @@ final class DeepSeekService implements AiServiceInterface
 
             Log::info('🔍 DeepSeek Connection Test', [
                 'endpoint' => $endpoint,
-                'timeout' => 30,
+                'timeout' => TimeoutLimits::HTTP_REQUEST_TIMEOUT,
             ]);
 
             $response = Http::withToken($apiKey)
-                ->timeout(30)
+                ->timeout(TimeoutLimits::HTTP_REQUEST_TIMEOUT)
                 ->post($endpoint, [
                     'model' => $model->model_identifier,
-                    'messages' => [['role' => 'user', 'content' => 'Test']],
-                    'max_tokens' => 10,
+                    'messages' => [['role' => SimulatorMessageType::USER()->value, 'content' => 'Test']],
+                    'max_tokens' => ApplicationLimits::AI_TEST_MAX_TOKENS,
                 ]);
 
             if ($response->successful()) {
@@ -250,7 +253,7 @@ final class DeepSeekService implements AiServiceInterface
         ];
 
         $messages[] = [
-            'role' => 'user',
+            'role' => SimulatorMessageType::USER()->value,
             'content' => $userMessage,
         ];
 

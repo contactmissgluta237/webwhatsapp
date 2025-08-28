@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ExternalTransactionType;
 use App\Enums\TransactionStatus;
+use App\Enums\UserRole;
 use App\Models\Geography\Country;
 use App\Traits\HasMediaCollections;
 use Illuminate\Database\Eloquent\Collection;
@@ -301,12 +302,12 @@ class User extends Authenticatable implements HasMedia
 
     public function isCustomer(): bool
     {
-        return $this->hasRole('customer');
+        return $this->hasRole(UserRole::CUSTOMER()->value);
     }
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->hasRole(UserRole::ADMIN()->value);
     }
 
     public function hasAvatar(): bool

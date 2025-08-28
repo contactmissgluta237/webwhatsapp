@@ -51,8 +51,8 @@ final class ResponseTime extends Enum
 
     private function getRandomDelayInSeconds(): int
     {
-        // Pour les tests : entre 60 et 30 secondes (plus rapide pour débugger)
-        $possibleDelays = range(60, 120); // en cas réel, entre 1min et 5min
+        // For testing: between 60 and 30 seconds (faster for debugging)
+        $possibleDelays = range(60, 120); // in real case, between 1min and 5min
 
         return $possibleDelays[array_rand($possibleDelays)];
     }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Shared;
 
+use App\Enums\UserRole;
 use App\Http\Requests\Profile\UpdateAvatarRequest;
 use App\Http\Requests\Profile\UpdatePasswordRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
@@ -231,7 +232,7 @@ class ProfileForm extends Component
 
             session()->flash('success', __('Language updated successfully.'));
 
-            if ($user->hasRole('admin')) {
+            if ($user->hasRole(UserRole::ADMIN()->value)) {
                 $this->redirectRoute('admin.profile.show');
             } else {
                 $this->redirectRoute('customer.profile.show');

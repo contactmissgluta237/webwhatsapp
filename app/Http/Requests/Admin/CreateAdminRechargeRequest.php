@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin;
 
+use App\Constants\FinancialLimits;
+use App\Constants\ValidationLimits;
 use App\Enums\PaymentMethod;
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,7 +17,7 @@ class CreateAdminRechargeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->hasRole('admin');
+        return $this->user()->hasRole(UserRole::ADMIN());
     }
 
     public function rules(): array
@@ -28,8 +31,8 @@ class CreateAdminRechargeRequest extends FormRequest
             'amount' => [
                 'required',
                 'integer',
-                'min:500',
-                'max:50000',
+                'min:'.FinancialLimits::RECHARGE_MIN_AMOUNT,
+                'max:'.FinancialLimits::RECHARGE_MAX_AMOUNT,
                 Rule::in(config('system_settings.predefined_amounts')),
             ],
             'external_transaction_id' => [
@@ -41,7 +44,7 @@ class CreateAdminRechargeRequest extends FormRequest
             'description' => [
                 'required',
                 'string',
-                'max:500',
+                'max:'.ValidationLimits::DESCRIPTION_MAX_LENGTH,
             ],
             'payment_method' => [
                 'required',
@@ -78,13 +81,13 @@ class CreateAdminRechargeRequest extends FormRequest
             'customer_id.exists' => 'Le client sélectionné n\'existe pas.',
             'amount.required' => 'Veuillez sélectionner un montant.',
             'amount.integer' => 'Le montant doit être un nombre entier.',
-            'amount.min' => 'Le montant minimum est de 500 FCFA.',
-            'amount.max' => 'Le montant maximum est de 50 000 FCFA.',
+            'amount.min' => 'Le montant minimum est de '.FinancialLimits::RECHARGE_MIN_AMOUNT.' FCFA.',
+            'amount.max' => 'Le montant maximum est de '.number_format(FinancialLimits::RECHARGE_MAX_AMOUNT).' FCFA.',
             'amount.in' => 'Le montant sélectionné n\'est pas valide.',
             'external_transaction_id.required' => 'L\'ID de transaction externe est requis.',
             'external_transaction_id.unique' => 'Cet ID de transaction existe déjà.',
             'description.required' => 'La description est requise.',
-            'description.max' => 'La description ne peut pas dépasser 500 caractères.',
+            'description.max' => 'La description ne peut pas dépasser '.ValidationLimits::DESCRIPTION_MAX_LENGTH.' caractères.',
             'payment_method.required' => 'Veuillez sélectionner une méthode de paiement.',
             'payment_method.in' => 'La méthode de paiement sélectionnée n\'est pas valide.',
             'sender_name.required' => 'Le nom de l\'expéditeur est requis.',

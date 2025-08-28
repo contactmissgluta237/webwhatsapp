@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\WhatsApp;
 
+use App\Constants\TimeoutLimits;
 use App\DTOs\WhatsApp\WhatsAppSessionStatusDTO;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -13,8 +14,6 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 final class WhatsAppQRService
 {
     private const QR_SIZE = 300;
-    private const HTTP_TIMEOUT = 12;
-    private const CONNECT_TIMEOUT = 6;
 
     private string $bridgeUrl;
     private ?string $apiToken;
@@ -244,10 +243,10 @@ final class WhatsAppQRService
 
     private function makeHttpRequest(string $method, string $url, array $data = [], ?int $customTimeout = null): \Illuminate\Http\Client\Response
     {
-        $timeout = $customTimeout ?? self::HTTP_TIMEOUT;
+        $timeout = $customTimeout ?? TimeoutLimits::WHATSAPP_QR_TIMEOUT;
 
         $http = Http::timeout($timeout)
-            ->connectTimeout(self::CONNECT_TIMEOUT)
+            ->connectTimeout(TimeoutLimits::WHATSAPP_CONNECT_TIMEOUT)
             ->acceptJson()
             ->withHeaders([
                 'Connection' => 'close',

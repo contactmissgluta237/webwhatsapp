@@ -11,12 +11,42 @@ class AdminDashboardTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Create necessary roles
+        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::create(['name' => 'customer']);
+
+        // Mock AdminDashboardMetricsService to avoid database dependencies
+        $this->app->bind(\App\Services\AdminDashboardMetricsService::class, function () {
+            $mock = \Mockery::mock(\App\Services\AdminDashboardMetricsService::class);
+            $mock->shouldReceive('getMetrics')->andReturn(
+                new \App\DTOs\Dashboard\AdminDashboardMetricsDTO(
+                    registeredUsers: 10,
+                    totalWithdrawals: 1000.0,
+                    totalRecharges: 2000.0,
+                    companyProfit: 500.0,
+                    period: new \App\DTOs\Dashboard\PeriodDTO(
+                        start: '2024-01-01',
+                        end: '2024-01-31'
+                    )
+                )
+            );
+            $mock->shouldReceive('getSystemAccountsBalance')->andReturn(collect([
+                (object) ['type' => 'Orange Money', 'balance' => 1000.0, 'icon' => 'fa-wallet', 'badge' => 'success'],
+                (object) ['type' => 'MTN Mobile Money', 'balance' => 2000.0, 'icon' => 'fa-money', 'badge' => 'info'],
+            ]));
+
+            return $mock;
+        });
+    }
+
     #[Test]
     public function admin_can_access_admin_dashboard(): void
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
-        $admin = $admin->fresh();
+        $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
@@ -27,9 +57,7 @@ class AdminDashboardTest extends TestCase
     #[Test]
     public function client_cannot_access_admin_dashboard(): void
     {
-        $client = User::factory()->create();
-        $client->assignRole('customer');
-        $client = $client->fresh();
+        $client = User::factory()->customer()->create();
 
         $this->actingAs($client)
             ->get(route('admin.dashboard'))

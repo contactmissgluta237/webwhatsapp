@@ -10,6 +10,7 @@ use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Filters\NumberFilter;
 use Rappasoft\LaravelLivewireTables\Views\Filters\SelectFilter;
 
 class ConversationDataTable extends CustomerConversationDataTable
@@ -144,7 +145,7 @@ class ConversationDataTable extends CustomerConversationDataTable
                     return '<div class="text-center">
                         <div class="fw-bold text-danger">'.number_format($totalCost, 0).' XAF</div>
                         <small class="text-muted">'.$requestCount.' req.</small>
-                        '.($lastUsed ? '<br><small class="text-info">'.date('d/m H:i', strtotime($lastUsed)).'</small>' : '').'
+                        '.($lastUsed ? '<br><small class="text-info">'.$lastUsed->format('d/m H:i').'</small>' : '').'
                     </div>';
                 })
                 ->html(),
@@ -258,35 +259,38 @@ class ConversationDataTable extends CustomerConversationDataTable
                     return $builder;
                 }),
 
-            SelectFilter::make('Cost Range', 'cost_range')
-                ->options([
-                    '' => 'All costs',
-                    'low' => 'Low (< 500 XAF)',
-                    'medium' => 'Medium (500-2000 XAF)',
-                    'high' => 'High (> 2000 XAF)',
+            NumberFilter::make('Min Cost (XAF)', 'cost_min')
+                ->config([
+                    'min' => 0,
+                    'placeholder' => 'Min cost...',
                 ])
                 ->filter(function (Builder $builder, string $value) {
-                    if ($value === 'low') {
-                        return $builder->whereHas('aiUsageLogs', function ($q) {
-                            $q->selectRaw('whatsapp_conversation_id, SUM(total_cost_xaf) as total_cost')
-                                ->groupBy('whatsapp_conversation_id')
-                                ->havingRaw('SUM(total_cost_xaf) < 500');
-                        });
-                    } elseif ($value === 'medium') {
-                        return $builder->whereHas('aiUsageLogs', function ($q) {
-                            $q->selectRaw('whatsapp_conversation_id, SUM(total_cost_xaf) as total_cost')
-                                ->groupBy('whatsapp_conversation_id')
-                                ->havingRaw('SUM(total_cost_xaf) BETWEEN 500 AND 2000');
-                        });
-                    } elseif ($value === 'high') {
-                        return $builder->whereHas('aiUsageLogs', function ($q) {
-                            $q->selectRaw('whatsapp_conversation_id, SUM(total_cost_xaf) as total_cost')
-                                ->groupBy('whatsapp_conversation_id')
-                                ->havingRaw('SUM(total_cost_xaf) > 2000');
-                        });
+                    if (empty($value)) {
+                        return $builder;
                     }
 
-                    return $builder;
+                    return $builder->whereHas('aiUsageLogs', function ($q) use ($value) {
+                        $q->selectRaw('conversation_id, SUM(total_cost_xaf) as total_cost')
+                            ->groupBy('conversation_id')
+                            ->havingRaw('SUM(total_cost_xaf) >= ?', [(float) $value]);
+                    });
+                }),
+
+            NumberFilter::make('Max Cost (XAF)', 'cost_max')
+                ->config([
+                    'min' => 0,
+                    'placeholder' => 'Max cost...',
+                ])
+                ->filter(function (Builder $builder, string $value) {
+                    if (empty($value)) {
+                        return $builder;
+                    }
+
+                    return $builder->whereHas('aiUsageLogs', function ($q) use ($value) {
+                        $q->selectRaw('conversation_id, SUM(total_cost_xaf) as total_cost')
+                            ->groupBy('conversation_id')
+                            ->havingRaw('SUM(total_cost_xaf) <= ?', [(float) $value]);
+                    });
                 }),
 
             SelectFilter::make('Activity Period', 'activity_period')

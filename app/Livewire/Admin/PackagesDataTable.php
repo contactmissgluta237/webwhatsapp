@@ -23,7 +23,7 @@ final class PackagesDataTable extends BaseDataTable
             ->setTableWrapperAttributes([
                 'class' => 'table-responsive',
             ])
-            ->setEmptyMessage('<div class="text-center py-4"><i class="la la-gift la-3x text-muted mb-3 d-block"></i><p class="text-muted">Aucun package trouvé</p></div>');
+            ->setEmptyMessage('<div class="text-center py-4"><i class="mdi mdi-package-variant-closed mdi-3x text-muted mb-3 d-block"></i><p class="text-muted">Aucun package trouvé</p></div>');
     }
 
     protected function getExportFileName(): string
@@ -49,6 +49,10 @@ final class PackagesDataTable extends BaseDataTable
                 'context_limit',
                 'accounts_limit',
                 'products_limit',
+                'duration_days',
+                'is_recurring',
+                'one_time_only',
+                'features',
                 'is_active',
                 'sort_order',
                 'created_at',
@@ -69,15 +73,23 @@ final class PackagesDataTable extends BaseDataTable
                 ->format(function ($value, $row) {
                     $editUrl = route('admin.packages.edit', $row->id);
 
-                    return '<div>
+                    $html = '<div>
                         <a href="'.$editUrl.'" class="text-decoration-none">
                             <span class="text-whatsapp fw-bold">
                                 '.$value.'
-                            </span>
-                        </a>
+                            </span>';
+
+                    // Badge recommandé pour le package business
+                    if ($row->name === 'business') {
+                        $html .= ' <span class="badge badge-warning ml-1">Recommandé</span>';
+                    }
+
+                    $html .= '</a>
                         <br>
                         <small class="text-muted mt-1 d-block">'.($row->description ? str($row->description)->limit(50) : 'Aucune description').'</small>
                     </div>';
+
+                    return $html;
                 })
                 ->html(),
 
@@ -85,25 +97,97 @@ final class PackagesDataTable extends BaseDataTable
                 ->sortable()
                 ->format(function ($value, $row) {
                     if ($row->hasActivePromotion()) {
+                        $originalPrice = $row->price == 0 ? 'GRATUIT' : number_format((float) $row->price, 0, ',', ' ').' XAF';
+                        $promoPrice = $row->promotional_price == 0 ? 'GRATUIT' : number_format((float) $row->promotional_price, 0, ',', ' ').' XAF';
+
                         return '<div>
-                            <span class="text-muted text-decoration-line-through small">'.number_format((float) $row->price, 0, ',', ' ').' XAF</span><br>
-                            <span class="text-whatsapp fw-bold">'.number_format((float) $row->promotional_price, 0, ',', ' ').' XAF</span>
+                            <span class="text-muted text-decoration-line-through small">'.$originalPrice.'</span><br>
+                            <span class="text-whatsapp fw-bold">'.$promoPrice.'</span>
                             <span class="badge badge-success ml-1">-'.$row->getPromotionalDiscountPercentage().'%</span>
                         </div>';
+                    }
+
+                    if ($value == 0) {
+                        return '<span class="text-success fw-bold">GRATUIT</span>';
                     }
 
                     return '<span class="text-dark fw-bold">'.number_format((float) $value, 0, ',', ' ').' XAF</span>';
                 })
                 ->html(),
 
-            Column::make('Limites', 'id')
+            Column::make('Messages', 'messages_limit')
+                ->sortable()
+                ->format(function ($value) {
+                    return '<span class="text-dark fw-bold">'.number_format($value).'</span>';
+                })
+                ->html(),
+
+            Column::make('Contexte', 'context_limit')
+                ->sortable()
+                ->format(function ($value) {
+                    return '<span class="text-dark fw-bold">'.number_format($value).'</span>';
+                })
+                ->html(),
+
+            Column::make('Comptes', 'accounts_limit')
+                ->sortable()
+                ->format(function ($value) {
+                    return '<span class="text-dark fw-bold">'.number_format($value).' compte'.($value > 1 ? 's' : '').'</span>';
+                })
+                ->html(),
+
+            Column::make('Produits', 'products_limit')
+                ->sortable()
+                ->format(function ($value) {
+                    return '<span class="text-dark fw-bold">'.number_format($value).' produit'.($value > 1 ? 's' : '').'</span>';
+                })
+                ->html(),
+
+            Column::make('Durée', 'duration_days')
                 ->html()
                 ->format(function ($value, $row) {
-                    return '<div class="small">
-                        <div><i class="la la-comment text-whatsapp mr-1"></i> '.number_format($row->messages_limit).' messages</div>
-                        <div><i class="la la-whatsapp text-whatsapp mr-1"></i> '.number_format($row->accounts_limit).' compte'.($row->accounts_limit > 1 ? 's' : '').'</div>
-                        <div><i class="la la-shopping-bag text-whatsapp mr-1"></i> '.number_format($row->products_limit).' produit'.($row->products_limit > 1 ? 's' : '').'</div>
-                    </div>';
+                    if ($value === null) {
+                        return '<span class="text-muted small">Illimitée</span>';
+                    }
+
+                    $durationText = $value == 1 ? '1 jour' : $value.' jour'.($value > 1 ? 's' : '');
+
+                    $html = '<div class="small">
+                        <div class="text-dark">'.$durationText.'</div>';
+
+                    if ($row->is_recurring) {
+                        $html .= '<span class="badge badge-success">Récurrent</span>';
+                    } elseif ($row->one_time_only) {
+                        $html .= '<span class="badge badge-warning">Une seule fois</span>';
+                    }
+
+                    $html .= '</div>';
+
+                    return $html;
+                }),
+
+            Column::make('Fonctionnalités', 'features')
+                ->html()
+                ->format(function ($value, $row) {
+                    if (empty($row->features)) {
+                        return '<span class="text-muted small">Standard</span>';
+                    }
+
+                    $featureLabels = [
+                        'weekly_reports' => 'Rapports hebdo.',
+                        'priority_support' => 'Support prioritaire',
+                        'advanced_analytics' => 'Analytics avancés',
+                        'custom_branding' => 'Branding personnalisé',
+                    ];
+
+                    $html = '<div class="small">';
+                    foreach ($row->features as $feature) {
+                        $label = $featureLabels[$feature] ?? ucfirst(str_replace('_', ' ', $feature));
+                        $html .= '<span class="badge badge-primary mr-1 mb-1">'.$label.'</span>';
+                    }
+                    $html .= '</div>';
+
+                    return $html;
                 }),
 
             Column::make('Statut', 'is_active')

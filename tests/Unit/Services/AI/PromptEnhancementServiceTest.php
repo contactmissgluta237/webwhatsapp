@@ -18,15 +18,12 @@ final class PromptEnhancementServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private PromptEnhancementService $service;
     private WhatsAppAccount $account;
     private AiModel $ollamaModel;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->service = new PromptEnhancementService;
 
         $this->ollamaModel = AiModel::factory()->create(
             AiTestHelper::createTestModelData('ollama', [
@@ -38,6 +35,11 @@ final class PromptEnhancementServiceTest extends TestCase
         $this->account = WhatsAppAccount::factory()->create([
             'ai_model_id' => $this->ollamaModel->id,
         ]);
+    }
+
+    private function createService($aiService): PromptEnhancementService
+    {
+        return new PromptEnhancementService($aiService);
     }
 
     /** @test */
@@ -59,9 +61,9 @@ final class PromptEnhancementServiceTest extends TestCase
                 tokensUsed: 50,
             ));
 
-        $this->app->bind(AiServiceInterface::class, fn () => $mockAiService);
+        $service = $this->createService($mockAiService);
 
-        $result = $this->service->enhancePrompt($this->account, $originalPrompt);
+        $result = $service->enhancePrompt($this->account, $originalPrompt);
 
         $this->assertEquals($enhancedPrompt, $result);
     }

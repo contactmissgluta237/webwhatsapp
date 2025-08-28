@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Constants\TimeoutLimits;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -22,7 +23,7 @@ final class NodeJsBackupService
     public function forceSaveActiveSessions(): bool
     {
         try {
-            $response = Http::timeout(10)->post($this->nodeJsBaseUrl.'/api/sessions/save');
+            $response = Http::timeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT)->post($this->nodeJsBaseUrl.'/api/sessions/save');
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -65,7 +66,7 @@ final class NodeJsBackupService
                 'url' => $url,
             ]);
 
-            $response = Http::timeout(10)->post($url);
+            $response = Http::timeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT)->post($url);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -103,7 +104,7 @@ final class NodeJsBackupService
     public function checkHealth(): bool
     {
         try {
-            $response = Http::timeout(5)->get($this->nodeJsBaseUrl.'/health');
+            $response = Http::timeout(TimeoutLimits::HTTP_CONNECT_TIMEOUT / 2)->get($this->nodeJsBaseUrl.'/health');
 
             return $response->successful();
         } catch (\Exception $e) {

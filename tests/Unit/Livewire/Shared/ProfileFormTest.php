@@ -307,12 +307,19 @@ class ProfileFormTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        // Créer quelques filleuls
-        $referral1 = User::factory()->create(['affiliation_code' => 'REF001']);
-        $referral2 = User::factory()->create(['affiliation_code' => 'REF002']);
+        // Créer quelques filleuls avec referrer_id pointant vers le user connecté
+        $referral1 = User::factory()->create([
+            'affiliation_code' => 'REF001',
+            'referrer_id' => $this->user->id,
+        ]);
+        $referral2 = User::factory()->create([
+            'affiliation_code' => 'REF002',
+            'referrer_id' => $this->user->id,
+        ]);
 
-        Customer::factory()->create(['user_id' => $referral1->id, 'referrer_id' => $this->customer->id]);
-        Customer::factory()->create(['user_id' => $referral2->id, 'referrer_id' => $this->customer->id]);
+        // Créer leurs profils customer (optionnel mais pour respecter la cohérence)
+        Customer::factory()->create(['user_id' => $referral1->id]);
+        Customer::factory()->create(['user_id' => $referral2->id]);
 
         $component = Livewire::test(ProfileForm::class);
 

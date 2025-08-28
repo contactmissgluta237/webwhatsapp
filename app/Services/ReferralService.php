@@ -22,9 +22,9 @@ final class ReferralService
     {
         $user = $subscription->user;
 
-        // Vérifier si l'utilisateur a un parrain
+        // Check if user has a referrer
         if (! $user->referrer_id) {
-            // Pas de parrain, tout va au système
+            // No referrer, everything goes to system
             $this->recordSystemRevenue($subscription, $amount);
 
             return;
@@ -32,22 +32,22 @@ final class ReferralService
 
         $referrer = User::find($user->referrer_id);
         if (! $referrer || ! $referrer->wallet) {
-            // Parrain introuvable ou pas de wallet, tout va au système
+            // Referrer not found or no wallet, everything goes to system
             $this->recordSystemRevenue($subscription, $amount);
 
             return;
         }
 
         DB::transaction(function () use ($subscription, $user, $referrer, $amount) {
-            // Calculer la commission du parrain
+            // Calculate referrer commission
             $commissionPercentage = floatval($referrer->referral_commission_percentage ?? 10.00);
             $commissionAmount = ($amount * $commissionPercentage) / 100;
             $systemAmount = $amount - $commissionAmount;
 
-            // 1. Créditer le wallet du parrain
+            // 1. Credit referrer wallet
             $transaction = $this->creditReferrerWallet($referrer, $commissionAmount, $subscription);
 
-            // 2. Enregistrer le gain de parrainage
+            // 2. Record referral earning
             ReferralEarning::recordEarning(
                 $referrer,
                 $user,
@@ -71,10 +71,10 @@ final class ReferralService
         float $commissionAmount,
         UserSubscription $subscription
     ): InternalTransaction {
-        // Créditer le wallet
+        // Credit the wallet
         $referrer->wallet->increment('balance', $commissionAmount);
 
-        // Créer la transaction interne
+        // Create internal transaction
         return InternalTransaction::create([
             'wallet_id' => $referrer->wallet->id,
             'amount' => $commissionAmount,
@@ -136,7 +136,7 @@ final class ReferralService
     public function updateCommissionRate(User $user, float $percentage): bool
     {
         if ($percentage < 0 || $percentage > 50) {
-            return false; // Taux invalide
+            return false; // Invalid rate
         }
 
         $user->update(['referral_commission_percentage' => $percentage]);

@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\UserRole;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\AdminWithdrawalNotificationMail;
 use App\Models\User;
@@ -32,7 +33,7 @@ class AdminWithdrawalNotificationListener extends BaseListener
 
         if (empty($adminEmails)) {
             $adminUsers = User::whereHas('roles', function (Builder $query): void {
-                $query->where('name', 'admin');
+                $query->where('name', UserRole::ADMIN()->value);
             })->get();
             $adminEmails = $adminUsers->pluck('email')->toArray();
         }

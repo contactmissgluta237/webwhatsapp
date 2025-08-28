@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Enums\TicketSenderType;
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\AdminTicketRepliedNotification;
 use App\Notifications\CustomerTicketRepliedNotification;
@@ -33,7 +34,7 @@ class SendTicketReplyNotificationsListener extends BaseListener implements Shoul
         /** @var \App\Models\Ticket $ticket */
         if ($ticketMessage->sender_type->equals(TicketSenderType::CUSTOMER())) {
             // Notify admins when customer replies
-            $admins = User::whereHas('roles', fn ($query) => $query->where('name', 'admin'))->get();
+            $admins = User::whereHas('roles', fn ($query) => $query->where('name', UserRole::ADMIN()->value))->get();
             foreach ($admins as $admin) {
                 /** @var \App\Models\User $admin */
                 $admin->notify(new AdminTicketRepliedNotification($ticketMessage));

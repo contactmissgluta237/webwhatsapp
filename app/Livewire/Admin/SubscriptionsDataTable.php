@@ -46,18 +46,24 @@ final class SubscriptionsDataTable extends BaseDataTable
         return [
             Column::make('ID', 'id')->sortable()->deselected(),
 
-            Column::make('Utilisateur', 'user.name')
+            Column::make('Utilisateur', 'user.first_name')
                 ->sortable()
                 ->searchable()
                 ->format(function ($value, $row) {
+                    if (! $row->user) {
+                        return '<span class="text-muted">Utilisateur introuvable</span>';
+                    }
+
+                    $fullName = trim($row->user->first_name.' '.$row->user->last_name);
+
                     return '<div class="d-flex align-items-center">
                         <div class="avatar-sm me-3">
                             <div class="avatar-title bg-primary text-white rounded-circle">
-                                '.strtoupper(substr($row->user->name, 0, 1)).'
+                                '.strtoupper(substr($fullName, 0, 1)).'
                             </div>
                         </div>
                         <div>
-                            <strong>'.$row->user->name.'</strong>
+                            <strong>'.$fullName.'</strong>
                             <br>
                             <small class="text-muted">'.$row->user->email.'</small>
                         </div>
@@ -68,14 +74,16 @@ final class SubscriptionsDataTable extends BaseDataTable
             Column::make('Package', 'package.display_name')
                 ->sortable()
                 ->format(function ($value, $row) {
+                    if (! $row->package) {
+                        return '<span class="text-muted">Package introuvable</span>';
+                    }
+
                     $badge = '<span class="badge bg-primary">'.$value.'</span>';
-                    $price = '<br><small class="text-muted">'.number_format($row->package->price).' XAF</small>';
+                    $price = '<br><small class="text-muted">'.number_format((float) $row->package->price).' XAF</small>';
 
                     return $badge.$price;
                 })
-                ->html(),
-
-            Column::make('Statut', 'status')
+                ->html(),            Column::make('Statut', 'status')
                 ->sortable()
                 ->format(function ($value) {
                     $badges = [
@@ -106,8 +114,9 @@ final class SubscriptionsDataTable extends BaseDataTable
             Column::make('Montant', 'amount_paid')
                 ->sortable()
                 ->format(function ($value, $row) {
-                    if ($value > 0) {
-                        return '<strong>'.number_format($value).' XAF</strong><br><small class="text-muted">'.($row->payment_method ?? 'wallet').'</small>';
+                    $amount = (float) $value;
+                    if ($amount > 0) {
+                        return '<strong>'.number_format($amount).' XAF</strong><br><small class="text-muted">'.($row->payment_method ?? 'wallet').'</small>';
                     }
 
                     return '<span class="badge bg-success">Gratuit</span>';
@@ -132,7 +141,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                                 <div class="progress-bar '.$progressClass.'" style="width: '.min(100, $percentage).'%"></div>
                             </div>
                         </div>
-                        <small class="text-muted">'.$totalUsed.'/'.number_format($row->messages_limit).'</small>
+                        <small class="text-muted">'.$totalUsed.'/'.number_format((float) $row->messages_limit).'</small>
                     </div>';
                 })
                 ->html(),
@@ -171,7 +180,8 @@ final class SubscriptionsDataTable extends BaseDataTable
                     }
 
                     return $builder->whereHas('user', function ($query) use ($value) {
-                        $query->where('name', 'like', '%'.$value.'%')
+                        $query->where('first_name', 'like', '%'.$value.'%')
+                            ->orWhere('last_name', 'like', '%'.$value.'%')
                             ->orWhere('email', 'like', '%'.$value.'%');
                     });
                 }),
@@ -202,13 +212,15 @@ final class SubscriptionsDataTable extends BaseDataTable
     {
         /** @var Collection<User> $users */
         $users = User::whereHas('subscriptions')
-            ->orderBy('name')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
             ->limit(50)
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'first_name', 'last_name', 'email']);
 
         $options = ['' => 'Tous les utilisateurs'];
         foreach ($users as $user) {
-            $options[$user->full_name] = $user->full_name.' ('.$user->email.')';
+            $fullName = trim($user->first_name.' '.$user->last_name);
+            $options[$fullName] = $fullName.' ('.$user->email.')';
         }
 
         return $options;

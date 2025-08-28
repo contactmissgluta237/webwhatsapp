@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Customer\Packages;
 
+use App\Constants\ApplicationLimits;
+use App\Enums\FlashMessageType;
+use App\Enums\PackageType;
+use App\Enums\SubscriptionStatus;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
@@ -24,6 +28,11 @@ class SubscribeController extends Controller
         private readonly ReferralService $referralService
     ) {}
 
+    /**
+     * Handle the package subscription request.
+     *
+     * @endpoint POST /customer/packages/{package}/subscribe
+     */
     public function __invoke(Request $request, Package $package): RedirectResponse
     {
         $user = $request->user();
@@ -31,25 +40,25 @@ class SubscribeController extends Controller
         if ($user->hasActiveSubscription()) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with('error', 'Vous avez déjà un abonnement actif. Veuillez attendre son expiration ou le résilier avant de souscrire à un nouveau package.');
+                ->with(FlashMessageType::ERROR(), 'Vous avez déjà un abonnement actif. Veuillez attendre son expiration ou le résilier avant de souscrire à un nouveau package.');
         }
 
         if ($package->isTrial()) {
             $hasUsedTrial = $user->subscriptions()
-                ->whereHas('package', fn (Builder $q): Builder => $q->where('name', 'trial'))
+                ->whereHas('package', fn (Builder $q): Builder => $q->where('name', PackageType::TRIAL()->value))
                 ->exists();
 
             if ($hasUsedTrial) {
                 return redirect()
                     ->route('customer.packages.index')
-                    ->with('error', 'Vous avez déjà utilisé votre essai gratuit.');
+                    ->with(FlashMessageType::ERROR(), 'Vous avez déjà utilisé votre essai gratuit.');
             }
         }
 
         if (! $package->is_active) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with('error', 'Ce package n\'est plus disponible.');
+                ->with(FlashMessageType::ERROR(), 'Ce package n\'est plus disponible.');
         }
 
         if ($package->isTrial()) {
@@ -69,7 +78,7 @@ class SubscribeController extends Controller
             } else {
                 return redirect()
                     ->route('customer.packages.index')
-                    ->with('error', $couponValidation['message']);
+                    ->with(FlashMessageType::ERROR(), $couponValidation['message']);
             }
         }
 
@@ -79,7 +88,7 @@ class SubscribeController extends Controller
 
             return redirect()
                 ->route('customer.packages.index')
-                ->with('error', "Solde insuffisant. Il vous manque {$missingAmount} XAF.")
+                ->with(FlashMessageType::ERROR(), "Solde insuffisant. Il vous manque {$missingAmount} XAF.")
                 ->with('recharge_needed', true)
                 ->with('missing_amount', $missingAmount);
         }
@@ -124,8 +133,8 @@ class SubscribeController extends Controller
                     'user_id' => $user->id,
                     'package_id' => $package->id,
                     'starts_at' => now(),
-                    'ends_at' => now()->addDays($package->duration_days ?? 30),
-                    'status' => 'active',
+                    'ends_at' => now()->addDays($package->duration_days ?? ApplicationLimits::DEFAULT_PACKAGE_DURATION_DAYS),
+                    'status' => SubscriptionStatus::ACTIVE(),
                     'messages_limit' => $package->messages_limit,
                     'context_limit' => $package->context_limit,
                     'accounts_limit' => $package->accounts_limit,
@@ -161,12 +170,12 @@ class SubscribeController extends Controller
 
             return redirect()
                 ->route('customer.packages.index')
-                ->with('success', $message);
+                ->with(FlashMessageType::SUCCESS(), $message);
 
         } catch (\Exception $e) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with('error', 'Une erreur est survenue lors de la souscription. Veuillez réessayer.');
+                ->with(FlashMessageType::ERROR(), 'Une erreur est survenue lors de la souscription. Veuillez réessayer.');
         }
     }
 }

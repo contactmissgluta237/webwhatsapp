@@ -130,7 +130,7 @@ class UserSubscription extends Model
 
     public function isExpired(): bool
     {
-        return $this->ends_at <= now() || $this->status === 'expired';
+        return $this->ends_at <= now() || $this->status === SubscriptionStatus::EXPIRED()->value;
     }
 
     public function isCancelled(): bool
@@ -138,15 +138,10 @@ class UserSubscription extends Model
         return $this->status === SubscriptionStatus::CANCELLED()->value;
     }
 
-    public function isSuspended(): bool
-    {
-        return $this->status === 'suspended';
-    }
-
     public function getCurrentStatus(): string
     {
         if ($this->ends_at <= now()) {
-            return 'expired';
+            return SubscriptionStatus::EXPIRED()->value;
         }
 
         return $this->status;
@@ -263,14 +258,6 @@ class UserSubscription extends Model
         $this->update([
             'status' => SubscriptionStatus::CANCELLED()->value,
             'cancelled_at' => now(),
-            'cancellation_reason' => $reason,
-        ]);
-    }
-
-    public function suspend(?string $reason = null): void
-    {
-        $this->update([
-            'status' => 'suspended',
             'cancellation_reason' => $reason,
         ]);
     }

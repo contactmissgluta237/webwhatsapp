@@ -1,4 +1,4 @@
-@extends('modern.layouts.app')
+@extends('modern.layouts.master')
 
 @section('title', 'Gestion des Souscriptions')
 

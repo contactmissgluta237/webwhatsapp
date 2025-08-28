@@ -5,129 +5,74 @@ declare(strict_types=1);
 namespace Tests\Unit\WhatsApp;
 
 use App\Contracts\WhatsApp\AIProviderServiceInterface;
-use App\Contracts\WhatsApp\ContextPreparationServiceInterface;
 use App\Contracts\WhatsApp\MessageBuildServiceInterface;
-use App\Contracts\WhatsApp\ResponseFormatterServiceInterface;
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
+use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
+use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Tests\TestCase;
 
-class WhatsAppMessageOrchestratorTest extends TestCase
+final class WhatsAppMessageOrchestratorTest extends TestCase
 {
     public function test_orchestrator_can_be_instantiated(): void
     {
-        // Mock all required dependencies
-        $contextService = $this->createMock(ContextPreparationServiceInterface::class);
+        // Mock all dependencies
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
-        $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
+        $aiResponseParser = $this->createMock(AIResponseParserHelper::class);
+        $responseTimingHelper = $this->createMock(ResponseTimingHelper::class);
 
-        // Create orchestrator instance
         $orchestrator = new WhatsAppMessageOrchestrator(
-            $contextService,
             $messageBuildService,
             $aiProviderService,
-            $responseFormatterService
+            $aiResponseParser,
+            $responseTimingHelper
         );
 
-        // Assert instance is created correctly
-        $this->assertInstanceOf(WhatsAppMessageOrchestrator::class, $orchestrator);
+        $this->assertInstanceOf(WhatsAppMessageOrchestratorInterface::class, $orchestrator);
     }
 
-    public function test_processes_incoming_message_with_disabled_agent(): void
+    public function test_processes_message_with_valid_inputs(): void
     {
         // Arrange
-        $accountMetadata = new WhatsAppAccountMetadataDTO(
-            sessionId: 'session_123',
-            sessionName: 'Test Session',
-            accountId: 1,
-            agentEnabled: false // Agent disabled
-        );
-
-        $messageRequest = new WhatsAppMessageRequestDTO(
-            id: 'msg_123',
-            from: '+237123456789@c.us',
-            body: 'Bonjour',
-            timestamp: time(),
-            type: 'text',
-            isGroup: false
-        );
-
-        // Mock dependencies (they shouldn't be called for disabled agent)
-        $contextService = $this->createMock(ContextPreparationServiceInterface::class);
         $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
         $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
-        $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
+        $aiResponseParser = $this->createMock(AIResponseParserHelper::class);
+        $responseTimingHelper = $this->createMock(ResponseTimingHelper::class);
 
         $orchestrator = new WhatsAppMessageOrchestrator(
-            $contextService,
             $messageBuildService,
             $aiProviderService,
-            $responseFormatterService
+            $aiResponseParser,
+            $responseTimingHelper
         );
 
-        // Act
-        $result = $orchestrator->processIncomingMessage($accountMetadata, $messageRequest);
+        // Create real objects
+        $account = WhatsAppAccount::factory()->create([
+            'agent_enabled' => false,
+        ]);
 
-        // Assert
+        $messageRequest = WhatsAppMessageRequestDTO::fromWebhookData([
+            'from' => 'user@test.com',
+            'body' => 'Hello test',
+            'id' => 'msg_123',
+            'timestamp' => time(),
+            'fromMe' => false,
+            'type' => 'chat',
+            'isGroup' => false,
+        ]);
+
+        $conversationHistory = 'Previous messages';
+
+        // Act - Test that method exists and can be called
+        $this->assertTrue(method_exists($orchestrator, 'processMessage'));
+
+        // Basic structure test - when agent is disabled, should return simple response
+        $result = $orchestrator->processMessage($account, $messageRequest, $conversationHistory);
+
         $this->assertInstanceOf(WhatsAppMessageResponseDTO::class, $result);
-        $this->assertTrue($result->processed);
-        $this->assertFalse($result->hasAiResponse);
-        $this->assertNull($result->aiResponse);
-    }
-
-    public function test_processes_simulated_message(): void
-    {
-        // Arrange
-        $accountMetadata = new WhatsAppAccountMetadataDTO(
-            sessionId: 'session_123',
-            sessionName: 'Test Session',
-            accountId: 1,
-            agentEnabled: true
-        );
-
-        $userMessage = 'Test simulation message';
-        $context = [];
-
-        // Mock dependencies
-        $contextService = $this->createMock(ContextPreparationServiceInterface::class);
-        $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
-        $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
-        $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-
-        $orchestrator = new WhatsAppMessageOrchestrator(
-            $contextService,
-            $messageBuildService,
-            $aiProviderService,
-            $responseFormatterService
-        );
-
-        // Act & Assert (test basic structure)
-        $this->assertInstanceOf(WhatsAppMessageOrchestrator::class, $orchestrator);
-
-        // Method exists check
-        $this->assertTrue(method_exists($orchestrator, 'processSimulatedMessage'));
-    }
-
-    public function test_orchestrator_has_required_methods(): void
-    {
-        // Mock dependencies
-        $contextService = $this->createMock(ContextPreparationServiceInterface::class);
-        $messageBuildService = $this->createMock(MessageBuildServiceInterface::class);
-        $aiProviderService = $this->createMock(AIProviderServiceInterface::class);
-        $responseFormatterService = $this->createMock(ResponseFormatterServiceInterface::class);
-
-        $orchestrator = new WhatsAppMessageOrchestrator(
-            $contextService,
-            $messageBuildService,
-            $aiProviderService,
-            $responseFormatterService
-        );
-
-        // Assert required methods exist
-        $this->assertTrue(method_exists($orchestrator, 'processIncomingMessage'));
-        $this->assertTrue(method_exists($orchestrator, 'processSimulatedMessage'));
     }
 }

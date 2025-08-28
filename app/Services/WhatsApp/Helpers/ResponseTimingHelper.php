@@ -10,7 +10,7 @@ use App\Models\WhatsAppAccount;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 
-final class ResponseTimingHelper
+class ResponseTimingHelper
 {
     /**
      * Calculate wait time before starting to type

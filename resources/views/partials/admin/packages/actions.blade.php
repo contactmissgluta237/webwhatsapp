@@ -29,6 +29,12 @@
             Voir détails
         </a>
         
+        {{-- Voir les souscriptions --}}
+        <a class="dropdown-item py-2" href="{{ route('admin.subscriptions.index', ['package_id' => $package->id]) }}">
+            <i class="mdi mdi-eye text-primary mr-2"></i>
+            Voir les souscriptions
+        </a>
+        
         <div class="dropdown-divider"></div>
         
         {{-- Supprimer --}}
