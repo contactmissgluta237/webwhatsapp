@@ -29,7 +29,7 @@ class WhatsAppAccountDataTable extends BaseDataTable
 
     public function getEmptyMessage(): string
     {
-        return 'No WhatsApp session found.';
+        return __('Aucune session WhatsApp trouvée.');
     }
 
     protected function getExportFileName(): string
@@ -60,7 +60,7 @@ class WhatsAppAccountDataTable extends BaseDataTable
         return [
             Column::make('ID', 'id')->sortable()->deselected(),
 
-            Column::make('Session Name', 'session_name')
+            Column::make(__('Nom de session'), 'session_name')
                 ->sortable()
                 ->searchable()
                 ->format(function ($value, $row) {
@@ -73,56 +73,56 @@ class WhatsAppAccountDataTable extends BaseDataTable
                 })
                 ->html(),
 
-            Column::make('Phone', 'phone_number')
+            Column::make(__('Téléphone'), 'phone_number')
                 ->sortable()
                 ->searchable()
                 ->format(function ($value) {
                     return $value
                         ? '<span class="badge badge-whatsapp">'.$value.'</span>'
-                        : '<span class="badge badge-secondary">Not connected</span>';
+                        : '<span class="badge badge-secondary">'.__('Non connecté').'</span>';
                 })
                 ->html(),
 
-            Column::make('Status', 'status')
+            Column::make(__('Statut'), 'status')
                 ->sortable()
                 ->html()
                 ->format(function ($value, $row) {
                     if ($row->isConnected()) {
-                        return '<span class="badge badge-success"><i class="la la-check"></i> Connected</span>';
+                        return '<span class="badge badge-success"><i class="la la-check"></i> '.__('Connecté').'</span>';
                     } elseif ($row->isConnecting()) {
-                        return '<span class="badge badge-warning"><i class="la la-sync-alt"></i> Connecting...</span>';
+                        return '<span class="badge badge-warning"><i class="la la-sync-alt"></i> '.__('Connexion en cours...').'</span>';
                     } else {
-                        return '<span class="badge badge-secondary"><i class="la la-times"></i> Disconnected</span>';
+                        return '<span class="badge badge-secondary"><i class="la la-times"></i> '.__('Déconnecté').'</span>';
                     }
                 }),
 
-            Column::make('AI Agent', 'agent_enabled')
+            Column::make(__('Agent IA'), 'agent_enabled')
                 ->sortable()
                 ->html()
                 ->format(function ($value, $row) {
                     $freshAccount = \App\Models\WhatsAppAccount::find($row->id);
 
                     if ($freshAccount->agent_enabled && $freshAccount->ai_model_id) {
-                        return '<span class="badge badge-success"><i class="la la-robot"></i> Active</span>';
+                        return '<span class="badge badge-success"><i class="la la-robot"></i> '.__('Actif').'</span>';
                     }
 
-                    return '<span class="badge badge-secondary"><i class="la la-robot"></i> Inactive</span>';
+                    return '<span class="badge badge-secondary"><i class="la la-robot"></i> '.__('Inactif').'</span>';
                 }),
 
-            Column::make('Conversations', 'id')
+            Column::make(__('Conversations'), 'id')
                 ->html()
                 ->format(function ($value, $row) {
                     $count = $row->conversations->count();
                     if ($count === 0) {
-                        return '<span class="text-muted">None</span>';
+                        return '<span class="text-muted">'.__('Aucune').'</span>';
                     }
 
-                    return '<span class="badge badge-info">'.$count.' conversation'.($count > 1 ? 's' : '').'</span>';
+                    return '<span class="badge badge-info">'.$count.' '.trans_choice('conversation|conversations', $count).'</span>';
                 }),
 
-            Column::make('Created At', 'created_at')
+            Column::make(__('Créé le'), 'created_at')
                 ->sortable()
-                ->format(fn ($value) => $value->format('j F Y H:i:s')),
+                ->format(fn ($value) => $value->locale('fr')->isoFormat('D MMMM YYYY HH:mm:ss')),
 
             $this->getActionsColumn(),
         ];
@@ -130,7 +130,7 @@ class WhatsAppAccountDataTable extends BaseDataTable
 
     protected function getActionsColumn(): Column
     {
-        return Column::make('Actions')
+        return Column::make(__('Actions'))
             ->label(fn (WhatsAppAccount $row) => view('partials.customer.whatsapp.actions', ['account' => $row])
             )
             ->html();
@@ -144,20 +144,20 @@ class WhatsAppAccountDataTable extends BaseDataTable
     protected function getBasicFilters(): array
     {
         return [
-            SelectFilter::make('Status', 'status')
+            SelectFilter::make(__('Statut'), 'status')
                 ->options([
-                    '' => 'All statuses',
-                    'connected' => 'Connected',
-                    'connecting' => 'Connecting...',
-                    'disconnected' => 'Disconnected',
+                    '' => __('Tous les statuts'),
+                    'connected' => __('Connecté'),
+                    'connecting' => __('Connexion en cours...'),
+                    'disconnected' => __('Déconnecté'),
                 ])
                 ->filter(fn (Builder $builder, string $value) => $value === '' ? $builder : $builder->where('status', $value)),
 
-            SelectFilter::make('AI Agent', 'agent_enabled')
+            SelectFilter::make(__('Agent IA'), 'agent_enabled')
                 ->options([
-                    '' => 'All agents',
-                    '1' => 'Active',
-                    '0' => 'Inactive',
+                    '' => __('Tous les agents'),
+                    '1' => __('Actif'),
+                    '0' => __('Inactif'),
                 ])
                 ->filter(function (Builder $builder, string $value) {
                     if ($value === '') {
@@ -171,8 +171,8 @@ class WhatsAppAccountDataTable extends BaseDataTable
                     return $builder->where('agent_enabled', false)->orWhereNull('ai_model_id');
                 }),
 
-            DateFilter::make('Created After', 'created_at')
-                ->config(['placeholder' => 'Minimum creation date', 'locale' => 'en'])
+            DateFilter::make(__('Créé après'), 'created_at')
+                ->config(['placeholder' => __('Date de création minimum'), 'locale' => 'fr'])
                 ->filter(fn (Builder $builder, string $value) => $builder->whereDate('created_at', '>=', $value)),
         ];
     }

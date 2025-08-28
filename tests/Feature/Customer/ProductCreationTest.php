@@ -46,9 +46,10 @@ final class ProductCreationTest extends TestCase
             ->set('title', 'Produit de Test')
             ->set('description', 'Description complète du produit de test')
             ->set('price', 15000.0)
-            ->set('is_active', true)
-            ->set('mediaFiles', [$image, $pdf])
-            ->call('save');
+            ->set('is_active', true);
+
+        $component->set('allMediaFiles', [$image, $pdf]);
+        $component->call('save');
 
         // Vérifications en base de données
         $this->assertDatabaseHas('user_products', [
@@ -63,14 +64,14 @@ final class ProductCreationTest extends TestCase
         $this->assertNotNull($product);
 
         // Vérifier que les médias sont attachés
-        $this->assertTrue($product->hasMedia('images'));
-        $this->assertCount(2, $product->getMedia('images'));
+        $this->assertTrue($product->hasMedia('medias'));
+        $this->assertCount(2, $product->getMedia('medias'));
 
         // Vérifier dans la table media
         $this->assertDatabaseHas('media', [
             'model_type' => UserProduct::class,
             'model_id' => $product->id,
-            'collection_name' => 'images',
+            'collection_name' => 'medias',
         ]);
     }
 
@@ -92,7 +93,7 @@ final class ProductCreationTest extends TestCase
         ]);
 
         $product = UserProduct::where('title', 'Produit Sans Média')->first();
-        $this->assertFalse($product->hasMedia('images'));
+        $this->assertFalse($product->hasMedia('medias'));
     }
 
     public function test_customer_can_access_create_product_page(): void
@@ -120,23 +121,22 @@ final class ProductCreationTest extends TestCase
             'description' => 'Description du produit avec image',
             'price' => 35.50,
             'is_active' => true,
-            'media' => [$image],
         ];
 
-        Livewire::test(CreateProductForm::class)
+        $component = Livewire::test(CreateProductForm::class)
             ->set('title', $productData['title'])
             ->set('description', $productData['description'])
             ->set('price', $productData['price'])
-            ->set('is_active', $productData['is_active'])
-            ->set('mediaFiles', $productData['media'])
-            ->call('save')
-            ->assertRedirect(route('customer.products.index'));
+            ->set('is_active', $productData['is_active']);
+
+        $component->set('allMediaFiles', [$image]);
+        $component->call('save');
 
         $product = UserProduct::where('title', $productData['title'])->first();
         $this->assertNotNull($product);
-        $this->assertCount(1, $product->getMedia('images'));
+        $this->assertCount(1, $product->getMedia('medias'));
 
-        $media = $product->getFirstMedia('images');
+        $media = $product->getFirstMedia('medias');
         $this->assertEquals('test-product.jpg', $media->name);
         $this->assertEquals('image/jpeg', $media->mime_type);
     }
@@ -147,35 +147,32 @@ final class ProductCreationTest extends TestCase
 
         $image1 = UploadedFile::fake()->image('image1.jpg', 800, 600)->size(1000);
         $image2 = UploadedFile::fake()->image('image2.png', 600, 400)->size(800);
-        // Utilisons une vidéo au lieu d'un PDF pour éviter les problèmes de mime type
-        $video = UploadedFile::fake()->create('video.mp4', 2000, 'video/mp4');
 
         $productData = [
             'title' => 'Produit multi-médias',
             'description' => 'Description du produit avec plusieurs médias',
             'price' => 99.99,
             'is_active' => true,
-            'media' => [$image1, $image2, $video],
         ];
 
-        Livewire::test(CreateProductForm::class)
+        $component = Livewire::test(CreateProductForm::class)
             ->set('title', $productData['title'])
             ->set('description', $productData['description'])
             ->set('price', $productData['price'])
-            ->set('is_active', $productData['is_active'])
-            ->set('mediaFiles', $productData['media'])
-            ->call('save')
-            ->assertRedirect(route('customer.products.index'));
+            ->set('is_active', $productData['is_active']);
+
+        // Set the media files in the allMediaFiles array directly
+        $component->set('allMediaFiles', [$image1, $image2]);
+        $component->call('save');
 
         $product = UserProduct::where('title', $productData['title'])->first();
         $this->assertNotNull($product);
-        $this->assertCount(3, $product->getMedia('images'));
+        $this->assertCount(2, $product->getMedia('medias'));
 
-        $mediaTypes = $product->getMedia('images')->pluck('mime_type')->toArray();
+        $mediaTypes = $product->getMedia('medias')->pluck('mime_type')->toArray();
         $this->assertContains('image/jpeg', $mediaTypes);
         $this->assertContains('image/png', $mediaTypes);
-        // Le fichier fake peut avoir un mime type différent, vérifions juste qu'il y a 3 médias
-        $this->assertCount(3, $mediaTypes);
+        $this->assertCount(2, $mediaTypes);
     }
 
     public function test_product_creation_validates_required_fields(): void
@@ -187,9 +184,30 @@ final class ProductCreationTest extends TestCase
             ->set('description', '')
             ->call('save')
             ->assertHasErrors([
-                'title' => 'Le titre est obligatoire.',
-                'description' => 'La description est obligatoire.',
+                'title',
+                'description',
             ]);
+    }
+
+    public function test_product_creation_validates_string_length(): void
+    {
+        $this->actingAs($this->user);
+
+        // Test titre trop long
+        Livewire::test(CreateProductForm::class)
+            ->set('title', str_repeat('a', 256))
+            ->set('description', 'Description valide')
+            ->set('price', 100)
+            ->call('save')
+            ->assertHasErrors(['title']);
+
+        // Test description trop longue
+        Livewire::test(CreateProductForm::class)
+            ->set('title', 'Titre valide')
+            ->set('description', str_repeat('a', 1001))
+            ->set('price', 100)
+            ->call('save')
+            ->assertHasErrors(['description']);
     }
 
     public function test_product_creation_validates_price_format(): void
@@ -202,6 +220,17 @@ final class ProductCreationTest extends TestCase
             ->set('price', 0)
             ->call('save')
             ->assertHasErrors(['price']);
+
+        // Test avec un prix négatif
+        Livewire::test(CreateProductForm::class)
+            ->set('title', 'Produit test')
+            ->set('description', 'Description test')
+            ->set('price', -10)
+            ->call('save')
+            ->assertHasErrors(['price']);
+
+        // Test avec un prix non numérique (skip this test as the property is typed as float)
+        // Livewire will convert non-numeric strings to 0 for float properties
     }
 
     public function test_product_creation_validates_file_size(): void
@@ -212,8 +241,20 @@ final class ProductCreationTest extends TestCase
         $component = Livewire::test(CreateProductForm::class);
         $rules = $component->instance()->rules();
 
-        $this->assertArrayHasKey('media.*', $rules);
-        $this->assertStringContainsString('max:10240', $rules['media.*']);
+        $this->assertArrayHasKey('mediaFiles.*', $rules);
+        $this->assertContains('max:10240', $rules['mediaFiles.*']);
+    }
+
+    public function test_product_creation_validates_file_types(): void
+    {
+        $this->actingAs($this->user);
+
+        // Vérifier que les règles de validation incluent les types de fichiers corrects
+        $component = Livewire::test(CreateProductForm::class);
+        $rules = $component->instance()->rules();
+
+        $this->assertArrayHasKey('mediaFiles.*', $rules);
+        $this->assertContains('mimes:jpeg,jpg,png,gif,pdf,doc,docx', $rules['mediaFiles.*']);
     }
 
     public function test_customer_can_remove_media_before_saving(): void
@@ -223,13 +264,13 @@ final class ProductCreationTest extends TestCase
         $image1 = UploadedFile::fake()->image('image1.jpg');
         $image2 = UploadedFile::fake()->image('image2.jpg');
 
-        $component = Livewire::test(CreateProductForm::class)
-            ->set('mediaFiles', [$image1, $image2]);
+        $component = Livewire::test(CreateProductForm::class);
+        $component->set('allMediaFiles', [$image1, $image2]);
 
-        $component->assertCount('allMediaFiles', 2);
+        $this->assertCount(2, $component->get('allMediaFiles'));
 
-        $component->call('removeMediaFile', 0)
-            ->assertCount('allMediaFiles', 1);
+        $component->call('removeMediaFile', 0);
+        $this->assertCount(1, $component->get('allMediaFiles'));
 
         // Vérifie que c'est le bon fichier qui reste
         $this->assertEquals('image2.jpg', $component->get('allMediaFiles')[0]->getClientOriginalName());

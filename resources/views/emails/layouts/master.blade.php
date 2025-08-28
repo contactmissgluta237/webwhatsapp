@@ -37,7 +37,7 @@
             font-size: 28px;
             font-weight: bold;
             color: white;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         
         .email-header h1 {

@@ -5,7 +5,7 @@ namespace Tests\Unit\Http\Requests;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
-abstract class BaseRequestTest extends TestCase
+abstract class BaseRequestTestCase extends TestCase
 {
     abstract protected function getRequestClass(): string;
 

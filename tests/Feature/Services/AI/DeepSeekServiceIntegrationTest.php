@@ -58,11 +58,14 @@ final class DeepSeekServiceIntegrationTest extends TestCase
     {
         Log::info('🧪 Test génération réponse chat DeepSeek');
 
+        // Créer un compte WhatsApp pour le test
+        $account = \App\Models\WhatsAppAccount::factory()->create();
+
         $request = new AiRequestDTO(
             systemPrompt: 'Tu es un assistant WhatsApp professionnel et utile.',
             userMessage: 'Salut ! Comment ça va ?',
-            config: [],
-            context: []
+            account: $account,
+            config: []
         );
 
         $response = $this->deepseekService->chat($this->deepseekModel, $request);
@@ -87,11 +90,14 @@ final class DeepSeekServiceIntegrationTest extends TestCase
         $invalidModel = clone $this->deepseekModel;
         $invalidModel->api_key = 'invalid-api-key';
 
+        // Créer un compte WhatsApp pour le test
+        $account = \App\Models\WhatsAppAccount::factory()->create();
+
         $request = new AiRequestDTO(
             systemPrompt: 'Test',
             userMessage: 'Test',
-            config: [],
-            context: []
+            account: $account,
+            config: []
         );
 
         $this->deepseekService->chat($invalidModel, $request);
@@ -110,11 +116,14 @@ final class DeepSeekServiceIntegrationTest extends TestCase
 
         $this->deepseekModel->model_config = $customConfig;
 
+        // Créer un compte WhatsApp pour le test
+        $account = \App\Models\WhatsAppAccount::factory()->create();
+
         $request = new AiRequestDTO(
             systemPrompt: 'Réponds en un seul mot.',
             userMessage: 'Dis juste \'OK\'',
-            config: [],
-            context: []
+            account: $account,
+            config: []
         );
 
         $response = $this->deepseekService->chat($this->deepseekModel, $request);

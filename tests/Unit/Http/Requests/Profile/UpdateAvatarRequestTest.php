@@ -5,9 +5,9 @@ namespace Tests\Unit\Http\Requests\Profile;
 use App\Http\Requests\Profile\UpdateAvatarRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Tests\Unit\Http\Requests\BaseRequestTest;
+use Tests\Unit\Http\Requests\BaseRequestTestCase;
 
-class UpdateAvatarRequestTest extends BaseRequestTest
+class UpdateAvatarRequestTest extends BaseRequestTestCase
 {
     use RefreshDatabase;
 

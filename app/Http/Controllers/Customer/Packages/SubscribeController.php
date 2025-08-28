@@ -40,7 +40,7 @@ class SubscribeController extends Controller
         if ($user->hasActiveSubscription()) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with(FlashMessageType::ERROR(), 'Vous avez déjà un abonnement actif. Veuillez attendre son expiration ou le résilier avant de souscrire à un nouveau package.');
+                ->with(FlashMessageType::ERROR()->value, 'Vous avez déjà un abonnement actif. Veuillez attendre son expiration ou le résilier avant de souscrire à un nouveau package.');
         }
 
         if ($package->isTrial()) {
@@ -51,14 +51,14 @@ class SubscribeController extends Controller
             if ($hasUsedTrial) {
                 return redirect()
                     ->route('customer.packages.index')
-                    ->with(FlashMessageType::ERROR(), 'Vous avez déjà utilisé votre essai gratuit.');
+                    ->with(FlashMessageType::ERROR()->value, 'Vous avez déjà utilisé votre essai gratuit.');
             }
         }
 
         if (! $package->is_active) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with(FlashMessageType::ERROR(), 'Ce package n\'est plus disponible.');
+                ->with(FlashMessageType::ERROR()->value, 'Ce package n\'est plus disponible.');
         }
 
         if ($package->isTrial()) {
@@ -78,7 +78,7 @@ class SubscribeController extends Controller
             } else {
                 return redirect()
                     ->route('customer.packages.index')
-                    ->with(FlashMessageType::ERROR(), $couponValidation['message']);
+                    ->with(FlashMessageType::ERROR()->value, $couponValidation['message']);
             }
         }
 
@@ -88,7 +88,7 @@ class SubscribeController extends Controller
 
             return redirect()
                 ->route('customer.packages.index')
-                ->with(FlashMessageType::ERROR(), "Solde insuffisant. Il vous manque {$missingAmount} XAF.")
+                ->with(FlashMessageType::ERROR()->value, "Solde insuffisant. Il vous manque {$missingAmount} XAF.")
                 ->with('recharge_needed', true)
                 ->with('missing_amount', $missingAmount);
         }
@@ -170,12 +170,12 @@ class SubscribeController extends Controller
 
             return redirect()
                 ->route('customer.packages.index')
-                ->with(FlashMessageType::SUCCESS(), $message);
+                ->with(FlashMessageType::SUCCESS()->value, $message);
 
         } catch (\Exception $e) {
             return redirect()
                 ->route('customer.packages.index')
-                ->with(FlashMessageType::ERROR(), 'Une erreur est survenue lors de la souscription. Veuillez réessayer.');
+                ->with(FlashMessageType::ERROR()->value, 'Une erreur est survenue lors de la souscription. Veuillez réessayer.');
         }
     }
 }

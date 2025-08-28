@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\E2E;
+namespace Tests\E2E\Integration;
 
 use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
 use App\Livewire\Customer\WhatsApp\ConversationSimulator;

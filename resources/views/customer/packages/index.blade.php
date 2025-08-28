@@ -130,8 +130,8 @@
                                 </button>
                             @else
                                 @if($package->isTrial())
-                                    <form method="POST" action="{{ route('customer.packages.subscribe', $package) }}" 
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir commencer l\'essai gratuit ?')">
+                                    <form method="POST" action="{{ route('customer.packages.subscribe', $package->id) }}" 
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir commencer l\'essai gratuit ?')">>
                                         @csrf
                                         <button type="submit" class="btn btn-package-{{ $package->name }} w-100">
                                             <i class="la la-gift"></i> Commencer l'essai

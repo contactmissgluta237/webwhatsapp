@@ -54,6 +54,11 @@
 15. `Tests\Feature\Referral\ReferralNotificationTest::multiple_customers_can_be_referred_by_same_referrer`
 16. `Tests\Feature\Referral\CompleteReferralFlowTest::registration_with_referral_code_links_users`
 
+
+
+
+
+
 ### Tests Services/AI
 17. `Tests\Feature\Services\AI\DeepSeekServiceIntegrationTest::it_handles_errors_gracefully_with_invalid_key`
 

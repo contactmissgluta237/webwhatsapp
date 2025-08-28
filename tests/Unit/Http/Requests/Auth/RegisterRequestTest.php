@@ -4,9 +4,9 @@ namespace Tests\Unit\Http\Requests\Auth;
 
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Unit\Http\Requests\BaseRequestTest;
+use Tests\Unit\Http\Requests\BaseRequestTestCase;
 
-class RegisterRequestTest extends BaseRequestTest
+class RegisterRequestTest extends BaseRequestTestCase
 {
     use RefreshDatabase;
 

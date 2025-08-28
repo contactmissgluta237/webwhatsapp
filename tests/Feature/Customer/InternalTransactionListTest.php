@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Customer;
 
 use App\Enums\PermissionEnum;
@@ -11,6 +13,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -55,8 +58,8 @@ class InternalTransactionListTest extends TestCase
         $this->otherWallet = Wallet::factory()->create(['user_id' => $this->otherCustomer->id]);
     }
 
-    /** @test */
-    public function customer_can_access_their_internal_transactions_list_page()
+    #[Test]
+    public function customer_can_access_their_internal_transactions_list_page(): void
     {
         $response = $this->actingAs($this->customer)
             ->get(route('customer.transactions.internal'));
@@ -65,8 +68,8 @@ class InternalTransactionListTest extends TestCase
         $response->assertViewIs('customer.transactions.internal-index');
     }
 
-    /** @test */
-    public function customer_can_only_see_their_own_internal_transactions()
+    #[Test]
+    public function customer_can_only_see_their_own_internal_transactions(): void
     {
         InternalTransaction::query()->delete();
 
@@ -88,8 +91,8 @@ class InternalTransactionListTest extends TestCase
             ->assertDontSee('Other Transaction Customer 2'); // Should not see other customer's transactions
     }
 
-    /** @test */
-    public function customer_can_filter_their_internal_transactions_by_type()
+    #[Test]
+    public function customer_can_filter_their_internal_transactions_by_type(): void
     {
         InternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
@@ -110,8 +113,8 @@ class InternalTransactionListTest extends TestCase
         $component->call('setFilter', 'transaction_type', 'credit');
     }
 
-    /** @test */
-    public function customer_can_filter_their_internal_transactions_by_status()
+    #[Test]
+    public function customer_can_filter_their_internal_transactions_by_status(): void
     {
         InternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
@@ -132,8 +135,8 @@ class InternalTransactionListTest extends TestCase
         $component->call('setFilter', 'status', 'completed');
     }
 
-    /** @test */
-    public function customer_can_search_their_internal_transactions_by_description()
+    #[Test]
+    public function customer_can_search_their_internal_transactions_by_description(): void
     {
         InternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
@@ -154,8 +157,8 @@ class InternalTransactionListTest extends TestCase
             ->assertDontSee('Paiement de facture');
     }
 
-    /** @test */
-    public function customer_can_see_internal_transaction_details_with_proper_formatting()
+    #[Test]
+    public function customer_can_see_internal_transaction_details_with_proper_formatting(): void
     {
         InternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
@@ -173,8 +176,8 @@ class InternalTransactionListTest extends TestCase
             ->assertSee('Terminé');
     }
 
-    /** @test */
-    public function admin_cannot_access_customer_internal_transactions_list()
+    #[Test]
+    public function admin_cannot_access_customer_internal_transactions_list(): void
     {
         $response = $this->actingAs($this->admin)
             ->get(route('customer.transactions.internal'));
@@ -182,8 +185,8 @@ class InternalTransactionListTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
-    public function unauthenticated_user_cannot_access_customer_internal_transactions_list()
+    #[Test]
+    public function unauthenticated_user_cannot_access_customer_internal_transactions_list(): void
     {
         $response = $this->get(route('customer.transactions.internal'));
 

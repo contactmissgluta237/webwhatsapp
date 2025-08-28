@@ -33,7 +33,7 @@ class PackageManagementTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'PackagesSeeder']);
 
         $this->admin = User::factory()->admin()->create();
-        
+
         // Cache packages for reuse
         $this->trialPackage = Package::where('name', 'trial')->first();
         $this->starterPackage = Package::where('name', 'starter')->first();
@@ -245,5 +245,194 @@ class PackageManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Aucun package trouvé');
         $response->assertSee('mdi-package-variant-closed'); // Icône empty state
+    }
+
+    #[Test]
+    public function test_non_admin_cannot_access_packages_page(): void
+    {
+        $customer = User::factory()->customer()->create();
+
+        $this->actingAs($customer)
+            ->get(route('admin.packages.index'))
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function test_guest_cannot_access_packages_page(): void
+    {
+        $this->get(route('admin.packages.index'))
+            ->assertRedirect('/login');
+    }
+
+    #[Test]
+    public function test_packages_are_displayed_in_page(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier que tous les packages sont présents (l'ordre peut varier)
+        $response->assertSee('Essai Gratuit');
+        $response->assertSee('Starter');
+        $response->assertSee('Pro');
+        $response->assertSee('Business');
+    }
+
+    #[Test]
+    public function test_packages_display_correct_pricing_formats(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier les formats de prix spécifiques
+        $response->assertSee('GRATUIT'); // Trial package
+        $response->assertSee('2 000 XAF'); // Starter avec espace de milliers
+        $response->assertSee('5 000 XAF'); // Pro avec espace de milliers
+        $response->assertSee('10 000 XAF'); // Business avec espace de milliers
+    }
+
+    #[Test]
+    public function test_packages_show_trial_specific_features(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier les caractéristiques spécifiques au trial
+        $response->assertSee('7 jour'); // Durée
+        $response->assertSee('Une seule fois'); // Non récurrent
+        $response->assertSee('GRATUIT'); // Prix
+    }
+
+    #[Test]
+    public function test_packages_show_usage_statistics_correctly(): void
+    {
+        // Créer des souscriptions pour différents packages
+        $this->createSubscriptionsForPackage($this->starterPackage, 3);
+        $this->createSubscriptionsForPackage($this->proPackage, 7);
+        $this->createSubscriptionsForPackage($this->businessPackage, 2);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier que les compteurs de souscriptions sont affichés
+        $response->assertSee('3'); // Starter
+        $response->assertSee('7'); // Pro
+        $response->assertSee('2'); // Business
+    }
+
+    #[Test]
+    public function test_packages_display_all_required_limits(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier que les limites principales sont affichées
+        $response->assertSee('200'); // Messages starter
+        $response->assertSee('1'); // Comptes starter
+
+        // Vérifier le contexte formaté avec virgule
+        $response->assertSee('3,000'); // Contexte starter formaté
+    }
+
+    #[Test]
+    public function test_packages_show_correct_feature_badges(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier les badges de fonctionnalités pour les packages premium
+        if ($this->proPackage->hasWeeklyReports() || $this->businessPackage->hasWeeklyReports()) {
+            $response->assertSee('Rapports hebdo.');
+        }
+
+        if ($this->proPackage->hasPrioritySupport() || $this->businessPackage->hasPrioritySupport()) {
+            $response->assertSee('Support prioritaire');
+        }
+    }
+
+    #[Test]
+    public function test_subscription_links_are_generated_correctly(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier que chaque package a un lien vers ses souscriptions
+        foreach ([$this->trialPackage, $this->starterPackage, $this->proPackage, $this->businessPackage] as $package) {
+            $expectedUrl = route('admin.subscriptions.index', ['package_id' => $package->id]);
+            $response->assertSee($expectedUrl);
+        }
+    }
+
+    #[Test]
+    public function test_packages_display_status_badges(): void
+    {
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Vérifier les badges de statut
+        $response->assertSee('Actif'); // Au moins un package doit être actif
+
+        // Vérifier les couleurs/styles de badges (si présentes dans le HTML)
+        $content = $response->getContent();
+        $this->assertStringContainsString('badge', $content);
+    }
+
+    #[Test]
+    public function test_packages_page_handles_large_numbers(): void
+    {
+        // Créer beaucoup de souscriptions pour tester l'affichage des grands nombres
+        $this->createSubscriptionsForPackage($this->starterPackage, 1234);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('1234'); // Doit afficher le grand nombre correctement
+    }
+
+    #[Test]
+    public function test_packages_page_shows_zero_subscriptions_correctly(): void
+    {
+        // S'assurer qu'il n'y a aucune souscription
+        UserSubscription::truncate();
+
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $response->assertStatus(200);
+
+        // Tous les compteurs doivent afficher 0
+        $content = $response->getContent();
+
+        // Vérifier que les packages existent toujours mais avec 0 souscriptions
+        $response->assertSee('Starter');
+        $response->assertSee('Pro');
+        $response->assertSee('Business');
+    }
+
+    #[Test]
+    public function test_packages_page_performance_with_many_packages(): void
+    {
+        // Créer des souscriptions pour tous les packages
+        foreach ([$this->trialPackage, $this->starterPackage, $this->proPackage, $this->businessPackage] as $package) {
+            $this->createSubscriptionsForPackage($package, 10);
+        }
+
+        $startTime = microtime(true);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.packages.index'));
+
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+
+        $response->assertStatus(200);
+
+        // La page ne doit pas prendre plus de 5 secondes (ajustable selon les besoins)
+        $this->assertLessThan(5.0, $executionTime, 'La page des packages prend trop de temps à charger');
     }
 }

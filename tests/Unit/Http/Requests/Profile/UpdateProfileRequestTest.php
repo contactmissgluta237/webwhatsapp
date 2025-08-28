@@ -4,9 +4,9 @@ namespace Tests\Unit\Http\Requests\Profile;
 
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Unit\Http\Requests\BaseRequestTest;
+use Tests\Unit\Http\Requests\BaseRequestTestCase;
 
-class UpdateProfileRequestTest extends BaseRequestTest
+class UpdateProfileRequestTest extends BaseRequestTestCase
 {
     use RefreshDatabase;
 
