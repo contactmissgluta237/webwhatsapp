@@ -97,7 +97,7 @@ final class PromptEnhancementIntegrationTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Impossible d\'améliorer le prompt');
+        $this->expectExceptionMessage('Unable to enhance prompt');
 
         $this->service->enhancePrompt($this->account, $originalPrompt);
     }
@@ -163,7 +163,7 @@ final class PromptEnhancementIntegrationTest extends TestCase
         ]);
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Impossible d\'améliorer le prompt');
+        $this->expectExceptionMessage('Unable to enhance prompt');
 
         $this->service->enhancePrompt($this->account, $originalPrompt);
     }

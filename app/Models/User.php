@@ -415,6 +415,20 @@ class User extends Authenticatable implements HasMedia
         return null;
     }
 
+    /**
+     * Get the user's prompt character limit based on their active subscription package
+     */
+    public function getPromptLimit(): int
+    {
+        $subscription = $this->activeSubscription;
+
+        if (! $subscription || ! $subscription->package) {
+            return app()->bound('config') ? config('whatsapp.ai.limits.context_default_max_length', 3000) : 3000;
+        }
+
+        return $subscription->package->context_limit;
+    }
+
     // ================================================================================
     // PROTECTED METHODS
     // ================================================================================

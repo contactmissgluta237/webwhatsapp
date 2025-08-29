@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp;
 
-use App\Contracts\WhatsApp\AIProviderServiceInterface;
 use App\DTOs\AI\AiRequestDTO;
 use App\DTOs\WhatsApp\ProductDataDTO;
 use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
@@ -15,6 +14,7 @@ use App\Models\AiUsageLog;
 use App\Models\User;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;

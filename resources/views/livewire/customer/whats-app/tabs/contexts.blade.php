@@ -3,20 +3,20 @@
     <div class="form-group">
         <label for="contextual_information" class="form-label">
             <i class="la la-file-text"></i> {{ __('Informations contextuelles') }}
-            <span class="text-muted">(<span id="char-count">{{ strlen($contextual_information ?? '') }}</span>/5000)</span>
+            <span class="text-muted">(<span id="char-count">{{ strlen($contextual_information ?? '') }}</span>/{{ number_format($this->userContextLimit) }})</span>
         </label>
         <textarea wire:model.defer="contextual_information" 
                   id="contextual_information" 
                   class="form-control @error('contextual_information') is-invalid @enderror" 
                   rows="8" 
-                  maxlength="5000"
+                  maxlength="{{ $this->userContextLimit }}"
                   placeholder="{{ __('Ex: AFRIK SOLUTIONS est une entreprise spécialisée dans le développement web, mobile et les solutions digitales. Nos services incluent...') }}"
                   oninput="updateCharCount(this)"></textarea>
         @error('contextual_information')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
         <small class="form-text text-muted">
-            <i class="la la-info-circle"></i> {{ __('Ajoutez des informations sur votre entreprise, vos services, vos tarifs que l\'IA pourra utiliser dans ses réponses. Maximum 5000 caractères.') }}
+            <i class="la la-info-circle"></i> {{ __('Ajoutez des informations sur votre entreprise, vos services, vos tarifs que l\'IA pourra utiliser dans ses réponses. Maximum :limit caractères.', ['limit' => number_format($this->userContextLimit)]) }}
         </small>
     </div>
 
@@ -136,9 +136,13 @@ function updateCharCount(textarea) {
         
         // Changer la couleur selon la limite
         const label = textarea.closest('.form-group').querySelector('.form-label');
-        if (charCount > 4500) {
+        const maxLength = parseInt(textarea.getAttribute('maxlength'));
+        const warningThreshold = maxLength * 0.9; // 90%
+        const dangerThreshold = maxLength * 0.95; // 95%
+        
+        if (charCount > dangerThreshold) {
             label.style.color = '#dc3545'; // Rouge
-        } else if (charCount > 4000) {
+        } else if (charCount > warningThreshold) {
             label.style.color = '#ffc107'; // Orange
         } else {
             label.style.color = ''; // Normal

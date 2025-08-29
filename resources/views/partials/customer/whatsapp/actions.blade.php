@@ -19,11 +19,11 @@
 
         <div class="dropdown-divider"></div>
 
-        {{-- Toggle Agent IA --}}
         @php
-            // Get fresh data to bypass cache issues
             $freshAccount = \App\Models\WhatsAppAccount::find($account->id);
             $isAgentActive = $freshAccount->agent_enabled && $freshAccount->ai_model_id;
+            $handler = app(\App\Handlers\WhatsApp\AgentActivationHandler::class);
+            $activationResult = $handler->handle(auth()->user());
         @endphp
         @if ($isAgentActive)
             <form method="POST" action="{{ route('whatsapp.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
@@ -37,16 +37,27 @@
                 </button>
             </form>
         @else
-            <form method="POST" action="{{ route('whatsapp.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
-                @csrf
-                <input type="hidden" name="enable" value="1">
-                <button type="submit" class="dropdown-item py-2 text-left border-0 bg-transparent w-100"
-                        onclick="return confirm('Activer cet agent IA ?')"
-                        style="background: none !important;">
-                    <i class="la la-play text-success mr-2"></i>
-                    Activer l'agent IA
-                </button>
-            </form>
+            @if($activationResult->canActivate)
+                <form method="POST" action="{{ route('whatsapp.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
+                    @csrf
+                    <input type="hidden" name="enable" value="1">
+                    <button type="submit" class="dropdown-item py-2 text-left border-0 bg-transparent w-100"
+                            onclick="return confirm('Activer cet agent IA ?')"
+                            style="background: none !important;">
+                        <i class="la la-play text-success mr-2"></i>
+                        Activer l'agent IA
+                    </button>
+                </form>
+            @else
+                <div class="dropdown-item py-2 text-muted" title="{{ $activationResult->reason }}">
+                    <i class="la la-lock text-muted mr-2"></i>
+                    <span class="text-muted">Activation limitée</span>
+                    <br>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        {{ Str::limit($activationResult->reason, 60) }}
+                    </small>
+                </div>
+            @endif
         @endif
 
         <div class="dropdown-divider"></div>

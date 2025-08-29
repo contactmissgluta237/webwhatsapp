@@ -167,7 +167,7 @@ final class CreateSession extends Component
                 'phone_number' => $sessionStatus->phoneNumber,
                 'last_seen_at' => $sessionStatus->lastActivity ?? now(),
                 'ai_model_id' => $defaultModel?->id,
-                'agent_enabled' => true, // Auto-enable AI agent with default model
+                'agent_enabled' => false, // Agent is created inactive by default
             ]);
 
             $this->isWaitingConnection = false;

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp\Integration;
 
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
+use App\DTOs\WhatsApp\WhatsAppAIResponseDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Events\WhatsApp\AiResponseGenerated;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -21,6 +22,9 @@ class WhatsAppEndToEndTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // ⚠️ MOCK L'IA POUR ÉVITER LES APPELS RÉELS ET LA CONSOMMATION DE TOKENS
+        $this->mockAIProviderService();
 
         // Create AI model for tests
         $aiModel = AiModel::factory()->create([
@@ -37,6 +41,33 @@ class WhatsAppEndToEndTest extends TestCase
             'ai_model_id' => $aiModel->id,
             'contextual_information' => 'Test business information',
         ]);
+    }
+
+    /**
+     * Mock l'IA pour éviter les vrais appels API et la consommation de tokens
+     */
+    private function mockAIProviderService(): void
+    {
+        $mockService = $this->createMock(AIProviderServiceInterface::class);
+        
+        $mockService->method('processMessage')
+            ->willReturnCallback(function($aiModel, $systemPrompt, $userMessage, $context) {
+                $response = json_encode([
+                    'message' => 'Bonjour ! Comment puis-je vous aider aujourd\'hui ?',
+                    'action' => 'text',
+                    'products' => []
+                ]);
+
+                return new WhatsAppAIResponseDTO(
+                    response: $response,
+                    model: 'mocked-test-model',
+                    confidence: 0.9,
+                    tokensUsed: 25,
+                    cost: 0.005
+                );
+            });
+
+        $this->app->instance(AIProviderServiceInterface::class, $mockService);
     }
 
     public function test_complete_message_processing_flow(): void

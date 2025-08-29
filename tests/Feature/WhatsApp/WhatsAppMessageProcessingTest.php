@@ -7,14 +7,13 @@ namespace Tests\Feature\WhatsApp;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\DTOs\WhatsApp\WhatsAppMessageResponseDTO;
 use App\Events\WhatsApp\MessageProcessedEvent;
-use App\Listeners\WhatsApp\BillingCounterListener;
+use App\Listeners\WhatsApp\StoreMessagesListener;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\UserSubscription;
 use App\Models\Wallet;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountUsage;
-use App\Services\WhatsApp\Helpers\MessageCostHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
@@ -131,7 +130,7 @@ class WhatsAppMessageProcessingTest extends TestCase
         $event = $this->createMockEvent(true);
 
         // Act
-        $listener = new BillingCounterListener;
+        $listener = app(StoreMessagesListener::class);
         $listener->handle($event);
 
         // Assert
@@ -157,7 +156,7 @@ class WhatsAppMessageProcessingTest extends TestCase
         $event = $this->createMockEvent(true);
 
         // Act
-        $listener = new BillingCounterListener;
+        $listener = app(StoreMessagesListener::class);
         $listener->handle($event);
 
         // Assert
@@ -237,11 +236,13 @@ class WhatsAppMessageProcessingTest extends TestCase
         int $messageCost,
         string $description
     ): void {
-        $canProcess = MessageCostHelper::canProcessMessage($this->user, $messageCost);
+        $subscription = $this->user->activeSubscription;
+        $canProcess = ($subscription && $subscription->getRemainingMessages() >= $messageCost) ||
+                     ($this->user->wallet && $this->user->wallet->balance >= $messageCost);
         $this->assertTrue($canProcess, "Should process message: {$description}");
 
         // Test que le listener traite le message sans erreur
-        $listener = new BillingCounterListener;
+        $listener = app(StoreMessagesListener::class);
         $listener->handle($event);
 
         // Vérifier qu'une usage entry a été créée ou mise à jour
@@ -257,7 +258,9 @@ class WhatsAppMessageProcessingTest extends TestCase
         int $messageCost,
         string $description
     ): void {
-        $canProcess = MessageCostHelper::canProcessMessage($this->user, $messageCost);
+        $subscription = $this->user->activeSubscription;
+        $canProcess = ($subscription && $subscription->getRemainingMessages() >= $messageCost) ||
+                     ($this->user->wallet && $this->user->wallet->balance >= $messageCost);
         $this->assertFalse($canProcess, "Should NOT process message: {$description}");
     }
 }

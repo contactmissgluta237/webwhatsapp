@@ -55,17 +55,19 @@ final class CreateSessionLivewireTest extends TestCase
         // Simulate QR scanning and connection check
         $component->call('confirmQRScanned');
 
-        // Check that account was created with phone number
+        // Check that account was created with phone number and agent disabled by default
         $this->assertDatabaseHas('whatsapp_accounts', [
             'user_id' => $this->user->id,
             'session_name' => $sessionName,
             'phone_number' => $phoneNumber,
             'status' => 'connected',
+            'agent_enabled' => false,
         ]);
 
         $account = WhatsAppAccount::where('user_id', $this->user->id)->first();
         $this->assertEquals($phoneNumber, $account->phone_number);
         $this->assertEquals($sessionName, $account->session_name);
+        $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default');
     }
 
     public function test_session_creation_handles_missing_phone_number(): void
@@ -91,13 +93,17 @@ final class CreateSessionLivewireTest extends TestCase
         $component->call('confirmQRScanned');
         $component->call('checkConnectionStatus');
 
-        // Check that account was created without phone number
+        // Check that account was created without phone number but agent disabled by default
         $this->assertDatabaseHas('whatsapp_accounts', [
             'user_id' => $this->user->id,
             'session_name' => $sessionName,
             'phone_number' => null,
             'status' => 'connected',
+            'agent_enabled' => false,
         ]);
+
+        $account = WhatsAppAccount::where('user_id', $this->user->id)->first();
+        $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default even without phone number');
     }
 
     public function test_connection_timeout_is_handled_properly(): void
@@ -156,7 +162,11 @@ final class CreateSessionLivewireTest extends TestCase
         $this->assertDatabaseHas('whatsapp_accounts', [
             'user_id' => $this->user->id,
             'session_name' => $sessionNameWithSpaces,
+            'agent_enabled' => false,
         ]);
+
+        $account = WhatsAppAccount::where('user_id', $this->user->id)->first();
+        $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default for sessions with spaces');
     }
 
     public function test_qr_generation_failure_is_handled(): void

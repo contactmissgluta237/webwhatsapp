@@ -26,6 +26,13 @@ final class OllamaServiceIntegrationTest extends TestCase
     {
         parent::setUp();
 
+        // ⚠️ PROTECTION CONTRE LES APPELS IA NON DÉSIRÉS
+        // Ces tests font de vrais appels API et consomment des tokens !
+        // Ils ne s'exécutent que si explicitement demandé via une variable d'environnement
+        if (! env('RUN_AI_INTEGRATION_TESTS', false)) {
+            $this->markTestSkipped('Tests d\'intégration IA désactivés. Utilisez RUN_AI_INTEGRATION_TESTS=true pour les activer.');
+        }
+
         $this->seed([
             \Database\Seeders\AiModelsSeeder::class,
         ]);

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp;
 
-use App\Contracts\WhatsApp\WhatsAppMessageOrchestratorInterface;
-use App\DTOs\WhatsApp\WhatsAppAccountMetadataDTO;
 use App\Enums\ResponseTime;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;

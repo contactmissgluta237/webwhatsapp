@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Contracts\PromptEnhancementInterface;
-use App\Livewire\WhatsApp\AiConfigurationForm;
+use App\Livewire\Customer\WhatsApp\AiConfigurationForm;
 use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
+use App\Services\AI\Contracts\PromptEnhancementInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Mockery;
@@ -184,6 +184,9 @@ class PromptEnhancementWorkflowTest extends TestCase
         $component->call('enhancePrompt')
             ->assertSet('hasEnhancedPrompt', false)
             ->assertSet('isEnhancing', false);
+
+        // Nettoyer explicitement les mocks pour ce test
+        \Mockery::close();
     }
 
     protected function tearDown(): void

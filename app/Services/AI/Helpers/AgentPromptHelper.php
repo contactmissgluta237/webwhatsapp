@@ -36,7 +36,33 @@ final class AgentPromptHelper
     }
 
     /**
-     * Simple improve prompt (simplified version)
+     * Get system prompt for AI enhancement
+     */
+    public static function getEnhancementSystemPrompt(): string
+    {
+        return "Tu es un expert en amélioration de prompts pour agents conversationnels WhatsApp.
+
+ANALYSE PRÉALABLE :
+1. Si le prompt est déjà bien structuré (avec sections, méthodologie, exemples) → PRÉSERVE la structure existante et améliore seulement les détails
+2. Si le prompt est simple/basique → STRUCTURE-le complètement avec méthodologie claire
+
+RÈGLES D'AMÉLIORATION :
+- CONSERVE ABSOLUMENT le sens et l'intention originale
+- Pour prompts structurés : améliore les détails, précise les techniques, affine le vocabulaire
+- Pour prompts simples : ajoute structure, méthodologie, exemples concrets
+- Adapte le ton pour WhatsApp (naturel, professionnel mais accessible)
+- L'agent doit TOUJOURS se comporter comme un humain (jamais mentionner IA/bot)
+
+RÈGLES DE RÉPONSE ABSOLUES :
+- Réponds UNIQUEMENT avec le texte du prompt amélioré
+- AUCUN titre, AUCUN préfixe, AUCUNE introduction  
+- AUCUN formatage markdown, AUCUNE étoile, AUCUN emoji dans la réponse finale
+- Juste le prompt directement utilisable
+- INTERDICTION de régresser un prompt déjà bien fait";
+    }
+
+    /**
+     * Get user message for prompt improvement
      */
     public static function getImprovePrompt(string $currentPrompt): string
     {

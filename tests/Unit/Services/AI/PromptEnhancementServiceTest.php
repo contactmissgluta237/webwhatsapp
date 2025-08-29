@@ -53,7 +53,7 @@ final class PromptEnhancementServiceTest extends TestCase
 
         // Quand aucun service AI n'est disponible, le service devrait lever une exception claire
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Aucun modèle IA disponible pour l\'amélioration du prompt');
+        $this->expectExceptionMessage('No AI model available for prompt enhancement');
 
         $service->enhancePrompt($this->account, $originalPrompt);
     }
@@ -68,7 +68,7 @@ final class PromptEnhancementServiceTest extends TestCase
         $service = $this->createService();
 
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Aucun modèle IA disponible pour l\'amélioration du prompt');
+        $this->expectExceptionMessage('No AI model available for prompt enhancement');
 
         $service->enhancePrompt($this->account, 'Test prompt');
     }

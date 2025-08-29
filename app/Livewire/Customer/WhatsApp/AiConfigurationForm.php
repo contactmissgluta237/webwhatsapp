@@ -6,6 +6,7 @@ namespace App\Livewire\Customer\WhatsApp;
 
 use App\Enums\AgentType;
 use App\Enums\ResponseTime;
+use App\Handlers\WhatsApp\AgentActivationHandler;
 use App\Http\Requests\Customer\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
@@ -92,6 +93,31 @@ final class AiConfigurationForm extends Component
         return AgentPromptHelper::getAllPromptTypes();
     }
 
+    #[Computed]
+    public function userContextLimit(): int
+    {
+        return auth()->user()->getPromptLimit();
+    }
+
+    #[Computed]
+    public function agentPromptLimit(): int
+    {
+        return config('whatsapp.ai.limits.agent_prompt_max_length', 3000);
+    }
+
+    #[Computed]
+    public function promptUsagePercentage(): int
+    {
+        if (empty($this->agent_prompt)) {
+            return 0;
+        }
+
+        $currentLength = strlen($this->agent_prompt);
+        $limit = $this->agentPromptLimit();
+
+        return (int) round(($currentLength / $limit) * 100);
+    }
+
     public function updatedAgentEnabled(): void
     {
         $this->dispatch('ai-status-changed', enabled: $this->agent_enabled);
@@ -145,6 +171,17 @@ final class AiConfigurationForm extends Component
 
     public function updatedContextualInformation(): void
     {
+        $this->resetErrorBag('contextual_information');
+
+        if ($this->contextual_information) {
+            $contextLimit = auth()->user()->getPromptLimit();
+            $contextRule = new PromptLengthRule($contextLimit);
+
+            $contextRule->validate('contextual_information', $this->contextual_information, function (string $message) {
+                $this->addError('contextual_information', $message);
+            });
+        }
+
         $this->dispatch('config-changed-live', [
             'contextual_information' => $this->contextual_information,
         ]);
@@ -325,6 +362,21 @@ final class AiConfigurationForm extends Component
         $request = new AiConfigurationRequest;
         $this->validate($request->rules(), $request->messages());
 
+        // Check activation limits if trying to enable agent
+        if ($this->agent_enabled && ! $this->account->agent_enabled) {
+            $handler = app(AgentActivationHandler::class);
+            $result = $handler->handle(auth()->user());
+
+            if (! $result->canActivate) {
+                $this->dispatch('configuration-saved', [
+                    'type' => 'error',
+                    'message' => $result->reason,
+                ]);
+
+                return;
+            }
+        }
+
         try {
             $this->account->update([
                 'session_name' => $this->agent_name,
@@ -408,14 +460,13 @@ final class AiConfigurationForm extends Component
         $this->resetErrorBag('agent_prompt');
 
         if ($this->agent_prompt) {
-            $promptRule = new PromptLengthRule;
+            $promptRule = new PromptLengthRule(config('whatsapp.ai.limits.agent_prompt_max_length', 3000));
 
             $promptRule->validate('agent_prompt', $this->agent_prompt, function (string $message) {
                 $this->addError('agent_prompt', $message);
             });
         }
 
-        // Update form validity based on ALL errors in the error bag
         $this->updateFormValidity();
     }
 

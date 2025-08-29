@@ -13,22 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class PromptEnhancementService implements PromptEnhancementInterface
 {
-    private const ENHANCEMENT_SYSTEM_PROMPT = "Tu es un expert en amélioration de prompts pour agents conversationnels WhatsApp.
-
-Améliore le prompt fourni en respectant ces règles :
-- Conserve le sens et l'intention originale
-- Améliore la clarité et la structure
-- Adapte le ton pour WhatsApp (naturel et direct)
-- Limite à 200 mots maximum
-- Assure-toi que l'agent se comporte comme un humain (jamais mentionner qu'il est une IA)
-
-RÈGLES DE RÉPONSE ABSOLUES :
-- Réponds UNIQUEMENT avec le texte du prompt amélioré
-- AUCUN titre, AUCUN préfixe, AUCUNE introduction
-- AUCUN formatage markdown, AUCUNE étoile, AUCUN emoji
-- AUCUNE section (Rôle:, Comportement:, etc.)
-- Juste le prompt directement utilisable";
-
     public function enhancePrompt(WhatsAppAccount $account, string $originalPrompt): string
     {
         $model = $this->getEnhancementModel($account);
@@ -47,12 +31,12 @@ RÈGLES DE RÉPONSE ABSOLUES :
         $userMessage = AgentPromptHelper::getImprovePrompt($originalPrompt);
 
         $request = new AiRequestDTO(
-            systemPrompt: self::ENHANCEMENT_SYSTEM_PROMPT,
+            systemPrompt: AgentPromptHelper::getEnhancementSystemPrompt(),
             userMessage: $userMessage,
             account: $account,
             config: [
-                'temperature' => 0.3,
-                'max_tokens' => 1000,
+                'temperature' => config('whatsapp.ai.enhancement.temperature', 0.3),
+                'max_tokens' => config('whatsapp.ai.enhancement.max_tokens', 4000),
             ]
         );
 
@@ -72,7 +56,8 @@ RÈGLES DE RÉPONSE ABSOLUES :
                 'account_id' => $account->id,
                 'enhanced_length' => strlen($response->content),
                 'model_used' => $primaryModel->name,
-                'provider' => $primaryModel->provider->value, // ← Correction
+                'provider' => $primaryModel->provider->value,
+                'raw_response' => $response->content, // LOG DE LA RÉPONSE BRUTE
             ]);
 
             $cleanedPrompt = $this->cleanEnhancedPrompt($response->content);
@@ -80,6 +65,18 @@ RÈGLES DE RÉPONSE ABSOLUES :
             if (empty(trim($cleanedPrompt))) {
                 throw new \Exception(__('AI could not enhance the prompt'));
             }
+
+            // LOG DÉTAILLÉ DU RÉSULTAT FINAL
+            Log::info('🎯 Résultat final amélioration prompt', [
+                'account_id' => $account->id,
+                'original_prompt' => $originalPrompt,
+                'original_length' => strlen($originalPrompt),
+                'enhanced_prompt' => $cleanedPrompt,
+                'enhanced_length' => strlen($cleanedPrompt),
+                'improvement_ratio' => round(strlen($cleanedPrompt) / strlen($originalPrompt), 2),
+                'word_count_original' => str_word_count($originalPrompt),
+                'word_count_enhanced' => str_word_count($cleanedPrompt),
+            ]);
 
             return $cleanedPrompt;
         } catch (\Exception $e) {
@@ -115,7 +112,8 @@ RÈGLES DE RÉPONSE ABSOLUES :
                     'account_id' => $account->id,
                     'enhanced_length' => strlen($response->content),
                     'fallback_model_used' => $model->name,
-                    'provider' => $model->provider->value, // ← Correction
+                    'provider' => $model->provider->value,
+                    'raw_response' => $response->content, // LOG DE LA RÉPONSE BRUTE FALLBACK
                 ]);
 
                 $cleanedPrompt = $this->cleanEnhancedPrompt($response->content);
@@ -123,6 +121,19 @@ RÈGLES DE RÉPONSE ABSOLUES :
                 if (empty(trim($cleanedPrompt))) {
                     throw new \Exception(__('AI could not enhance the prompt'));
                 }
+
+                // LOG DÉTAILLÉ DU RÉSULTAT FINAL FALLBACK
+                Log::info('🎯 Résultat final amélioration prompt (fallback)', [
+                    'account_id' => $account->id,
+                    'original_prompt' => $originalPrompt,
+                    'original_length' => strlen($originalPrompt),
+                    'enhanced_prompt' => $cleanedPrompt,
+                    'enhanced_length' => strlen($cleanedPrompt),
+                    'improvement_ratio' => round(strlen($cleanedPrompt) / strlen($originalPrompt), 2),
+                    'word_count_original' => str_word_count($originalPrompt),
+                    'word_count_enhanced' => str_word_count($cleanedPrompt),
+                    'fallback_model_used' => $model->name,
+                ]);
 
                 return $cleanedPrompt;
             } catch (\Exception $e) {

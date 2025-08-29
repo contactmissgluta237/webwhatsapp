@@ -48,11 +48,15 @@ class ApproveTransactionTest extends TestCase
         Mail::fake();
         \App\Listeners\BaseListener::clearProcessedEvents();
 
+        // Ajouter du solde au portefeuille pour permettre l'approbation
+        $this->wallet->update(['balance' => 10000]); // Solde suffisant
+
         $transaction = ExternalTransaction::factory()->create([
             'wallet_id' => $this->wallet->id,
             'transaction_type' => ExternalTransactionType::WITHDRAWAL(),
             'status' => TransactionStatus::PENDING(),
             'approved_by' => null,
+            'amount' => 5000, // Montant inférieur au solde
         ]);
 
         $response = $this->actingAs($this->admin)

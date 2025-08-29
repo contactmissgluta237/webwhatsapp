@@ -33,8 +33,14 @@ class AdminDataTablesTest extends TestCase
     {
         parent::setUp();
 
-        $this->adminUser = User::factory()->create(['role' => 'admin']);
-        $this->customerUser = User::factory()->create(['role' => 'customer']);
+        \Spatie\Permission\Models\Role::create(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::create(['name' => 'customer']);
+
+        $this->adminUser = User::factory()->create();
+        $this->adminUser->assignRole('admin');
+
+        $this->customerUser = User::factory()->create();
+        $this->customerUser->assignRole('customer');
 
         $aiModel = AiModel::factory()->create();
 

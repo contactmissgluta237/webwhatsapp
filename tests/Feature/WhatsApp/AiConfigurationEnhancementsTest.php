@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\WhatsApp;
 
-use App\Livewire\WhatsApp\AiConfigurationForm;
+use App\Livewire\Customer\WhatsApp\AiConfigurationForm;
 use App\Models\AiModel;
 use App\Models\User;
 use App\Models\WhatsAppAccount;

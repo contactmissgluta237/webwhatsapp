@@ -189,20 +189,41 @@
             <i class="la la-lightbulb"></i> {{ __('Définissez le comportement, la personnalité et les instructions principales de votre agent IA') }}
         </small>
         <div class="char-counter mt-2">
-            <small class="{{ strlen($agent_prompt ?? '') > 10000 ? 'text-danger' : 'text-muted' }}">
-                <i class="la {{ strlen($agent_prompt ?? '') > 10000 ? 'la-exclamation-triangle' : 'la-info-circle' }}"></i>
-                {{ strlen($agent_prompt ?? '') }} / 10 000 caractères
-                @if(strlen($agent_prompt ?? '') > 10000)
+            @php
+                $currentLength = strlen($agent_prompt ?? '');
+                $limit = $this->agentPromptLimit;
+                $isOverLimit = $currentLength > $limit;
+                $percentage = $this->promptUsagePercentage;
+            @endphp
+            
+            <small class="{{ $isOverLimit ? 'text-danger' : 'text-muted' }}">
+                <i class="la {{ $isOverLimit ? 'la-exclamation-triangle' : 'la-info-circle' }}"></i>
+                {{ number_format($currentLength) }} / {{ number_format($limit) }} caractères
+                
+                @if($percentage > 0)
+                    <span class="badge badge-{{ $percentage >= 90 ? 'warning' : ($percentage >= 100 ? 'danger' : 'info') }} ml-1">
+                        {{ $percentage }}%
+                    </span>
+                @endif
+                
+                @if($isOverLimit)
                     <span class="badge badge-danger ml-1">{{ __('Limite dépassée') }}</span>
                 @elseif($hasEnhancedPrompt)
                     <span class="badge badge-success ml-1">{{ __('Amélioré') }}</span>
                 @endif
             </small>
-            @if(strlen($agent_prompt ?? '') > 10000)
+            
+            {{-- Progress bar for visual limit indication --}}
+            <div class="progress mt-1" style="height: 3px;">
+                <div class="progress-bar {{ $percentage >= 100 ? 'bg-danger' : ($percentage >= 90 ? 'bg-warning' : 'bg-info') }}" 
+                     style="width: {{ min($percentage, 100) }}%"></div>
+            </div>
+            
+            @if($isOverLimit)
                 <div class="text-danger mt-1">
                     <small>
                         <i class="la la-exclamation-circle"></i>
-                        {{ __('Le prompt dépasse la limite de 10 000 caractères. Veuillez le raccourcir.') }}
+                        {{ __('Le prompt dépasse la limite de :limit caractères de votre forfait. Veuillez le raccourcir.', ['limit' => number_format($limit)]) }}
                     </small>
                 </div>
             @endif

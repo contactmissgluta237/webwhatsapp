@@ -103,7 +103,7 @@ class ResetPasswordFormRequestTest extends BaseRequestTestCase
         $messages = ResetPasswordFormRequest::getMessages();
         $validator = Validator::make($data, $rules, $messages);
 
-        $this->assertTrue($validator->passes(), 'Validation should pass with valid data. Errors: ' . $validator->errors()->first());
+        $this->assertTrue($validator->passes(), 'Validation should pass with valid data. Errors: '.$validator->errors()->first());
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -122,7 +122,7 @@ class ResetPasswordFormRequestTest extends BaseRequestTestCase
         $this->assertArrayHasKey(
             $expectedErrorField,
             $validator->errors()->toArray(),
-            "Expected error field '{$expectedErrorField}' not found for case: {$caseName}. Errors: " . $validator->errors()->first()
+            "Expected error field '{$expectedErrorField}' not found for case: {$caseName}. Errors: ".$validator->errors()->first()
         );
     }
 
@@ -138,7 +138,7 @@ class ResetPasswordFormRequestTest extends BaseRequestTestCase
         $messages = ResetPasswordFormRequest::getMessages();
         $validator = Validator::make($data, $rules, $messages);
 
-        $this->assertTrue($validator->passes(), "Validation should pass for case: {$caseName}. Errors: " . $validator->errors()->first());
+        $this->assertTrue($validator->passes(), "Validation should pass for case: {$caseName}. Errors: ".$validator->errors()->first());
     }
 
     // Test spécifique pour ResetPasswordFormRequest - validation avec téléphone
@@ -162,6 +162,6 @@ class ResetPasswordFormRequestTest extends BaseRequestTestCase
         $messages = ResetPasswordFormRequest::getMessages();
         $validator = Validator::make($data, $rules, $messages);
 
-        $this->assertTrue($validator->passes(), 'Validation should pass with valid phone data. Errors: ' . $validator->errors()->first());
+        $this->assertTrue($validator->passes(), 'Validation should pass with valid phone data. Errors: '.$validator->errors()->first());
     }
 }

@@ -33,6 +33,27 @@ return [
 
         // Timeout pour les réponses IA
         'response_timeout' => 60,
+
+        // Limites de caractères
+        'limits' => [
+            // Limite fixe du prompt agent (tous utilisateurs)
+            'agent_prompt_max_length' => env('WHATSAPP_AGENT_PROMPT_LIMIT', 3000),
+
+            // Limite par défaut du contexte (utilisateurs sans abonnement)
+            'context_default_max_length' => env('WHATSAPP_CONTEXT_DEFAULT_LIMIT', 3000),
+        ],
+
+        // Configuration de l'amélioration de prompts
+        'enhancement' => [
+            // Température pour l'amélioration (0-1, plus faible = plus déterministe)
+            'temperature' => env('WHATSAPP_ENHANCEMENT_TEMPERATURE', 0.3),
+
+            // Limite de tokens/caractères pour les prompts améliorés
+            'max_tokens' => env('WHATSAPP_ENHANCEMENT_MAX_TOKENS', 4000),
+
+            // Amélioration de ratio - seuil pour considérer qu'une amélioration est réussie
+            'min_improvement_ratio' => env('WHATSAPP_ENHANCEMENT_MIN_RATIO', 0.8),
+        ],
     ],
 
     'messaging' => [

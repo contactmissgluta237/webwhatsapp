@@ -6,7 +6,7 @@ namespace Tests\Feature\WhatsApp;
 
 use App\Events\WhatsApp\AiResponseGenerated;
 use App\Events\WhatsApp\MessageProcessedEvent;
-use App\Listeners\WhatsApp\BillingCounterListener;
+use App\Listeners\WhatsApp\StoreMessagesListener;
 use App\Listeners\WhatsApp\TrackAiUsageListener;
 use App\Models\AiModel;
 use App\Models\AiUsageLog;
@@ -133,15 +133,14 @@ class BillingIntegrationTest extends TestCase
             $messageRequest,
             $aiResponse,
             'Hello AI',
-            1200.5,
-            isSimulation: false
+            1200.5
         );
 
         // Act - Handle both events
-        $billingListener = new BillingCounterListener;
+        $billingListener = app(StoreMessagesListener::class);
         $billingListener->handle($messageProcessedEvent);
 
-        $aiTrackingListener = new TrackAiUsageListener;
+        $aiTrackingListener = app(TrackAiUsageListener::class);
         $aiTrackingListener->handle($aiResponseEvent);
 
         // Assert both systems worked independently
@@ -195,12 +194,11 @@ class BillingIntegrationTest extends TestCase
             $messageRequest,
             $aiResponse,
             'Simulation message',
-            800.0,
-            isSimulation: true // Mark as simulation
+            800.0
         );
 
         // Act
-        $aiTrackingListener = new TrackAiUsageListener;
+        $aiTrackingListener = app(TrackAiUsageListener::class);
         $aiTrackingListener->handle($aiResponseEvent);
 
         // Assert - No AI usage should be logged for simulations

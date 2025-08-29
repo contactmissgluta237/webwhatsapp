@@ -47,6 +47,19 @@ final class WhatsAppAccountMigrationTest extends TestCase
     }
 
     /** @test */
+    public function agent_enabled_has_default_false_value(): void
+    {
+        // Créer un compte WhatsApp sans spécifier agent_enabled
+        $user = \App\Models\User::factory()->create();
+        $account = \App\Models\WhatsAppAccount::factory()->create([
+            'user_id' => $user->id,
+        ]);
+
+        // Vérifier que la valeur par défaut est false
+        $this->assertFalse($account->fresh()->agent_enabled, 'agent_enabled should default to false');
+    }
+
+    /** @test */
     public function can_set_stop_on_human_reply_to_true(): void
     {
         $user = \App\Models\User::factory()->create();
@@ -56,6 +69,18 @@ final class WhatsAppAccountMigrationTest extends TestCase
         ]);
 
         $this->assertTrue($account->stop_on_human_reply);
+    }
+
+    /** @test */
+    public function can_set_agent_enabled_to_true(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $account = \App\Models\WhatsAppAccount::factory()->create([
+            'user_id' => $user->id,
+            'agent_enabled' => true,
+        ]);
+
+        $this->assertTrue($account->agent_enabled);
     }
 
     /** @test */

@@ -17,7 +17,8 @@
       "Bash(vendor/bin/pint:*)",
       "Bash(./vendor/bin/phpstan analyse:*)",
       "Bash(chmod:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(php:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
