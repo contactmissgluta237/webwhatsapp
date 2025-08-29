@@ -80,7 +80,7 @@ class BillingIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function both_ai_tracking_and_billing_listeners_can_handle_message_processed_event(): void
     {
         $this->assertDatabaseEmpty('ai_usage_logs');
@@ -162,7 +162,7 @@ class BillingIntegrationTest extends TestCase
         $this->assertEquals(1, $accountUsage->messages_used);
     }
 
-    /** @test */
+    #[Test]
     public function ai_tracking_listener_ignores_simulation_events(): void
     {
         $this->assertDatabaseEmpty('ai_usage_logs');
@@ -205,7 +205,7 @@ class BillingIntegrationTest extends TestCase
         $this->assertDatabaseEmpty('ai_usage_logs');
     }
 
-    /** @test */
+    #[Test]
     public function listeners_are_registered_correctly_in_event_service_provider(): void
     {
         Event::fake();

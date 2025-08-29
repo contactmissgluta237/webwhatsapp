@@ -39,7 +39,8 @@
         @endif
 
         @if($currentSubscription)
-        <div class="alert alert-info" role="alert">
+        <div class="alert alert-success" role="alert" style="border-left: 4px solid #25D366;">
+            <i class="la la-check-circle text-success me-2"></i>
             <strong>Abonnement actuel:</strong> {{ $currentSubscription->package->display_name }} 
             - Expire le {{ $currentSubscription->ends_at->format('d/m/Y') }}
             - {{ $currentSubscription->getRemainingMessages() }} messages restants
@@ -65,7 +66,7 @@
                                         @if($package->hasActivePromotion())
                                             {{-- Prix barré et badge promotion --}}
                                             <div class="original-price mb-1">
-                                                <span class="text-decoration-line-through text-muted small">{{ number_format($package->price) }} XAF</span>
+                                                <span class="text-decoration-line-through text-muted">{{ number_format($package->price) }} XAF</span>
                                                 <span class="badge bg-warning text-dark ms-1">-{{ $package->getPromotionalDiscountPercentage() }}%</span>
                                             </div>
                                             {{-- Prix promotionnel --}}
@@ -121,9 +122,17 @@
                             @endphp
                             
                             @if($currentSubscription && $currentSubscription->package_id === $package->id)
-                                <button class="btn btn-package-{{ $package->name }} w-100" disabled>
-                                    <i class="la la-check-circle"></i> En cours
-                                </button>
+                                <div class="mb-2">
+                                    <button class="btn btn-success w-100" disabled>
+                                        <i class="la la-check-circle"></i> En cours
+                                    </button>
+                                </div>
+                                @if(!$package->isTrial())
+                                    <button type="button" class="btn btn-package-{{ $package->name }} w-100" 
+                                            data-bs-toggle="modal" data-bs-target="#subscriptionModal-{{ $package->id }}">
+                                        <i class="la la-credit-card"></i> Souscrire
+                                    </button>
+                                @endif
                             @elseif($package->isTrial() && $hasUsedTrial)
                                 <button class="btn btn-outline-secondary w-100" disabled>
                                     Essai déjà utilisé
@@ -131,7 +140,7 @@
                             @else
                                 @if($package->isTrial())
                                     <form method="POST" action="{{ route('customer.packages.subscribe', $package->id) }}" 
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir commencer l\'essai gratuit ?')">>
+                                          onsubmit="return confirm('Êtes-vous sûr de vouloir commencer l\'essai gratuit ?')">
                                         @csrf
                                         <button type="submit" class="btn btn-package-{{ $package->name }} w-100">
                                             <i class="la la-gift"></i> Commencer l'essai
@@ -139,7 +148,7 @@
                                     </form>
                                 @else
                                     <button type="button" class="btn btn-package-{{ $package->name }} w-100" 
-                                            onclick="showCouponModal({{ $package->id }}, '{{ $package->display_name }}', {{ $package->getCurrentPrice() }})">
+                                            data-bs-toggle="modal" data-bs-target="#subscriptionModal-{{ $package->id }}">
                                         <i class="la la-credit-card"></i> Souscrire
                                     </button>
                                 @endif
@@ -150,68 +159,15 @@
                 @endforeach
             </div>
         </section>
+
+        {{-- Composants Livewire pour souscription --}}
+        @foreach($packages as $package)
+            @if(!$package->isTrial())
+                <livewire:customer.packages.subscription-modal :package="$package" :key="'subscription-'.$package->id" />
+            @endif
+        @endforeach
     </div>
 
-<!-- Modal pour code promo -->
-<div class="modal fade" id="couponModal" tabindex="-1" aria-labelledby="couponModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="couponModalLabel">
-                    <i class="la la-ticket"></i> Souscription à <span id="packageName"></span>
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="subscriptionForm" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="price-summary mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>Prix du package:</span>
-                            <span class="fw-bold" id="originalPrice"></span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2" id="discountRow" style="display: none;">
-                            <span class="text-success">Réduction (<span id="discountPercent"></span>):</span>
-                            <span class="text-success fw-bold" id="discountAmount">-0 XAF</span>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="fw-bold">Total à payer:</span>
-                            <span class="fw-bold text-primary fs-5" id="finalPrice"></span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="couponCode" class="form-label">
-                            <i class="la la-gift"></i> Code promo (optionnel)
-                        </label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="couponCode" name="coupon_code" 
-                                   placeholder="Entrez votre code promo">
-                            <button class="btn btn-outline-secondary" type="button" id="applyCouponBtn">
-                                <i class="la la-check"></i> Appliquer
-                            </button>
-                        </div>
-                        <div id="couponMessage" class="mt-2"></div>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="la la-info-circle"></i> 
-                        <strong>Votre solde actuel:</strong> {{ number_format(auth()->user()->wallet?->balance ?? 0) }} XAF
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="la la-times"></i> Annuler
-                    </button>
-                    <button type="submit" class="btn btn-success" id="subscribeBtn">
-                        <i class="la la-credit-card"></i> Confirmer la souscription
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <style>
 .pricing-card {
@@ -358,7 +314,7 @@
 }
 
 .original-price {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 
 /* Badge promotion visible */
@@ -388,129 +344,4 @@
     margin: 0;
 }
 </style>
-
-<script>
-let currentPackageId = null;
-let currentPackagePrice = 0;
-let appliedDiscount = 0;
-let appliedCoupon = null;
-
-function showCouponModal(packageId, packageName, packagePrice) {
-    currentPackageId = packageId;
-    currentPackagePrice = packagePrice;
-    appliedDiscount = 0;
-    appliedCoupon = null;
-    
-    // Mettre à jour le modal
-    document.getElementById('packageName').textContent = packageName;
-    document.getElementById('originalPrice').textContent = formatPrice(packagePrice);
-    document.getElementById('finalPrice').textContent = formatPrice(packagePrice);
-    document.getElementById('subscriptionForm').action = `/customer/packages/${packageId}/subscribe`;
-    
-    // Réinitialiser le formulaire
-    document.getElementById('couponCode').value = '';
-    document.getElementById('couponMessage').innerHTML = '';
-    document.getElementById('discountRow').style.display = 'none';
-    
-    // Afficher le modal
-    new bootstrap.Modal(document.getElementById('couponModal')).show();
-}
-
-function formatPrice(price) {
-    return new Intl.NumberFormat('fr-FR').format(price) + ' XAF';
-}
-
-function updatePricing() {
-    const finalPrice = currentPackagePrice - appliedDiscount;
-    document.getElementById('finalPrice').textContent = formatPrice(finalPrice);
-    
-    if (appliedDiscount > 0) {
-        document.getElementById('discountRow').style.display = 'flex';
-        document.getElementById('discountAmount').textContent = '-' + formatPrice(appliedDiscount);
-        if (appliedCoupon && appliedCoupon.type === 'percentage') {
-            document.getElementById('discountPercent').textContent = appliedCoupon.value + '%';
-        } else {
-            document.getElementById('discountPercent').textContent = 'Coupon';
-        }
-    } else {
-        document.getElementById('discountRow').style.display = 'none';
-    }
-}
-
-// Validation du coupon via AJAX
-document.getElementById('applyCouponBtn').addEventListener('click', function() {
-    const couponCode = document.getElementById('couponCode').value.trim();
-    const messageDiv = document.getElementById('couponMessage');
-    const applyBtn = this;
-    
-    if (!couponCode) {
-        showCouponMessage('Veuillez entrer un code promo.', 'warning');
-        return;
-    }
-    
-    // Désactiver le bouton pendant la requête
-    applyBtn.disabled = true;
-    applyBtn.innerHTML = '<i class="la la-spinner la-spin"></i> Vérification...';
-    
-    // Requête AJAX pour valider le coupon
-    fetch('/api/coupons/validate', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({
-            coupon_code: couponCode,
-            package_price: currentPackagePrice
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.valid) {
-            appliedDiscount = data.discount_amount;
-            appliedCoupon = data.coupon;
-            updatePricing();
-            showCouponMessage(
-                `Code promo appliqué ! Vous économisez ${formatPrice(data.savings)}.`, 
-                'success'
-            );
-            applyBtn.innerHTML = '<i class="la la-check"></i> Appliqué';
-            document.getElementById('couponCode').disabled = true;
-        } else {
-            appliedDiscount = 0;
-            appliedCoupon = null;
-            updatePricing();
-            showCouponMessage(data.message, 'danger');
-            applyBtn.innerHTML = '<i class="la la-check"></i> Appliquer';
-        }
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        showCouponMessage('Erreur lors de la validation du coupon.', 'danger');
-        applyBtn.innerHTML = '<i class="la la-check"></i> Appliquer';
-    })
-    .finally(() => {
-        applyBtn.disabled = false;
-    });
-});
-
-function showCouponMessage(message, type) {
-    const messageDiv = document.getElementById('couponMessage');
-    messageDiv.innerHTML = `<div class="alert alert-${type} alert-sm">${message}</div>`;
-}
-
-// Permettre la soumission en appuyant sur Entrée dans le champ coupon
-document.getElementById('couponCode').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('applyCouponBtn').click();
-    }
-});
-
-// Réinitialiser le formulaire à la fermeture du modal
-document.getElementById('couponModal').addEventListener('hidden.bs.modal', function() {
-    document.getElementById('couponCode').disabled = false;
-    document.getElementById('applyCouponBtn').innerHTML = '<i class="la la-check"></i> Appliquer';
-});
-</script>
 @endsection

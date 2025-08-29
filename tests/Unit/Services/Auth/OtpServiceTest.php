@@ -29,7 +29,7 @@ class OtpServiceTest extends TestCase
         $this->otpService = new OtpService($this->smsService);
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_and_stores_otp_for_email()
     {
         Mail::fake();
@@ -49,7 +49,7 @@ class OtpServiceTest extends TestCase
         $this->assertTrue(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_and_stores_otp_for_phone()
     {
         $user = User::factory()->create([
@@ -71,7 +71,7 @@ class OtpServiceTest extends TestCase
         $this->assertTrue(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_user_not_found()
     {
         $this->expectException(UserNotFoundException::class);
@@ -79,7 +79,7 @@ class OtpServiceTest extends TestCase
         $this->otpService->sendOtp('nonexistent@example.com', LoginChannel::EMAIL());
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_sms_fails()
     {
         $user = User::factory()->create([
@@ -96,7 +96,7 @@ class OtpServiceTest extends TestCase
         $this->otpService->sendOtp('+237655332183', LoginChannel::PHONE());
     }
 
-    /** @test */
+    #[Test]
     public function it_verifies_valid_otp()
     {
         $identifier = 'test@example.com';
@@ -113,7 +113,7 @@ class OtpServiceTest extends TestCase
         $this->assertFalse(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_invalid_otp()
     {
         $identifier = 'test@example.com';
@@ -131,7 +131,7 @@ class OtpServiceTest extends TestCase
         $this->assertTrue(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_rejects_expired_otp()
     {
         $identifier = 'test@example.com';
@@ -142,7 +142,7 @@ class OtpServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    /** @test */
+    #[Test]
     public function it_determines_channel_correctly()
     {
         $emailChannel = $this->otpService->determineChannel('test@example.com');
@@ -168,7 +168,7 @@ class OtpServiceTest extends TestCase
         $this->assertEquals('+237*****2183', $masked);
     }
 
-    /** @test */
+    #[Test]
     public function it_invalidates_otp()
     {
         $identifier = 'test@example.com';
@@ -184,7 +184,7 @@ class OtpServiceTest extends TestCase
         $this->assertFalse(Cache::has($cacheKey));
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_reset_token()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);

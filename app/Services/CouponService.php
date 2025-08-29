@@ -43,8 +43,8 @@ final class CouponService
             ];
         }
 
-        // Vérifier si l'utilisateur a déjà utilisé ce coupon (si limite = 1)
-        if ($coupon->usage_limit === 1 && $this->hasUserUsedCoupon($coupon, $user)) {
+        // Vérifier si l'utilisateur a déjà utilisé ce coupon selon la limite par utilisateur
+        if ($coupon->per_user_limit && $this->getUserCouponUsageCount($coupon, $user) >= $coupon->per_user_limit) {
             return [
                 'valid' => false,
                 'message' => 'Vous avez déjà utilisé ce code coupon.',
@@ -112,6 +112,16 @@ final class CouponService
         return CouponUsage::where('coupon_id', $coupon->id)
             ->where('user_id', $user->id)
             ->exists();
+    }
+
+    /**
+     * Compter le nombre d'utilisations d'un coupon par un utilisateur
+     */
+    public function getUserCouponUsageCount(Coupon $coupon, User $user): int
+    {
+        return CouponUsage::where('coupon_id', $coupon->id)
+            ->where('user_id', $user->id)
+            ->count();
     }
 
     /**

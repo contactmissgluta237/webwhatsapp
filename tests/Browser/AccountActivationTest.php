@@ -63,7 +63,8 @@ class AccountActivationTest extends DuskTestCase
                 ->assertSee('Activation du compte')
                 ->assertSee('test@example.com')
                 ->within(new ActivationPage, function (Browser $browser) {
-                    $browser->activateAccount($browser, '123456')
+                    $activationPage = new ActivationPage;
+                    $activationPage->activateAccount($browser, '123456')
                         ->waitForActivationResult($browser);
                 });
 
@@ -97,7 +98,8 @@ class AccountActivationTest extends DuskTestCase
             $browser->visit('/account/activate/test@example.com')
                 ->on(new ActivationPage)
                 ->within(new ActivationPage, function (Browser $browser) {
-                    $browser->activateAccount($browser, '000000')
+                    $activationPage = new ActivationPage;
+                    $activationPage->activateAccount($browser, '000000')
                         ->waitFor('@errorMessage', 5);
                 });
 
@@ -135,7 +137,8 @@ class AccountActivationTest extends DuskTestCase
             $browser->visit('/account/activate/test@example.com')
                 ->on(new ActivationPage)
                 ->within(new ActivationPage, function (Browser $browser) {
-                    $browser->resendActivationCode($browser);
+                    $activationPage = new ActivationPage;
+                    $activationPage->resendActivationCode($browser);
                 });
 
             $browser->assertSee('Code d\'activation renvoyé avec succès');

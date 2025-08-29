@@ -35,7 +35,7 @@ class LoginTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_view_login_form()
     {
         $response = $this->get(route('login'));
@@ -44,7 +44,7 @@ class LoginTest extends TestCase
         $response->assertSeeLivewire(LoginForm::class);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_login_with_valid_email_credentials()
     {
         $user = User::factory()->create([
@@ -63,7 +63,7 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_login_with_valid_phone_credentials()
     {
         $user = User::factory()->create([
@@ -87,7 +87,7 @@ class LoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    /** @test */
+    #[Test]
     public function users_cannot_login_with_invalid_credentials()
     {
         $user = User::factory()->create([
@@ -105,7 +105,7 @@ class LoginTest extends TestCase
         $this->assertGuest();
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_users_cannot_view_login_form()
     {
         $user = User::factory()->create();

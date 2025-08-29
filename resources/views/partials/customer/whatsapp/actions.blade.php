@@ -1,10 +1,10 @@
 <div class="dropdown" style="position: static;">
     <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-toggle="dropdown" 
             aria-haspopup="true" aria-expanded="false" title="Actions"
-            data-boundary="window">
+            data-flip="false" data-placement="bottom-end">
         <i class="la la-cog"></i>
     </button>
-    <div class="dropdown-menu dropdown-menu-right" style="position: absolute; z-index: 1050; min-width: 220px;">
+    <div class="dropdown-menu dropdown-menu-right" style="min-width: 220px;">
         {{-- Configurer l'agent IA --}}
         <a class="dropdown-item py-2" href="{{ route('whatsapp.configure-ai', $account->id) }}">
             <i class="la la-cog text-primary mr-2"></i>
@@ -15,6 +15,12 @@
         <a class="dropdown-item py-2" href="{{ route('customer.whatsapp.conversations.index', $account->id) }}">
             <i class="la la-comments text-info mr-2"></i>
             Conversations
+        </a>
+
+        {{-- Configuration des notifications --}}
+        <a class="dropdown-item py-2" href="{{ route('whatsapp.notifications.config', $account->id) }}">
+            <i class="la la-bell text-warning mr-2"></i>
+            Notifications
         </a>
 
         <div class="dropdown-divider"></div>
@@ -81,6 +87,7 @@
 .dropdown-menu {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
     border: 1px solid #dee2e6 !important;
+    z-index: 1055 !important;
 }
 
 .dropdown-item {
@@ -110,6 +117,16 @@
 
 .dataTables_wrapper .dropdown-menu {
     position: absolute !important;
+    transform: none !important;
+    z-index: 1055 !important;
+}
+
+/* Force le dropdown à s'ouvrir vers le bas et aligné à droite du bouton */
+.dropdown-menu.dropdown-menu-right {
+    top: 68% !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 0 !important;
     transform: none !important;
 }
 </style>

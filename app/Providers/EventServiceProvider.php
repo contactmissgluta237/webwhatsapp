@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\AdminWithdrawalCreatedEvent;
+use App\Events\Customer\PackageSubscriptionCreatedEvent;
 use App\Events\CustomerCreatedEvent;
 use App\Events\CustomerRechargeCreatedEvent;
 use App\Events\ExternalTransactionApprovedEvent;
@@ -17,6 +18,7 @@ use App\Events\WhatsApp\AiResponseGenerated;
 use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Events\WithdrawalRequestedEvent;
 use App\Listeners\AdminWithdrawalNotificationListener;
+use App\Listeners\Customer\ReferralDistributionListener;
 use App\Listeners\HandleExternalTransactionWebhookListener;
 use App\Listeners\LogUserUpdatedListener;
 use App\Listeners\NotifyAdminOfCustomerMessageListener;
@@ -29,6 +31,7 @@ use App\Listeners\NotifyCustomerOfTicketReplyListener;
 use App\Listeners\NotifyReferrerListener;
 use App\Listeners\SendApprovalNotificationListener;
 use App\Listeners\SendRechargeNotificationToCustomerListener;
+use App\Listeners\WhatsApp\AIUnknownInformationListener;
 use App\Listeners\WhatsApp\AnalyticsListener;
 use App\Listeners\WhatsApp\StoreMessagesListener;
 use App\Listeners\WhatsApp\TrackAiUsageListener;
@@ -82,9 +85,13 @@ class EventServiceProvider extends ServiceProvider
         MessageProcessedEvent::class => [
             StoreMessagesListener::class,
             AnalyticsListener::class,
+            AIUnknownInformationListener::class,
         ],
         AiResponseGenerated::class => [
             TrackAiUsageListener::class,
+        ],
+        PackageSubscriptionCreatedEvent::class => [
+            ReferralDistributionListener::class,
         ],
     ];
 

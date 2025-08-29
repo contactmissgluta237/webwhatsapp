@@ -73,7 +73,7 @@ final class ReplyTicketRequestTest extends BaseRequestTestCase
         ];
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_valid_file_attachments(): void
     {
         $validData = $this->getValidData();
@@ -112,7 +112,7 @@ final class ReplyTicketRequestTest extends BaseRequestTestCase
         $this->assertTrue($validator->passes(), 'Multiple attachments validation should pass');
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_invalid_file_attachments(): void
     {
         $validData = $this->getValidData();

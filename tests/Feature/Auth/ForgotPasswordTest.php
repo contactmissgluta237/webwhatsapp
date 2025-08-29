@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Auth\Contracts\OtpServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ForgotPasswordTest extends TestCase
@@ -39,7 +40,7 @@ class ForgotPasswordTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_view_forgot_password_form()
     {
         $response = $this->get(route('password.request'));
@@ -48,7 +49,7 @@ class ForgotPasswordTest extends TestCase
         $response->assertSeeLivewire(ForgotPasswordForm::class);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_request_password_reset_with_email()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -69,7 +70,7 @@ class ForgotPasswordTest extends TestCase
             ]));
     }
 
-    /** @test */
+    #[Test]
     public function users_can_request_password_reset_with_phone()
     {
         $user = User::factory()->create(['phone_number' => '+237655332183']);
@@ -95,7 +96,7 @@ class ForgotPasswordTest extends TestCase
             ]));
     }
 
-    /** @test */
+    #[Test]
     public function forgot_password_fails_with_invalid_email()
     {
         Livewire::test(ForgotPasswordForm::class)
@@ -105,7 +106,7 @@ class ForgotPasswordTest extends TestCase
             ->assertHasErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function forgot_password_fails_with_nonexistent_email()
     {
         Livewire::test(ForgotPasswordForm::class)
@@ -115,7 +116,7 @@ class ForgotPasswordTest extends TestCase
             ->assertHasErrors(['email']);
     }
 
-    /** @test */
+    #[Test]
     public function forgot_password_fails_with_nonexistent_phone()
     {
         Livewire::test(ForgotPasswordForm::class)
@@ -130,7 +131,7 @@ class ForgotPasswordTest extends TestCase
             ->assertHasErrors(['phoneNumber']);
     }
 
-    /** @test */
+    #[Test]
     public function forgot_password_handles_service_exception()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -147,7 +148,7 @@ class ForgotPasswordTest extends TestCase
             ->assertSet('error', 'Une erreur est survenue. Veuillez réessayer plus tard.');
     }
 
-    /** @test */
+    #[Test]
     public function users_can_switch_between_reset_methods()
     {
         Livewire::test(ForgotPasswordForm::class)
@@ -158,7 +159,7 @@ class ForgotPasswordTest extends TestCase
             ->assertSet('phoneNumber', '');
     }
 
-    /** @test */
+    #[Test]
     public function users_can_go_back_to_login()
     {
         Livewire::test(ForgotPasswordForm::class)
@@ -166,7 +167,7 @@ class ForgotPasswordTest extends TestCase
             ->assertRedirect(route('login'));
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_users_cannot_view_forgot_password_form()
     {
         $user = User::factory()->create();

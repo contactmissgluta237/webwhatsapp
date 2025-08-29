@@ -46,7 +46,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enhance_basic_prompt_with_real_ollama(): void
     {
         $this->markTestSkipped('Test d\'intégration avec Ollama - à activer manuellement');
@@ -74,7 +74,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enhance_customer_service_prompt_with_real_ollama(): void
     {
         $this->markTestSkipped('Test d\'intégration avec Ollama - à activer manuellement');
@@ -102,7 +102,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enhance_restaurant_prompt_with_real_ollama(): void
     {
         $this->markTestSkipped('Test d\'intégration avec Ollama - à activer manuellement');
@@ -130,7 +130,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_ollama_connection_error_gracefully(): void
     {
         // Créer un modèle avec un endpoint incorrect
@@ -159,7 +159,7 @@ final class OllamaPromptEnhancementIntegrationTest extends TestCase
         $this->assertTrue(true, 'Le service gère gracieusement les erreurs de connexion');
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_enhanced_prompt_quality(): void
     {
         $this->markTestSkipped('Test d\'intégration avec Ollama - à activer manuellement');

@@ -21,6 +21,7 @@ use App\Services\WhatsApp\Helpers\MessageBillingHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BillingSystemE2ETest extends TestCase
@@ -69,7 +70,7 @@ class BillingSystemE2ETest extends TestCase
         config(['whatsapp.billing.alert_threshold_percentage' => 20]);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_message_costs_correctly_with_helper()
     {
         // Test AI message only
@@ -97,7 +98,7 @@ class BillingSystemE2ETest extends TestCase
         $this->assertEquals(35.0, MessageBillingHelper::getAmountToBillFromResponse($fullResponse));
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_quota_when_messages_are_available()
     {
         Notification::fake();
@@ -110,7 +111,14 @@ class BillingSystemE2ETest extends TestCase
 
         $event = new MessageProcessedEvent(
             $this->account,
-            new WhatsAppMessageRequestDTO('+237123456789', 'test message', now(), 'test-session'),
+            new WhatsAppMessageRequestDTO(
+                id: 'msg_test_'.uniqid(),
+                from: '+237123456789@c.us',
+                body: 'test message',
+                timestamp: time(),
+                type: 'text',
+                isGroup: false
+            ),
             $response
         );
 
@@ -132,7 +140,7 @@ class BillingSystemE2ETest extends TestCase
         Notification::assertNothingSent();
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_low_quota_alert_when_threshold_reached()
     {
         Notification::fake();
@@ -164,7 +172,7 @@ class BillingSystemE2ETest extends TestCase
         Notification::assertSentTo($this->user, LowQuotaNotification::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_debits_wallet_when_quota_exhausted()
     {
         Notification::fake();
@@ -205,7 +213,7 @@ class BillingSystemE2ETest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_insufficient_wallet_balance_gracefully()
     {
         Notification::fake();
@@ -246,7 +254,7 @@ class BillingSystemE2ETest extends TestCase
         Notification::assertNotSentTo($this->user, WalletDebitedNotification::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_complex_billing_scenario_end_to_end()
     {
         Notification::fake();

@@ -103,6 +103,10 @@ class Coupon extends Model
             return false;
         }
 
+        if (! $this->is_active) {
+            return false;
+        }
+
         $now = now();
 
         if ($this->valid_from && $now < $this->valid_from) {

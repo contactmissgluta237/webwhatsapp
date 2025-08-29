@@ -88,9 +88,10 @@ RÈGLES DE RÉPONSE ABSOLUES :
             ."\n- ❌ JAMAIS inventer d'informations que tu ne connais pas avec certitude"
             ."\n- ❌ JAMAIS donner de données factuelles non vérifiées (dates, prix, coordonnées, etc.)"
             ."\n- ❌ JAMAIS faire semblant de connaître des détails spécifiques si tu n'en es pas sûr"
-            ."\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : dire 'Je reviens vers vous dans un instant avec cette information, bien sûre en fonction de la langue de l'interlocuteur'"
+            ."\n- ✅ Si on te pose une question dont tu ne connais pas la réponse : unknown_information: true"
+            ."\n- ✅ Message type: 'Je vérifie cette information pour vous et reviens rapidement'"
             ."\n- ✅ Être honnête sur tes limites plutôt que d'inventer"
-            ."\n- ✅ Si tu doutes d'une information, demander plutôt confirmation ou dire que tu vérifies";
+            ."\n- ✅ Si tu doutes d'une information, utiliser unknown_information: true";
     }
 
     /**
@@ -110,9 +111,10 @@ RÈGLES DE RÉPONSE ABSOLUES :
     {
         return "\n\n⚡ FORMAT DE RÉPONSE OBLIGATOIRE :"
             ."\n- Tu DOIS TOUJOURS répondre en JSON avec cette structure exacte :"
-            ."\n  {\"message\":\"Votre message texte\", \"action\":\"text|show_products|show_catalog\", \"products\":[1,2,3]}"
-            ."\n- Si question générale → action: \"text\" + products: []"
-            ."\n- Si client demande produits → action: \"show_products\" + IDs des produits"
+            ."\n  {\"message\":\"Votre message texte\", \"action\":\"text|show_products|show_catalog\", \"products\":[1,2,3], \"unknown_information\":false}"
+            ."\n- Si question générale → action: \"text\" + products: [] + unknown_information: false"
+            ."\n- Si client demande produits → action: \"show_products\" + IDs des produits + unknown_information: false"
+            ."\n- Si tu ne connais pas l'information → unknown_information: true + message expliquant que tu vérifies"
             ."\n- INTERDICTION: Pas de texte en dehors du JSON, seulement du JSON valide";
     }
 

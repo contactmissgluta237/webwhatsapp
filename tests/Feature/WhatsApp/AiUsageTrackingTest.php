@@ -50,7 +50,7 @@ class AiUsageTrackingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_dispatches_ai_response_generated_event(): void
     {
         Event::fake();
@@ -97,7 +97,7 @@ class AiUsageTrackingTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function it_tracks_ai_usage_when_event_is_dispatched(): void
     {
         $this->assertDatabaseEmpty('ai_usage_logs');
@@ -159,7 +159,7 @@ class AiUsageTrackingTest extends TestCase
         $this->assertEquals(1201, $usageLog->response_time_ms); // rounded
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_conversation_gracefully(): void
     {
         $this->assertDatabaseEmpty('ai_usage_logs');
@@ -211,7 +211,7 @@ class AiUsageTrackingTest extends TestCase
         $this->assertNull($usageLog->whatsapp_message_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_track_when_no_cost_data_available(): void
     {
         $this->assertDatabaseEmpty('ai_usage_logs');
@@ -245,14 +245,14 @@ class AiUsageTrackingTest extends TestCase
         $this->assertDatabaseEmpty('ai_usage_logs');
     }
 
-    /** @test */
+    #[Test]
     public function listener_can_be_resolved_from_container(): void
     {
         $listener = app(TrackAiUsageListener::class);
         $this->assertInstanceOf(TrackAiUsageListener::class, $listener);
     }
 
-    /** @test */
+    #[Test]
     public function usage_tracker_service_can_be_resolved(): void
     {
         $tracker = app(AiUsageTracker::class);

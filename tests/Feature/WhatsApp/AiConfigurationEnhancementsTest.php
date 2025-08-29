@@ -46,7 +46,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_save_stop_on_human_reply_configuration()
     {
         $this->actingAs($this->user);
@@ -71,7 +71,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertTrue($this->account->fresh()->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_disable_stop_on_human_reply_configuration()
     {
         $this->actingAs($this->user);
@@ -97,7 +97,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertFalse($this->account->fresh()->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function it_loads_stop_on_human_reply_from_existing_configuration(): void
     {
         $this->account->update(['stop_on_human_reply' => true]);
@@ -109,7 +109,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertTrue($component->get('stop_on_human_reply'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_enhance_prompt_with_ollama(): void
     {
         $this->actingAs($this->user);
@@ -152,7 +152,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_cannot_enhance_empty_prompt(): void
     {
         $this->actingAs($this->user);
@@ -164,7 +164,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertSet('hasEnhancedPrompt', false);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_accept_enhanced_prompt(): void
     {
         $this->actingAs($this->user);
@@ -184,7 +184,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertDispatched('show-toast');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_reject_enhanced_prompt(): void
     {
         $this->actingAs($this->user);
@@ -204,7 +204,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertDispatched('show-toast');
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_prompt_enhancement_service_error(): void
     {
         $this->actingAs($this->user);
@@ -228,7 +228,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $component->assertDispatched('show-toast');
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_agent_prompt_is_required_when_agent_enabled(): void
     {
         $this->actingAs($this->user);
@@ -246,7 +246,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertHasErrors(['agent_prompt']);
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_empty_prompt_when_agent_disabled(): void
     {
         $this->actingAs($this->user);
@@ -263,7 +263,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertHasNoErrors();
     }
 
-    /** @test */
+    #[Test]
     public function it_requires_ai_model_when_agent_enabled(): void
     {
         $this->actingAs($this->user);
@@ -281,7 +281,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertHasErrors(['ai_model_id']);
     }
 
-    /** @test */
+    #[Test]
     public function only_account_owner_can_configure_ai(): void
     {
         /** @var User $otherUser */
@@ -293,7 +293,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function it_preserves_other_configuration_when_updating_stop_on_human_reply(): void
     {
         $this->actingAs($this->user);
@@ -326,7 +326,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         // On vérifie seulement que la configuration stop_on_human_reply a été sauvegardée
     }
 
-    /** @test */
+    #[Test]
     public function it_can_access_ai_configuration_page(): void
     {
         $this->actingAs($this->user);
@@ -337,7 +337,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $response->assertSee('Configuration IA'); // Ou tout autre texte présent sur la page
     }
 
-    /** @test */
+    #[Test]
     public function it_cannot_access_other_user_ai_configuration(): void
     {
         /** @var User $otherUser */
@@ -350,7 +350,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_stop_on_human_reply_defaulting_to_false(): void
     {
         $newAccount = WhatsAppAccount::factory()->create([
@@ -360,7 +360,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertFalse($newAccount->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_stop_on_human_reply_in_form_validation(): void
     {
         $this->actingAs($this->user);
@@ -371,7 +371,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertNotNull($component->get('stop_on_human_reply'));
     }
 
-    /** @test */
+    #[Test]
     public function it_properly_saves_enhanced_prompt(): void
     {
         $this->actingAs($this->user);
@@ -394,7 +394,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertEquals($enhancedPrompt, $this->account->agent_prompt);
     }
 
-    /** @test */
+    #[Test]
     public function test_can_update_stop_on_human_reply_setting(): void
     {
         $this->actingAs($this->user);
@@ -418,7 +418,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
         $this->assertTrue($this->account->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function test_form_validation_includes_stop_on_human_reply(): void
     {
         $this->actingAs($this->user);
@@ -430,7 +430,7 @@ final class AiConfigurationEnhancementsTest extends TestCase
             ->assertHasErrors(['agent_name']);
     }
 
-    /** @test */
+    #[Test]
     public function test_loads_current_configuration_including_stop_on_human_reply(): void
     {
         $this->actingAs($this->user);

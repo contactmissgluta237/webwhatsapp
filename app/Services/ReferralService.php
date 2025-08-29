@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 final class ReferralService
 {
     /**
-     * Distribuer les gains de parrainage lors d'une souscription
+     * Distribute referral earnings when a subscription is created
      */
     public function distributeReferralEarnings(UserSubscription $subscription, float $amount): void
     {
@@ -58,19 +58,23 @@ final class ReferralService
                 $transaction
             );
 
-            // 3. Enregistrer les revenus système
+            // 3. Record system revenue
             $this->recordSystemRevenue($subscription, $systemAmount);
         });
     }
 
     /**
-     * Créditer le wallet du parrain
+     * Credit the referrer's wallet with commission amount
      */
     private function creditReferrerWallet(
         User $referrer,
         float $commissionAmount,
         UserSubscription $subscription
     ): InternalTransaction {
+        if (! $referrer->wallet) {
+            throw new \Exception('Referrer wallet not found');
+        }
+
         // Credit the wallet
         $referrer->wallet->increment('balance', $commissionAmount);
 
@@ -80,7 +84,7 @@ final class ReferralService
             'amount' => $commissionAmount,
             'transaction_type' => TransactionType::CREDIT(),
             'status' => TransactionStatus::COMPLETED(),
-            'description' => "Commission parrainage - Souscription de {$subscription->user->full_name} au package {$subscription->package->display_name}",
+            'description' => "Referral commission - {$subscription->user->full_name} subscription to {$subscription->package->display_name}",
             'related_type' => UserSubscription::class,
             'related_id' => $subscription->id,
             'recipient_user_id' => $referrer->id,
@@ -90,7 +94,7 @@ final class ReferralService
     }
 
     /**
-     * Enregistrer les revenus système
+     * Record system revenue from subscription
      */
     private function recordSystemRevenue(UserSubscription $subscription, float $amount): void
     {
@@ -98,7 +102,7 @@ final class ReferralService
     }
 
     /**
-     * Calculer les gains totaux d'un parrain
+     * Calculate total earnings for a referrer
      */
     public function calculateTotalEarnings(User $referrer): float
     {
@@ -107,7 +111,9 @@ final class ReferralService
     }
 
     /**
-     * Obtenir les statistiques de parrainage d'un utilisateur
+     * Get referral statistics for a user
+     *
+     * @return array{total_referrals: int, active_referrals: int, total_earnings: float, total_transactions: int, average_commission: float, current_commission_rate: float}
      */
     public function getReferralStats(User $referrer): array
     {
@@ -131,7 +137,7 @@ final class ReferralService
     }
 
     /**
-     * Mettre à jour le taux de commission d'un utilisateur
+     * Update commission rate for a user
      */
     public function updateCommissionRate(User $user, float $percentage): bool
     {
@@ -145,7 +151,9 @@ final class ReferralService
     }
 
     /**
-     * Obtenir le top des parrains par gains
+     * Get top referrers by earnings
+     *
+     * @return array<int, array{user: User, total_earnings: float, total_referrals: int, commission_rate: float}>
      */
     public function getTopReferrers(int $limit = 10): array
     {
@@ -169,7 +177,9 @@ final class ReferralService
     }
 
     /**
-     * Calculer le potentiel de gain pour un montant donné
+     * Calculate potential earning for a given amount
+     *
+     * @return array{amount: float, commission_rate: float, commission_amount: float, system_amount: float}
      */
     public function calculatePotentialEarning(User $referrer, float $amount): array
     {

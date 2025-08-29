@@ -19,14 +19,14 @@ class AdminDashboardMetricsTest extends TestCase
         Ticket::factory()->count(3)->create();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_total_users_count()
     {
         $users = User::factory()->count(5)->create();
         $this->assertEquals(5, $users->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_total_tickets_count()
     {
         $tickets = Ticket::factory()->count(3)->create();

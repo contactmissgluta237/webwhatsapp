@@ -5,6 +5,7 @@ namespace Tests\Browser;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\DuskTestCase;
 
 class LoginFlowTest extends DuskTestCase
@@ -34,7 +35,7 @@ class LoginFlowTest extends DuskTestCase
         })->name('dashboard');
     }
 
-    /** @test */
+    #[Test]
     public function user_can_login_with_email()
     {
         $user = User::factory()->create([
@@ -53,7 +54,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_login_with_phone()
     {
         $user = User::factory()->create([
@@ -74,7 +75,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_cannot_login_with_invalid_credentials()
     {
         $user = User::factory()->create([
@@ -92,7 +93,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_navigate_to_forgot_password()
     {
         $this->browse(function (Browser $browser) {
@@ -104,7 +105,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_switch_between_email_and_phone_login()
     {
         $this->browse(function (Browser $browser) {
@@ -120,7 +121,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function login_form_validates_required_fields()
     {
         $this->browse(function (Browser $browser) {
@@ -132,7 +133,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_is_redirected_from_login()
     {
         $user = User::factory()->create();
@@ -145,7 +146,7 @@ class LoginFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_logout()
     {
         $user = User::factory()->create();

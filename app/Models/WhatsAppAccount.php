@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Spatie\MediaLibrary\HasMedia;
@@ -56,11 +57,13 @@ use Spatie\MediaLibrary\HasMedia;
  * @property-read AiModel|null $aiModel
  * @property-read Collection|UserProduct[] $userProducts
  * @property-read Collection|AiUsageLog[] $aiUsageLogs
+ * @property-read WhatsAppAccountSetting|null $settings
  */
 final class WhatsAppAccount extends Model implements HasMedia
 {
     use HasFactory;
     use HasMediaCollections;
+    use Notifiable;
 
     protected $table = 'whatsapp_accounts';
 
@@ -130,6 +133,11 @@ final class WhatsAppAccount extends Model implements HasMedia
     public function aiModel(): BelongsTo
     {
         return $this->belongsTo(AiModel::class);
+    }
+
+    public function settings(): HasOne
+    {
+        return $this->hasOne(WhatsAppAccountSetting::class, 'whatsapp_account_id');
     }
 
     public function userProducts(): BelongsToMany

@@ -24,7 +24,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->seed(\Database\Seeders\PackagesSeeder::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_packages_with_correct_attributes()
     {
         $packages = Package::all();
@@ -55,7 +55,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertEquals(5, $pro->products_limit);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_user_subscription()
     {
         $user = User::factory()->create();
@@ -76,7 +76,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertEquals($user->id, $subscription->user_id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_track_user_active_subscription()
     {
         $user = User::factory()->create();
@@ -102,7 +102,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertEquals($package->id, $user->getCurrentPackage()->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_and_manage_account_usage()
     {
         $user = User::factory()->create();
@@ -134,7 +134,7 @@ class PackageSubscriptionSystemTest extends TestCase
         // $this->assertTrue($subscription->hasRemainingMessages());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_validate_trial_subscription_rules()
     {
         $user = User::factory()->create();
@@ -177,7 +177,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertFalse($starterSubscription->canSubscribeToTrial());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_package_features_correctly()
     {
         $trial = Package::findByName('trial');
@@ -198,7 +198,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $this->assertFalse($pro->hasPrioritySupport());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_track_usage_across_multiple_accounts()
     {
         $user = User::factory()->create();

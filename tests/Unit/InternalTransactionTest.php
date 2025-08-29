@@ -22,7 +22,7 @@ class InternalTransactionTest extends TestCase
         \Spatie\Permission\Models\Role::create(['name' => 'customer']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_internal_transaction()
     {
         $user = User::factory()->create();
@@ -46,7 +46,7 @@ class InternalTransactionTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_a_wallet_relationship()
     {
         $user = User::factory()->create();
@@ -57,7 +57,7 @@ class InternalTransactionTest extends TestCase
         $this->assertEquals($wallet->id, $transaction->wallet->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_a_creator_relationship()
     {
         $user = User::factory()->create();
@@ -71,7 +71,7 @@ class InternalTransactionTest extends TestCase
         $this->assertEquals($user->id, $transaction->creator->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_has_a_recipient_relationship()
     {
         $sender = User::factory()->create();
@@ -88,7 +88,7 @@ class InternalTransactionTest extends TestCase
         $this->assertEquals($recipient->id, $transaction->recipient->id);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_a_credit_transaction()
     {
         $user = User::factory()->create();
@@ -103,7 +103,7 @@ class InternalTransactionTest extends TestCase
         $this->assertFalse($transaction->isDebit());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_a_debit_transaction()
     {
         $user = User::factory()->create();
@@ -118,7 +118,7 @@ class InternalTransactionTest extends TestCase
         $this->assertFalse($transaction->isCredit());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_a_completed_transaction()
     {
         $user = User::factory()->create();
@@ -133,7 +133,7 @@ class InternalTransactionTest extends TestCase
         $this->assertFalse($transaction->isPending());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_a_pending_transaction()
     {
         $user = User::factory()->create();
@@ -148,7 +148,7 @@ class InternalTransactionTest extends TestCase
         $this->assertFalse($transaction->isCompleted());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_a_failed_transaction()
     {
         $user = User::factory()->create();
@@ -164,7 +164,7 @@ class InternalTransactionTest extends TestCase
         $this->assertFalse($transaction->isPending());
     }
 
-    /** @test */
+    #[Test]
     public function scope_credits_returns_only_credit_transactions()
     {
         $user = User::factory()->create();
@@ -187,7 +187,7 @@ class InternalTransactionTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function scope_debits_returns_only_debit_transactions()
     {
         $user = User::factory()->create();
@@ -210,7 +210,7 @@ class InternalTransactionTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function scope_completed_returns_only_completed_transactions()
     {
         $user = User::factory()->create();

@@ -28,12 +28,16 @@ class PackagesSeeder extends Seeder
             'sort_order' => 1,
         ]);
 
-        // Package STARTER (2000 XAF/mois)
+        // Package STARTER (3000 XAF/mois avec promo à 2000 XAF)
         Package::create([
             'name' => 'starter',
             'display_name' => 'Starter',
             'description' => 'Parfait pour commencer avec votre agent WhatsApp IA.',
-            'price' => 2000,
+            'price' => 3000,
+            'promotional_price' => 2000,
+            'promotion_is_active' => true,
+            'promotion_starts_at' => now(),
+            'promotion_ends_at' => null,
             'currency' => 'XAF',
             'messages_limit' => 200,
             'context_limit' => 5000,
@@ -47,12 +51,16 @@ class PackagesSeeder extends Seeder
             'sort_order' => 2,
         ]);
 
-        // Package PRO (5000 XAF/mois) - Interverti avec ancien business
+        // Package PRO (7500 XAF/mois avec promo à 5000 XAF) - Interverti avec ancien business
         Package::create([
             'name' => 'pro',
             'display_name' => 'Pro',
             'description' => 'Idéal pour les professionnels avec gestion de produits et comptes multiples.',
-            'price' => 5000,
+            'price' => 7500,
+            'promotional_price' => 5000,
+            'promotion_is_active' => true,
+            'promotion_starts_at' => now(),
+            'promotion_ends_at' => null,
             'currency' => 'XAF',
             'messages_limit' => 600,
             'context_limit' => 7000,
@@ -66,12 +74,16 @@ class PackagesSeeder extends Seeder
             'sort_order' => 3,
         ]);
 
-        // Package BUSINESS (10000 XAF/mois) - Interverti avec ancien pro
+        // Package BUSINESS (15000 XAF/mois avec promo à 10000 XAF) - Interverti avec ancien pro
         Package::create([
             'name' => 'business',
             'display_name' => 'Business',
             'description' => 'Pour les entreprises exigeantes avec rapports hebdomadaires et support prioritaire.',
-            'price' => 10000,
+            'price' => 15000,
+            'promotional_price' => 10000,
+            'promotion_is_active' => true,
+            'promotion_starts_at' => now(),
+            'promotion_ends_at' => null,
             'currency' => 'XAF',
             'messages_limit' => 1300,
             'context_limit' => 10000,

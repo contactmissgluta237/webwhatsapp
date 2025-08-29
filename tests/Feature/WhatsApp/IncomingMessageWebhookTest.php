@@ -53,7 +53,7 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_receive_incoming_message_webhook_successfully()
     {
         // Mock les logs de façon permissive pour éviter les erreurs de mock
@@ -142,7 +142,7 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_group_messages_correctly()
     {
         $payload = [
@@ -170,7 +170,7 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_with_invalid_session_id_type()
     {
         $payload = [
@@ -193,7 +193,7 @@ class IncomingMessageWebhookTest extends TestCase
             ->assertJsonValidationErrors(['session_id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_whatsapp_account_gracefully()
     {
         $payload = [
@@ -236,7 +236,7 @@ class IncomingMessageWebhookTest extends TestCase
         \Mockery::close();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         $response = $this->postJson('/api/whatsapp/webhook/incoming-message', []);
@@ -249,7 +249,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_message_structure()
     {
         $payload = [
@@ -273,7 +273,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_enums_correctly_for_different_message_types()
     {
         // Test avec différents types de messages pour valider les Enums
@@ -309,7 +309,7 @@ class IncomingMessageWebhookTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_402_when_user_has_no_subscription_and_no_wallet()
     {
         // Aucune subscription, aucun wallet
@@ -325,7 +325,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_402_when_subscription_is_expired_and_insufficient_wallet()
     {
         // Créer une subscription expirée
@@ -354,7 +354,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_402_when_no_messages_remaining_and_insufficient_wallet()
     {
         // Subscription active mais sans messages restants
@@ -386,7 +386,7 @@ class IncomingMessageWebhookTest extends TestCase
         $response->assertStatus(402);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_message_when_no_messages_remaining_but_sufficient_wallet()
     {
         // Mock les logs pour éviter les erreurs
@@ -424,7 +424,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_message_when_subscription_is_active_with_remaining_messages()
     {
         // Mock les logs
@@ -452,7 +452,7 @@ class IncomingMessageWebhookTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_prioritizes_saved_contact_name_over_push_name()
     {
         // Mock logs
@@ -497,7 +497,7 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_push_name_when_no_saved_name()
     {
         // Mock logs
@@ -542,7 +542,7 @@ class IncomingMessageWebhookTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_non_text_messages_with_automatic_response()
     {
         // Mock les logs
@@ -597,7 +597,7 @@ class IncomingMessageWebhookTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_notification_messages_with_automatic_response()
     {
         // Mock les logs
@@ -642,7 +642,7 @@ class IncomingMessageWebhookTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_processes_text_and_chat_messages_normally()
     {
         // Mock les logs

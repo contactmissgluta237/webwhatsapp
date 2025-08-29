@@ -76,7 +76,7 @@ class ExternalTransactionListTest extends TestCase
         $this->otherWallet = Wallet::factory()->create(['user_id' => $this->otherCustomer->id]);
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_access_their_transactions_list_page()
     {
         $response = $this->actingAs($this->customer)
@@ -88,7 +88,7 @@ class ExternalTransactionListTest extends TestCase
         $response->assertSee('Solde Actuel du Portefeuille');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_only_see_their_own_transactions()
     {
         ExternalTransaction::factory()->count(3)->create([
@@ -108,7 +108,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertSee('Recharge'); // Ses propres transactions sont visibles
     }
 
-    /** @test */
+    #[Test]
     public function customer_sees_only_details_action_button()
     {
         ExternalTransaction::factory()->create([
@@ -125,7 +125,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertDontSee('Modifier');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_filter_their_transactions_by_type()
     {
         ExternalTransaction::factory()->create([
@@ -145,7 +145,7 @@ class ExternalTransactionListTest extends TestCase
         $component->call('setFilter', 'transaction_type', 'recharge');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_filter_their_transactions_by_status()
     {
         ExternalTransaction::factory()->create([
@@ -165,7 +165,7 @@ class ExternalTransactionListTest extends TestCase
         $component->call('setFilter', 'status', 'completed');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_search_their_transactions_by_description()
     {
         ExternalTransaction::factory()->create([
@@ -185,7 +185,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertDontSee('Retrait bancaire');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_see_transaction_details_with_proper_formatting()
     {
         ExternalTransaction::factory()->create([
@@ -205,7 +205,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertSee('Mobile Money');
     }
 
-    /** @test */
+    #[Test]
     public function customer_without_wallet_sees_empty_transactions_list()
     {
         $customerWithoutWallet = User::factory()->create();
@@ -218,7 +218,7 @@ class ExternalTransactionListTest extends TestCase
         $component->assertStatus(200);
     }
 
-    /** @test */
+    #[Test]
     public function admin_cannot_access_customer_transactions_list()
     {
         $response = $this->actingAs($this->admin)
@@ -227,7 +227,7 @@ class ExternalTransactionListTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function unauthenticated_user_cannot_access_customer_transactions_list()
     {
         $response = $this->get('/customer/transactions');
@@ -235,7 +235,7 @@ class ExternalTransactionListTest extends TestCase
         $response->assertRedirect('/login');
     }
 
-    /** @test */
+    #[Test]
     public function customer_can_export_their_transactions()
     {
         ExternalTransaction::factory()->count(5)->create([

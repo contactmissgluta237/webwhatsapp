@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\Auth\Contracts\OtpServiceInterface;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Laravel\Dusk\Browser;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\DuskTestCase;
 
 class PasswordResetFlowTest extends DuskTestCase
@@ -35,7 +36,7 @@ class PasswordResetFlowTest extends DuskTestCase
         })->name('dashboard');
     }
 
-    /** @test */
+    #[Test]
     public function user_can_complete_password_reset_flow_with_email()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -71,7 +72,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_complete_password_reset_flow_with_phone()
     {
         $user = User::factory()->create(['phone_number' => '+237655332183']);
@@ -108,7 +109,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_switch_between_email_and_phone_reset_methods()
     {
         $this->browse(function (Browser $browser) {
@@ -124,7 +125,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_sees_error_for_nonexistent_email()
     {
         $this->browse(function (Browser $browser) {
@@ -136,7 +137,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_sees_error_for_invalid_otp()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -156,7 +157,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_resend_otp()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -174,7 +175,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_go_back_to_forgot_password_from_otp()
     {
         $this->browse(function (Browser $browser) {
@@ -185,7 +186,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function user_can_go_back_to_login_from_forgot_password()
     {
         $this->browse(function (Browser $browser) {
@@ -196,7 +197,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function reset_password_form_validates_password_confirmation()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -211,7 +212,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function reset_password_form_validates_minimum_password_length()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -226,7 +227,7 @@ class PasswordResetFlowTest extends DuskTestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function authenticated_user_is_redirected_from_password_reset()
     {
         $user = User::factory()->create();

@@ -10,10 +10,19 @@ return [
     |
     */
 
-    'node_js' => [
-        'base_url' => env('WHATSAPP_BRIDGE_URL', 'http://localhost:3000'),
+    'bridge' => [
+        'base_url' => env('WHATSAPP_BRIDGE_URL', 'http://localhost:3001'),
         'timeout' => env('WHATSAPP_BRIDGE_TIMEOUT', 30),
         'api_token' => env('WHATSAPP_API_TOKEN'),
+        'endpoints' => [
+            'send_message' => '/api/bridge/send-message',
+            'session_status' => '/api/bridge/session/{sessionId}/status',
+            'create_session' => '/api/sessions',
+            'get_session_status' => '/api/sessions/{sessionId}/status',
+            'get_qr_code' => '/api/sessions/{sessionId}/qr',
+            'destroy_session' => '/api/sessions/{sessionId}/destroy',
+            'send_media' => '/api/bridge/send-media',
+        ],
     ],
 
     'products' => [

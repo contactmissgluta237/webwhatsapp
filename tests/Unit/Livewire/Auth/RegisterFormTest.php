@@ -41,14 +41,14 @@ class RegisterFormTest extends TestCase
         $this->app->instance(AccountActivationServiceInterface::class, $this->activationService);
     }
 
-    /** @test */
+    #[Test]
     public function it_renders_successfully()
     {
         Livewire::test(RegisterForm::class)
             ->assertSuccessful();
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_required_fields()
     {
         Livewire::test(RegisterForm::class)
@@ -62,7 +62,7 @@ class RegisterFormTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_email_format()
     {
         Livewire::test(RegisterForm::class)
@@ -71,7 +71,7 @@ class RegisterFormTest extends TestCase
             ->assertHasErrors(['email' => 'email']);
     }
 
-    /** @test */
+    #[Test]
     public function it_validates_password_confirmation()
     {
         Livewire::test(RegisterForm::class)
@@ -81,7 +81,7 @@ class RegisterFormTest extends TestCase
             ->assertHasErrors(['password' => 'confirmed']);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_phone_updated_event()
     {
         $phoneData = [
@@ -99,7 +99,7 @@ class RegisterFormTest extends TestCase
         $this->assertEquals('+237655332183', $component->get('phone_number'));
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_user_successfully_with_valid_data()
     {
         $this->activationService->expects($this->once())
@@ -126,7 +126,7 @@ class RegisterFormTest extends TestCase
         $this->assertTrue($user->hasRole(UserRole::CUSTOMER()->value));
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_user_with_phone_number()
     {
         $this->activationService->expects($this->once())
@@ -156,7 +156,7 @@ class RegisterFormTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_registration_exception()
     {
         $this->activationService->expects($this->once())
@@ -179,7 +179,7 @@ class RegisterFormTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'john.doe@example.com']);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_loading_state_during_registration()
     {
         $this->activationService->expects($this->once())
@@ -198,7 +198,7 @@ class RegisterFormTest extends TestCase
         $component->assertSet('loading', false);
     }
 
-    /** @test */
+    #[Test]
     public function it_clears_passwords_on_error()
     {
         $this->activationService->expects($this->once())

@@ -12,7 +12,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function whatsapp_accounts_table_has_stop_on_human_reply_column(): void
     {
         $this->assertTrue(
@@ -21,7 +21,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function stop_on_human_reply_column_has_correct_attributes(): void
     {
         $columns = Schema::getColumnListing('whatsapp_accounts');
@@ -33,7 +33,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
             'La colonne stop_on_human_reply doit être de type boolean ou tinyint');
     }
 
-    /** @test */
+    #[Test]
     public function stop_on_human_reply_has_default_false_value(): void
     {
         // Créer un compte WhatsApp sans spécifier stop_on_human_reply
@@ -46,7 +46,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         $this->assertFalse($account->fresh()->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function agent_enabled_has_default_false_value(): void
     {
         // Créer un compte WhatsApp sans spécifier agent_enabled
@@ -59,7 +59,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         $this->assertFalse($account->fresh()->agent_enabled, 'agent_enabled should default to false');
     }
 
-    /** @test */
+    #[Test]
     public function can_set_stop_on_human_reply_to_true(): void
     {
         $user = \App\Models\User::factory()->create();
@@ -71,7 +71,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         $this->assertTrue($account->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function can_set_agent_enabled_to_true(): void
     {
         $user = \App\Models\User::factory()->create();
@@ -83,7 +83,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         $this->assertTrue($account->agent_enabled);
     }
 
-    /** @test */
+    #[Test]
     public function can_update_stop_on_human_reply_value(): void
     {
         $user = \App\Models\User::factory()->create();
@@ -103,7 +103,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
         $this->assertFalse($account->fresh()->stop_on_human_reply);
     }
 
-    /** @test */
+    #[Test]
     public function stop_on_human_reply_is_included_in_fillable_array(): void
     {
         $account = new \App\Models\WhatsAppAccount;
@@ -112,7 +112,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
             'stop_on_human_reply doit être dans le tableau fillable du modèle');
     }
 
-    /** @test */
+    #[Test]
     public function stop_on_human_reply_is_cast_to_boolean(): void
     {
         $account = new \App\Models\WhatsAppAccount;
@@ -125,7 +125,7 @@ final class WhatsAppAccountMigrationTest extends TestCase
             'stop_on_human_reply doit être casté en boolean');
     }
 
-    /** @test */
+    #[Test]
     public function all_required_whatsapp_account_columns_exist(): void
     {
         $requiredColumns = [

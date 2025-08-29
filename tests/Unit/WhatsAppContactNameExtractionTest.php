@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class WhatsAppContactNameExtractionTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_prioritizes_contact_name_over_public_name()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -27,7 +27,7 @@ final class WhatsAppContactNameExtractionTest extends TestCase
         $this->assertEquals('Jean Public', $dto->getPublicName());
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_public_name_when_no_saved_contact_name()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -45,7 +45,7 @@ final class WhatsAppContactNameExtractionTest extends TestCase
         $this->assertEquals('Jean Public', $dto->getPublicName());
     }
 
-    /** @test */
+    #[Test]
     public function it_falls_back_to_phone_number_when_no_names()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -63,7 +63,7 @@ final class WhatsAppContactNameExtractionTest extends TestCase
         $this->assertNull($dto->getPublicName());
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_from_webhook_with_all_contact_fields()
     {
         $webhookData = [

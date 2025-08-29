@@ -28,6 +28,11 @@ return new class extends Migration
             
             // Métadonnées de paiement
             $table->decimal('amount_paid', 10, 2)->nullable();
+            $table->decimal('original_price', 10, 2)->nullable();
+            $table->decimal('promotional_price', 10, 2)->nullable();
+            $table->string('coupon_code')->nullable();
+            $table->decimal('coupon_discount', 10, 2)->nullable();
+            $table->foreignId('coupon_id')->nullable()->constrained('coupons')->onDelete('set null');
             $table->string('payment_method')->nullable();
             $table->string('transaction_id')->nullable();
             

@@ -44,14 +44,13 @@ return new class extends Migration
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
             
-            // Contrainte d'unicité
-            $table->unique(['external_transaction_id', 'payment_method'], 'unique_external_transaction');
-            
             // Index
             $table->index(['wallet_id', 'transaction_type']);
             $table->index('payment_method');
             $table->index('status');
             $table->index('approved_by');
+            
+            $table->unique(['external_transaction_id', 'payment_method'], 'unique_external_transaction');
         });
     }
 

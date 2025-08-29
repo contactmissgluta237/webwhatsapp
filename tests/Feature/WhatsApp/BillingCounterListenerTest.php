@@ -215,7 +215,7 @@ class BillingCounterListenerTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_unsuccessful_events_gracefully(): void
     {
         $response = WhatsAppMessageResponseDTO::error('Processing failed');
@@ -234,7 +234,7 @@ class BillingCounterListenerTest extends TestCase
         Notification::assertNothingSent();
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_subscription_gracefully(): void
     {
         // Delete subscription
@@ -258,7 +258,7 @@ class BillingCounterListenerTest extends TestCase
         Notification::assertNothingSent();
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_processing_details_correctly(): void
     {
         $response = $this->createComplexResponse();
@@ -277,7 +277,7 @@ class BillingCounterListenerTest extends TestCase
             ->once();
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_message_costs_correctly(): void
     {
         $response = $this->createComplexResponse();

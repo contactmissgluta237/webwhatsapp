@@ -39,7 +39,7 @@ class VerifyOtpTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_view_otp_verification_form()
     {
         $response = $this->get(route('password.verify.otp', [
@@ -51,7 +51,7 @@ class VerifyOtpTest extends TestCase
         $response->assertSeeLivewire(VerifyOtpForm::class);
     }
 
-    /** @test */
+    #[Test]
     public function users_can_verify_otp_for_password_reset()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -80,7 +80,7 @@ class VerifyOtpTest extends TestCase
             ]));
     }
 
-    /** @test */
+    #[Test]
     public function users_can_verify_otp_for_registration()
     {
         $user = User::factory()->create([
@@ -111,7 +111,7 @@ class VerifyOtpTest extends TestCase
         $this->assertNotNull($user->email_verified_at);
     }
 
-    /** @test */
+    #[Test]
     public function otp_verification_fails_with_invalid_code()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -133,7 +133,7 @@ class VerifyOtpTest extends TestCase
             ->assertSet('error', 'Code de vérification incorrect. Veuillez réessayer.');
     }
 
-    /** @test */
+    #[Test]
     public function otp_verification_fails_with_empty_code()
     {
         Livewire::test(VerifyOtpForm::class, [
@@ -146,7 +146,7 @@ class VerifyOtpTest extends TestCase
             ->assertHasErrors(['otpCode']);
     }
 
-    /** @test */
+    #[Test]
     public function otp_verification_handles_service_exception()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -166,7 +166,7 @@ class VerifyOtpTest extends TestCase
             ->assertSet('error', 'Une erreur est survenue lors de la vérification. Veuillez réessayer.');
     }
 
-    /** @test */
+    #[Test]
     public function users_can_resend_otp()
     {
         $user = User::factory()->create(['email' => 'test@example.com']);
@@ -188,7 +188,7 @@ class VerifyOtpTest extends TestCase
             ->assertSet('error', null); // Vérifier que l'erreur a été effacée
     }
 
-    /** @test */
+    #[Test]
     public function users_can_go_back_to_forgot_password()
     {
         Livewire::test(VerifyOtpForm::class, [
@@ -200,7 +200,7 @@ class VerifyOtpTest extends TestCase
             ->assertRedirect(route('password.request'));
     }
 
-    /** @test */
+    #[Test]
     public function verification_redirects_if_no_identifier()
     {
         $response = $this->get(route('password.verify.otp', [
@@ -210,7 +210,7 @@ class VerifyOtpTest extends TestCase
         $response->assertRedirect(route('password.request'));
     }
 
-    /** @test */
+    #[Test]
     public function phone_otp_verification_works()
     {
         $user = User::factory()->create(['phone_number' => '+237655332183']);

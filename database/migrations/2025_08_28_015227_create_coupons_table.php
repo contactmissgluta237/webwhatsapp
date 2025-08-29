@@ -17,7 +17,9 @@ return new class extends Migration
             $table->enum('type', ['percentage', 'fixed_amount']);
             $table->decimal('value', 10, 2);
             $table->enum('status', ['active', 'used', 'expired'])->default('active');
+            $table->boolean('is_active')->default(true);
             $table->integer('usage_limit')->default(1);
+            $table->integer('per_user_limit')->default(1);
             $table->integer('used_count')->default(0);
             $table->timestamp('valid_from')->nullable();
             $table->timestamp('valid_until')->nullable();

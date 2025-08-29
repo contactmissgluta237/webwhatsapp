@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ApproveTransactionTest extends TestCase
@@ -39,7 +40,7 @@ class ApproveTransactionTest extends TestCase
         $this->wallet = Wallet::factory()->create(['user_id' => $this->customer->id]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_approve_a_pending_withdrawal_transaction()
     {
         // Forcer les queues à être traitées synchronément pour les tests

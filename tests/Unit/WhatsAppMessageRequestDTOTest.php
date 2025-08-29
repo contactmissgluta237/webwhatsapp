@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class WhatsAppMessageRequestDTOTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_prioritizes_contact_name_over_push_name()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -27,7 +27,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertEquals('Jean Sauvegardé', $dto->getBestContactName());
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_push_name_when_no_saved_contact_name()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -45,7 +45,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertEquals('Jean Public', $dto->getBestContactName());
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_display_name_as_fallback()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -63,7 +63,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertEquals('Jean Display', $dto->getBestContactName());
     }
 
-    /** @test */
+    #[Test]
     public function it_falls_back_to_phone_number_when_no_names_available()
     {
         $dto = new WhatsAppMessageRequestDTO(
@@ -81,7 +81,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertEquals('237676636794', $dto->getBestContactName());
     }
 
-    /** @test */
+    #[Test]
     public function it_creates_from_webhook_data_correctly()
     {
         $webhookData = [
@@ -106,7 +106,7 @@ final class WhatsAppMessageRequestDTOTest extends TestCase
         $this->assertEquals('Jean Sauvegardé', $dto->getBestContactName());
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_missing_contact_fields_in_webhook_data()
     {
         $webhookData = [

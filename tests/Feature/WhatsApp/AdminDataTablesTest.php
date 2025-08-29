@@ -73,7 +73,7 @@ class AdminDataTablesTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_account_datatable_inherits_from_customer_datatable(): void
     {
         // Act & Assert
@@ -83,7 +83,7 @@ class AdminDataTablesTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function admin_conversation_datatable_inherits_from_customer_datatable(): void
     {
         // Act & Assert
@@ -93,7 +93,7 @@ class AdminDataTablesTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function admin_account_datatable_displays_user_information(): void
     {
         Auth::login($this->adminUser);
@@ -108,7 +108,7 @@ class AdminDataTablesTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_account_datatable_displays_ai_cost_statistics(): void
     {
         Auth::login($this->adminUser);
@@ -126,7 +126,7 @@ class AdminDataTablesTest extends TestCase
         $component->assertSee(number_format($expectedTokens).' tokens');
     }
 
-    /** @test */
+    #[Test]
     public function admin_conversation_datatable_displays_user_information_when_needed(): void
     {
         Auth::login($this->adminUser);
@@ -141,7 +141,7 @@ class AdminDataTablesTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_conversation_datatable_displays_ai_usage_statistics(): void
     {
         Auth::login($this->adminUser);
@@ -159,7 +159,7 @@ class AdminDataTablesTest extends TestCase
         $component->assertSee(number_format($expectedTokens));
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_have_additional_filters_not_present_in_customer_version(): void
     {
         Auth::login($this->adminUser);
@@ -177,7 +177,7 @@ class AdminDataTablesTest extends TestCase
         $conversationComponent->assertSee('Low (< 500 XAF)'); // Cost range filter
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_can_filter_by_user(): void
     {
         Auth::login($this->adminUser);
@@ -197,7 +197,7 @@ class AdminDataTablesTest extends TestCase
         $component->assertDontSee($anotherUser->name);
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_can_filter_by_ai_activity(): void
     {
         Auth::login($this->adminUser);
@@ -217,7 +217,7 @@ class AdminDataTablesTest extends TestCase
         $component->assertDontSee($accountWithoutAI->session_name);
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_can_filter_by_cost_range(): void
     {
         Auth::login($this->adminUser);
@@ -238,7 +238,7 @@ class AdminDataTablesTest extends TestCase
         $component->assertSee($this->account->session_name);
     }
 
-    /** @test */
+    #[Test]
     public function customer_datatables_do_not_show_admin_specific_features(): void
     {
         Auth::login($this->customerUser);
@@ -262,7 +262,7 @@ class AdminDataTablesTest extends TestCase
         $conversationComponent->assertDontSee('Cost Range');
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_handle_empty_results_gracefully(): void
     {
         Auth::login($this->adminUser);
@@ -282,7 +282,7 @@ class AdminDataTablesTest extends TestCase
         $conversationComponent->assertSee('No conversation found in the system.');
     }
 
-    /** @test */
+    #[Test]
     public function admin_datatables_show_correct_empty_message_when_filtered_by_user(): void
     {
         Auth::login($this->adminUser);

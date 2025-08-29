@@ -13,6 +13,7 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
         public string $message,
         public AIResponseAction $action,
         public array $productIds = [],
+        public bool $unknownInformation = false,
         public ?WhatsAppAIResponseDTO $originalResponse = null
     ) {}
 
@@ -32,6 +33,7 @@ final class WhatsAppAIStructuredResponseDTO extends BaseDTO
             message: $data['message'],
             action: AIResponseAction::from($data['action']),
             productIds: self::validateProductIds($data['products'] ?? []),
+            unknownInformation: (bool) ($data['unknown_information'] ?? false),
             originalResponse: $aiResponse
         );
     }

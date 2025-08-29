@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ExternalTransactionListTest extends TestCase
@@ -36,7 +37,7 @@ class ExternalTransactionListTest extends TestCase
         $this->wallet = Wallet::factory()->create(['user_id' => $this->customer->id]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_access_transactions_list_page()
     {
         $response = $this->actingAs($this->admin)
@@ -50,7 +51,7 @@ class ExternalTransactionListTest extends TestCase
         $response->assertSee('Nouveau Retrait');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_see_all_external_transactions()
     {
         ExternalTransaction::factory()->count(3)->create([
@@ -75,7 +76,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertSee('En attente');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_filter_transactions_by_type()
     {
         ExternalTransaction::factory()->create([
@@ -98,7 +99,7 @@ class ExternalTransactionListTest extends TestCase
         $component->call('setFilter', 'transaction_type', 'recharge');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_filter_transactions_by_status()
     {
         ExternalTransaction::factory()->create([
@@ -121,7 +122,7 @@ class ExternalTransactionListTest extends TestCase
         $component->call('setFilter', 'status', 'completed');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_search_transactions_by_client_name()
     {
         $this->customer->update(['first_name' => 'Jean', 'last_name' => 'Dupont']);
@@ -136,7 +137,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertSee('Jean Dupont');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_see_transaction_actions()
     {
         $withdrawal = ExternalTransaction::factory()->create([
@@ -154,7 +155,7 @@ class ExternalTransactionListTest extends TestCase
             ->assertSee('Modifier');
     }
 
-    /** @test */
+    #[Test]
     public function customer_cannot_access_admin_transactions_list()
     {
         $response = $this->actingAs($this->customer)
@@ -163,7 +164,7 @@ class ExternalTransactionListTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[Test]
     public function unauthenticated_user_cannot_access_admin_transactions_list()
     {
         $response = $this->get('/admin/transactions');

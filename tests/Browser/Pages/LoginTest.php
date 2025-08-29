@@ -17,8 +17,8 @@ class LoginTest extends DuskTestCase
         $this->browse(function (Browser $browser) {
             $browser->visit('/login')
                 ->waitFor('input[name="email"]', 5) // Attendre 5 secondes
-                ->type('email', env('ADMIN_EMAIL'))
-                ->type('password', env('ADMIN_PASSWORD'))
+                ->type('email', config('auth.admin.email', 'admin@test.com'))
+                ->type('password', config('auth.admin.password', 'password'))
                 ->press('button[type="submit"]') // Ou le texte du bouton
                 ->waitForLocation('/dashboard', 10) // Attendre redirection
                 ->assertSee('Tableau de bord'); // Texte confirmant la connexion
@@ -34,8 +34,8 @@ class LoginTest extends DuskTestCase
         $user = User::create([
             'name' => 'Test User Phone',
             'email' => 'phone@test.com',
-            'phone' => env('TEST_USER_PHONE'),
-            'password' => Hash::make(env('TEST_USER_PASSWORD')),
+            'phone' => config('auth.test_user.phone', '+1234567890'),
+            'password' => Hash::make(config('auth.test_user.password', 'password')),
             'email_verified_at' => now(),
         ]);
 
@@ -73,16 +73,16 @@ class LoginTest extends DuskTestCase
     {
         $user = User::create([
             'name' => 'Test Redirect',
-            'email' => env('TEST_USER_EMAIL'),
-            'password' => Hash::make(env('TEST_USER_PASSWORD')),
+            'email' => config('auth.test_user.email', 'user@test.com'),
+            'password' => Hash::make(config('auth.test_user.password', 'password')),
             'email_verified_at' => now(),
         ]);
 
         $this->browse(function (Browser $browser) {
             $browser->visit('/login')
                 ->waitFor('input[name="email"]', 5)
-                ->type('email', env('TEST_USER_EMAIL'))
-                ->type('password', env('TEST_USER_PASSWORD'))
+                ->type('email', config('auth.test_user.email', 'user@test.com'))
+                ->type('password', config('auth.test_user.password', 'password'))
                 ->press('button[type="submit"]')
                 ->waitForLocation('/dashboard', 10)
                 ->assertPathIs('/dashboard')
