@@ -10,6 +10,7 @@ use App\Models\WhatsAppAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class CreateSessionLivewireTest extends TestCase
@@ -23,9 +24,16 @@ final class CreateSessionLivewireTest extends TestCase
         parent::setUp();
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
+
+        // Configure WhatsApp bridge settings for tests
+        config([
+            'whatsapp.bridge.base_url' => 'http://localhost:3001',
+            'whatsapp.bridge.api_token' => 'test-token',
+        ]);
     }
 
-    public function test_session_creation_saves_phone_number_from_node_response(): void
+    #[Test]
+    public function session_creation_saves_phone_number_from_node_response(): void
     {
         $sessionName = 'My Test Session';
         $sessionId = 'session_2_17562223624561_43f7dfe4';
@@ -70,7 +78,8 @@ final class CreateSessionLivewireTest extends TestCase
         $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default');
     }
 
-    public function test_session_creation_handles_missing_phone_number(): void
+    #[Test]
+    public function session_creation_handles_missing_phone_number(): void
     {
         $sessionName = 'Session Without Phone';
         $sessionId = 'session_no_phone_123';
@@ -106,7 +115,8 @@ final class CreateSessionLivewireTest extends TestCase
         $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default even without phone number');
     }
 
-    public function test_connection_timeout_is_handled_properly(): void
+    #[Test]
+    public function connection_timeout_is_handled_properly(): void
     {
         $sessionName = 'Timeout Session';
 
@@ -138,7 +148,8 @@ final class CreateSessionLivewireTest extends TestCase
         ]);
     }
 
-    public function test_session_name_with_spaces_is_allowed(): void
+    #[Test]
+    public function session_name_with_spaces_is_allowed(): void
     {
         $sessionNameWithSpaces = 'My WhatsApp Agent With Spaces';
 
@@ -169,7 +180,8 @@ final class CreateSessionLivewireTest extends TestCase
         $this->assertFalse($account->agent_enabled, 'Agent should be disabled by default for sessions with spaces');
     }
 
-    public function test_qr_generation_failure_is_handled(): void
+    #[Test]
+    public function qr_generation_failure_is_handled(): void
     {
         Http::fake([
             '*/api/sessions/create' => Http::response(['success' => false, 'message' => 'Bridge error'], 400),

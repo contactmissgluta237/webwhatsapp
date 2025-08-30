@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\WhatsAppAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
 

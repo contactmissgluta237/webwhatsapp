@@ -8,6 +8,7 @@ use App\Models\InternalTransaction;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class InternalTransactionTest extends TestCase

@@ -53,10 +53,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'SAVE20',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 20.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -65,6 +67,8 @@ class CouponSystemTest extends TestCase
             'code' => 'SAVE20',
             'type' => 'percentage',
             'value' => 20.00,
+            'is_active' => true,
+            'per_user_limit' => 1,
         ]);
 
         $this->assertEquals(20.00, $coupon->value);
@@ -75,10 +79,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'DISCOUNT500',
-            'type' => CouponType::FIXED_AMOUNT(),
+            'type' => CouponType::FIXED_AMOUNT()->value,
             'value' => 500.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 50,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -87,6 +93,7 @@ class CouponSystemTest extends TestCase
             'code' => 'DISCOUNT500',
             'type' => 'fixed_amount',
             'value' => 500.00,
+            'is_active' => true,
         ]);
 
         $this->assertEquals(500.00, $coupon->value);
@@ -96,10 +103,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'SAVE25',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 25.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -115,10 +124,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'FIXED1000',
-            'type' => CouponType::FIXED_AMOUNT(),
+            'type' => CouponType::FIXED_AMOUNT()->value,
             'value' => 1000.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -134,10 +145,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'FIXED3000',
-            'type' => CouponType::FIXED_AMOUNT(),
+            'type' => CouponType::FIXED_AMOUNT()->value,
             'value' => 3000.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -153,10 +166,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'VALID30',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 30.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -182,10 +197,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'EXPIRED',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 20.00,
-            'status' => CouponStatus::EXPIRED(),
+            'status' => CouponStatus::EXPIRED()->value,
+            'is_active' => false,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -200,10 +217,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'FULLUSED',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 20.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 1,
+            'per_user_limit' => 1,
             'used_count' => 1, // Fully used
             'created_by' => $this->user->id,
         ]);
@@ -218,10 +237,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'APPLY20',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 20.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 100,
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -254,10 +275,12 @@ class CouponSystemTest extends TestCase
     {
         $coupon = Coupon::create([
             'code' => 'LIMIT1',
-            'type' => CouponType::PERCENTAGE(),
+            'type' => CouponType::PERCENTAGE()->value,
             'value' => 20.00,
-            'status' => CouponStatus::ACTIVE(),
+            'status' => CouponStatus::ACTIVE()->value,
+            'is_active' => true,
             'usage_limit' => 1, // Limite de 1
+            'per_user_limit' => 1,
             'used_count' => 0,
             'created_by' => $this->user->id,
         ]);
@@ -267,7 +290,7 @@ class CouponSystemTest extends TestCase
 
         $coupon->refresh();
         $this->assertEquals(1, $coupon->used_count);
-        $this->assertEquals(CouponStatus::USED(), $coupon->status);
+        $this->assertEquals(CouponStatus::USED()->value, $coupon->status->value);
     }
 
     public function test_coupon_can_generate_unique_code()

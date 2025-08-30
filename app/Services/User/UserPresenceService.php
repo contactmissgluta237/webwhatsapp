@@ -51,14 +51,4 @@ class UserPresenceService
     {
         return Cache::get(self::CACHE_PREFIX.$userId);
     }
-
-    /**
-     * Clean up inactive users (optional, for maintenance).
-     */
-    public function cleanupInactiveUsers(): int
-    {
-        // This method could be called by a scheduled job
-        // For now, the cache expires automatically
-        return 0;
-    }
 }

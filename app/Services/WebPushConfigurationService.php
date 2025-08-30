@@ -18,11 +18,4 @@ final class WebPushConfigurationService
             ],
         ]);
     }
-
-    public function validateConfiguration(): bool
-    {
-        return ! empty(config('webpush.vapid.public_key'))
-            && ! empty(config('webpush.vapid.private_key'))
-            && ! empty(config('app.url'));
-    }
 }

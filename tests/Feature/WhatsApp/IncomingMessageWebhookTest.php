@@ -14,7 +14,9 @@ use App\Models\Wallet;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class IncomingMessageWebhookTest extends TestCase
@@ -27,6 +29,12 @@ class IncomingMessageWebhookTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Configure WhatsApp bridge settings for tests
+        config([
+            'whatsapp.bridge.base_url' => 'http://localhost:3001',
+            'whatsapp.bridge.api_token' => 'test-token',
+        ]);
 
         // Créer un utilisateur de test
         $this->user = User::factory()->create([
@@ -56,6 +64,11 @@ class IncomingMessageWebhookTest extends TestCase
     #[Test]
     public function it_can_receive_incoming_message_webhook_successfully()
     {
+        // Mock HTTP calls to WhatsApp bridge
+        Http::fake([
+            'localhost:3001/*' => Http::response(['success' => true], 200),
+        ]);
+
         // Mock les logs de façon permissive pour éviter les erreurs de mock
         Log::shouldReceive('info')->withAnyArgs()->zeroOrMoreTimes();
         Log::shouldReceive('error')->withAnyArgs()->zeroOrMoreTimes();
@@ -111,12 +124,8 @@ class IncomingMessageWebhookTest extends TestCase
         // Envoyer le webhook
         $response = $this->postJson('/api/whatsapp/webhook/incoming-message', $payload);
 
-        // Debug: Afficher la réponse si elle échoue
-        if ($response->getStatusCode() !== 200) {
-            dump('Response Status: '.$response->getStatusCode());
-            dump('Response Content: '.$response->getContent());
-            dump('Response Headers: ', $response->headers->all());
-        }
+        // Assert the response
+        $response->assertStatus(200);
 
         // Vérifications
         $response->assertStatus(200)

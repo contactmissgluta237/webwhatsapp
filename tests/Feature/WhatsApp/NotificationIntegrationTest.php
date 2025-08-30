@@ -135,7 +135,7 @@ final class NotificationIntegrationTest extends TestCase
             function ($notification) {
                 $channels = $notification->via($this->account);
 
-                return in_array('mail', $channels) && ! in_array(\App\Channels\WhatsAppNotificationChannel::class, $channels);
+                return in_array('mail', $channels) && ! in_array(\App\Channels\WhatsAppChannel::class, $channels);
             }
         );
     }
@@ -161,7 +161,7 @@ final class NotificationIntegrationTest extends TestCase
             function ($notification) {
                 $channels = $notification->via($this->account);
 
-                return in_array(\App\Channels\WhatsAppNotificationChannel::class, $channels) && ! in_array('mail', $channels);
+                return in_array(\App\Channels\WhatsAppChannel::class, $channels) && ! in_array('mail', $channels);
             }
         );
     }
@@ -180,7 +180,7 @@ final class NotificationIntegrationTest extends TestCase
             function ($notification) {
                 $channels = $notification->via($this->account);
 
-                return in_array('mail', $channels) && in_array(\App\Channels\WhatsAppNotificationChannel::class, $channels);
+                return in_array('mail', $channels) && in_array(\App\Channels\WhatsAppChannel::class, $channels);
             }
         );
     }

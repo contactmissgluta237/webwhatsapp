@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Enums;
 
 use App\Services\AI\AiServiceInterface;
-use App\Services\AI\AnthropicService;
 use App\Services\AI\DeepSeekService;
 use App\Services\AI\OllamaService;
 use App\Services\AI\OpenAiService;
@@ -14,7 +13,6 @@ use Spatie\Enum\Enum;
 /**
  * @method static self OLLAMA()
  * @method static self OPENAI()
- * @method static self ANTHROPIC()
  * @method static self DEEPSEEK()
  */
 final class AiProvider extends Enum
@@ -24,7 +22,6 @@ final class AiProvider extends Enum
         return [
             'OLLAMA' => 'ollama',
             'OPENAI' => 'openai',
-            'ANTHROPIC' => 'anthropic',
             'DEEPSEEK' => 'deepseek',
         ];
     }
@@ -34,7 +31,6 @@ final class AiProvider extends Enum
         return [
             'OLLAMA' => 'Ollama',
             'OPENAI' => 'OpenAI',
-            'ANTHROPIC' => 'Anthropic (Claude)',
             'DEEPSEEK' => 'DeepSeek',
         ];
     }
@@ -48,7 +44,6 @@ final class AiProvider extends Enum
         return match ($this->value) {
             'ollama' => OllamaService::class,
             'openai' => OpenAiService::class,
-            'anthropic' => AnthropicService::class,
             'deepseek' => DeepSeekService::class,
             default => throw new \InvalidArgumentException("Service non supporté: {$this->value}")
         };
@@ -79,11 +74,6 @@ final class AiProvider extends Enum
                 'frequency_penalty' => 0.0,
                 'presence_penalty' => 0.0,
             ],
-            'anthropic' => [
-                'max_tokens' => 1500,
-                'temperature' => 0.7,
-                'top_p' => 0.9,
-            ],
             'deepseek' => [
                 'temperature' => 0.7,
                 'max_tokens' => 1500,
@@ -98,7 +88,6 @@ final class AiProvider extends Enum
         return match ($this->value) {
             'ollama' => ['endpoint_url', 'model_identifier'],
             'openai' => ['api_key', 'model_identifier'],
-            'anthropic' => ['api_key', 'model_identifier'],
             'deepseek' => ['api_key', 'model_identifier', 'endpoint_url'],
             default => []
         };
@@ -108,7 +97,7 @@ final class AiProvider extends Enum
     {
         return match ($this->value) {
             'ollama' => false,
-            'openai', 'anthropic', 'deepseek' => true,
+            'openai', 'deepseek' => true,
             default => true
         };
     }
@@ -117,7 +106,6 @@ final class AiProvider extends Enum
     {
         return match ($this->value) {
             'openai' => 'https://api.openai.com/v1',
-            'anthropic' => 'https://api.anthropic.com',
             'deepseek' => 'https://api.deepseek.com',
             'ollama' => null, // Defined by user
             default => null
@@ -133,7 +121,6 @@ final class AiProvider extends Enum
         return match ($this->value) {
             'ollama' => 'bg-blue-100 text-blue-800',
             'openai' => 'bg-green-100 text-green-800',
-            'anthropic' => 'bg-purple-100 text-purple-800',
             'deepseek' => 'bg-orange-100 text-orange-800',
             default => 'bg-gray-100 text-gray-800',
         };
@@ -144,7 +131,6 @@ final class AiProvider extends Enum
         return match ($this->value) {
             'ollama' => 'server',
             'openai' => 'sparkles',
-            'anthropic' => 'brain',
             'deepseek' => 'academic-cap',
             default => 'cpu-chip',
         };

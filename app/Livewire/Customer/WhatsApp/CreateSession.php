@@ -182,7 +182,7 @@ final class CreateSession extends Component
                 'attempts_needed' => $this->connectionAttempts,
             ]);
 
-            $this->redirect(route('whatsapp.index'), navigate: true);
+            $this->redirect(route('whatsapp.index'));
 
         } catch (\Exception $e) {
             $this->statusMessage = 'Error creating account: '.$e->getMessage();

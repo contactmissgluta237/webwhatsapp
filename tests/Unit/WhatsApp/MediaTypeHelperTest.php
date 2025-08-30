@@ -6,13 +6,14 @@ namespace Tests\Unit\WhatsApp;
 
 use App\Enums\MessageType;
 use App\Services\WhatsApp\Helpers\MediaTypeHelper;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class MediaTypeHelperTest extends TestCase
 {
-    /**
-     * @dataProvider mediaTypeProvider
-     */
+    #[Test]
+    #[DataProvider('mediaTypeProvider')]
     public function test_returns_correct_media_type(string $url, string $expectedType): void
     {
         $result = MediaTypeHelper::getMediaType($url);

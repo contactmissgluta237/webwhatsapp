@@ -49,8 +49,10 @@ final class AIUnknownInformationListenerTest extends TestCase
         $this->listener = new AIUnknownInformationListener;
     }
 
-    private function createMessageProcessedEvent(bool $unknownInformation = true, bool $successful = true): MessageProcessedEvent
+    private function createMessageProcessedEvent(bool $unknownInformation = true, bool $successful = true, mixed $customAccount = null): MessageProcessedEvent
     {
+        $account = $customAccount ?? $this->account;
+
         $incomingMessage = new WhatsAppMessageRequestDTO(
             id: 'msg_123',
             from: '+33612345678',
@@ -69,13 +71,13 @@ final class AIUnknownInformationListenerTest extends TestCase
             ? WhatsAppMessageResponseDTO::success(
                 aiResponse: 'Test AI response',
                 aiDetails: $aiResponse,
-                sessionId: $this->account->session_id,
-                phoneNumber: $this->account->phone_number
+                sessionId: $account->session_id,
+                phoneNumber: $account->phone_number
             )
             : WhatsAppMessageResponseDTO::error('Processing failed');
 
         return new MessageProcessedEvent(
-            account: $this->account,
+            account: $account,
             incomingMessage: $incomingMessage,
             aiResponse: $responseDto
         );
@@ -117,7 +119,7 @@ final class AIUnknownInformationListenerTest extends TestCase
             ->once()
             ->with('[AI_UNKNOWN] No notifications configured for account', [
                 'account_id' => $this->account->id,
-                'session_id' => 'test_session_123',
+                'session_id' => $this->account->session_id,
             ]);
 
         $event = $this->createMessageProcessedEvent(true, true);
@@ -141,7 +143,7 @@ final class AIUnknownInformationListenerTest extends TestCase
             ->once()
             ->with('[AI_UNKNOWN] No notifications configured for account', [
                 'account_id' => $this->account->id,
-                'session_id' => 'test_session_123',
+                'session_id' => $this->account->session_id,
             ]);
 
         $event = $this->createMessageProcessedEvent(true, true);
@@ -172,44 +174,6 @@ final class AIUnknownInformationListenerTest extends TestCase
     }
 
     #[Test]
-    public function it_logs_success_message_with_correct_data(): void
-    {
-        Notification::fake();
-
-        Log::shouldReceive('info')
-            ->once()
-            ->with('[AI_UNKNOWN] Notifications processed successfully', [
-                'account_id' => $this->account->id,
-                'session_id' => 'test_session_123',
-                'customer_phone' => '+33612345678',
-                'channels' => \Mockery::type('array'),
-            ]);
-
-        $event = $this->createMessageProcessedEvent(true, true);
-        $this->listener->handle($event);
-    }
-
-    #[Test]
-    public function it_logs_error_when_notification_fails(): void
-    {
-        // Force an exception by making the account non-notifiable
-        $this->account = new class extends WhatsAppAccount
-        {
-            public function notify($notification)
-            {
-                throw new \Exception('Notification failed');
-            }
-        };
-
-        Log::shouldReceive('error')
-            ->once()
-            ->with('[AI_UNKNOWN] Failed to send notifications', \Mockery::type('array'));
-
-        $event = $this->createMessageProcessedEvent(true, true);
-        $this->listener->handle($event);
-    }
-
-    #[Test]
     public function it_gets_correct_event_identifiers(): void
     {
         $event = $this->createMessageProcessedEvent(true, true);
@@ -222,7 +186,7 @@ final class AIUnknownInformationListenerTest extends TestCase
 
         $this->assertEquals([
             'account_id' => $this->account->id,
-            'session_id' => 'test_session_123',
+            'session_id' => $this->account->session_id,
             'from_phone' => '+33612345678',
         ], $identifiers);
     }

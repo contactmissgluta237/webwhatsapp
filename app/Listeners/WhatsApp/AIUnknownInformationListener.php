@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Listeners\WhatsApp;
 
 use App\DTOs\WhatsApp\WhatsAppAIStructuredResponseDTO;
+use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Listeners\BaseListener;
+use App\Models\WhatsAppAccount;
+use App\Models\WhatsAppAccountSetting;
 use App\Notifications\WhatsApp\AIUnknownInformationNotification;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 
 final class AIUnknownInformationListener extends BaseListener
 {
@@ -16,48 +20,72 @@ final class AIUnknownInformationListener extends BaseListener
         return [
             'account_id' => $event->account->id,
             'session_id' => $event->getSessionId(),
-            'from_phone' => $event->getFromPhone(),
+            'message_id' => $event->incomingMessage->id,
         ];
     }
 
+    /**
+     * @param  MessageProcessedEvent  $event
+     */
     protected function handleEvent($event): void
     {
-        if (! $event->wasSuccessful()) {
+        if (! $this->shouldProcessEvent($event)) {
             return;
         }
 
-        // Parse the structured response from the AI response
+        $structuredResponse = $this->parseAIResponse($event);
+        if (! $structuredResponse?->unknownInformation) {
+            return;
+        }
+
+        $this->sendNotifications($event, $structuredResponse->message);
+    }
+
+    private function shouldProcessEvent(MessageProcessedEvent $event): bool
+    {
+        if (! $event->wasSuccessful()) {
+            Log::debug('[AI_UNKNOWN] Skipping unsuccessful event', [
+                'account_id' => $event->account->id,
+                'session_id' => $event->getSessionId(),
+            ]);
+
+            return false;
+        }
+
         if (! $event->aiResponse->aiDetails) {
             Log::warning('[AI_UNKNOWN] No AI details in response', [
                 'account_id' => $event->account->id,
                 'session_id' => $event->getSessionId(),
             ]);
 
-            return;
+            return false;
         }
 
+        return true;
+    }
+
+    private function parseAIResponse(MessageProcessedEvent $event): ?WhatsAppAIStructuredResponseDTO
+    {
         try {
-            $structuredResponse = WhatsAppAIStructuredResponseDTO::fromAIResponse($event->aiResponse->aiDetails);
-        } catch (\InvalidArgumentException $e) {
+            return WhatsAppAIStructuredResponseDTO::fromAIResponse($event->aiResponse->aiDetails);
+        } catch (InvalidArgumentException $e) {
             Log::warning('[AI_UNKNOWN] Failed to parse AI response', [
                 'account_id' => $event->account->id,
                 'session_id' => $event->getSessionId(),
                 'error' => $e->getMessage(),
             ]);
 
-            return;
+            return null;
         }
+    }
 
-        if (! $structuredResponse->unknownInformation) {
-            return;
-        }
-
+    private function sendNotifications(MessageProcessedEvent $event, string $aiMessage): void
+    {
         $account = $event->account;
         $settings = $account->settings;
 
-        // Vérifier si des notifications sont configurées
-        if (! $settings || ! $settings->hasNotificationsEnabled()) {
-            Log::info('[AI_UNKNOWN] No notifications configured for account', [
+        if (! $this->hasNotificationsEnabled($settings)) {
+            Log::info('[AI_UNKNOWN] No notifications configured', [
                 'account_id' => $account->id,
                 'session_id' => $event->getSessionId(),
             ]);
@@ -66,30 +94,53 @@ final class AIUnknownInformationListener extends BaseListener
         }
 
         try {
-            $notification = new AIUnknownInformationNotification(
-                $account,
-                $event->incomingMessage,
-                $structuredResponse->message
-            );
+            $this->sendStandardNotifications($account, $event, $aiMessage);
 
-            // Send notification using Laravel's notification system
-            // The notification will determine which channels to use based on settings
-            $account->notify($notification);
-
-            Log::info('[AI_UNKNOWN] Notifications processed successfully', [
+            Log::info('[AI_UNKNOWN] All notifications sent successfully', [
                 'account_id' => $account->id,
                 'session_id' => $event->getSessionId(),
                 'customer_phone' => $event->getFromPhone(),
-                'channels' => $notification->via($account),
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('[AI_UNKNOWN] Failed to send notifications', [
+        } catch (\Throwable $e) {
+            Log::error('[AI_UNKNOWN] Notification sending failed', [
                 'account_id' => $account->id,
                 'session_id' => $event->getSessionId(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
         }
+    }
+
+    private function hasNotificationsEnabled(?WhatsAppAccountSetting $settings): bool
+    {
+        return $settings && $settings->hasNotificationsEnabled();
+    }
+
+    private function sendStandardNotifications(
+        WhatsAppAccount $account,
+        MessageProcessedEvent $event,
+        string $aiMessage
+    ): void {
+        Log::info('[AI_UNKNOWN] Creating notification', [
+            'account_id' => $account->id,
+            'session_id' => $event->getSessionId(),
+        ]);
+
+        $notification = new AIUnknownInformationNotification(
+            $account,
+            $event->incomingMessage,
+            $aiMessage
+        );
+
+        Log::info('[AI_UNKNOWN] Sending notification via Laravel notification system', [
+            'account_id' => $account->id,
+            'notification_class' => get_class($notification),
+        ]);
+
+        $account->notify($notification);
+
+        Log::info('[AI_UNKNOWN] Notification sent successfully', [
+            'account_id' => $account->id,
+        ]);
     }
 }

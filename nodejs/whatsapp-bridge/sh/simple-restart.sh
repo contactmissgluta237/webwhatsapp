@@ -92,18 +92,27 @@ start_service() {
         exit 1
     }
     
-    # Démarrer le service en arrière-plan
-    nohup node src/server.js > logs/service.log 2>&1 &
-    SERVICE_PID=$!
-    
-    # Sauvegarder le PID
-    echo "$SERVICE_PID" > "$PID_FILE"
-    
-    echo -e "${GREEN}✅ Service démarré avec PID $SERVICE_PID${NC}"
-    
-    # Attendre un peu pour que le service s'initialise
-    echo -e "${BLUE}Attente de l'initialisation...${NC}"
-    sleep 3
+    # Vérifier si on doit lancer en arrière-plan
+    if [[ "$1" == "--background" ]]; then
+        # Démarrer le service en arrière-plan
+        echo -e "${BLUE}🔙 Mode arrière-plan${NC}"
+        nohup node src/server.js > logs/service.log 2>&1 &
+        SERVICE_PID=$!
+        
+        # Sauvegarder le PID
+        echo "$SERVICE_PID" > "$PID_FILE"
+        
+        echo -e "${GREEN}✅ Service démarré avec PID $SERVICE_PID${NC}"
+        
+        # Attendre un peu pour que le service s'initialise
+        echo -e "${BLUE}Attente de l'initialisation...${NC}"
+        sleep 3
+    else
+        echo -e "${BLUE}🎯 Mode premier plan (par défaut) - Ctrl+C pour arrêter${NC}"
+        echo -e "${BLUE}Logs en temps réel:${NC}"
+        echo ""
+        node src/server.js
+    fi
 }
 
 # Fonction pour vérifier que le service fonctionne
@@ -142,9 +151,11 @@ verify_service() {
 # Exécution du redémarrage
 stop_service
 echo ""
-start_service
+start_service "$1"
 echo ""
-verify_service
+if [[ "$1" == "--background" ]]; then
+    verify_service
+fi
 
 echo ""
 echo -e "${GREEN}🎉 Redémarrage terminé !${NC}"

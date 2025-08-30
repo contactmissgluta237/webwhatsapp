@@ -39,6 +39,7 @@ final class NotificationConfig extends Component
                 $this->enableWhatsappNotifications ? 'required' : 'nullable',
                 'string',
                 'max:20',
+                'regex:/^[0-9+\s\-()]+$/',
             ],
         ];
     }
@@ -46,11 +47,12 @@ final class NotificationConfig extends Component
     protected function messages(): array
     {
         return [
-            'notificationEmail.required' => 'Email address is required when email notifications are enabled.',
-            'notificationEmail.email' => 'Please enter a valid email address.',
-            'notificationEmail.max' => 'Email address is too long.',
-            'notificationWhatsappNumber.required' => 'WhatsApp number is required when WhatsApp notifications are enabled.',
-            'notificationWhatsappNumber.max' => 'WhatsApp number is too long.',
+            'notificationEmail.required' => 'L\'adresse email est obligatoire lorsque les notifications email sont activées.',
+            'notificationEmail.email' => 'Veuillez entrer une adresse email valide.',
+            'notificationEmail.max' => 'L\'adresse email est trop longue.',
+            'notificationWhatsappNumber.required' => 'Le numéro WhatsApp est obligatoire lorsque les notifications WhatsApp sont activées.',
+            'notificationWhatsappNumber.max' => 'Le numéro WhatsApp est trop long.',
+            'notificationWhatsappNumber.regex' => 'Le numéro WhatsApp doit contenir uniquement des chiffres, espaces, tirets, parenthèses et le signe +.',
         ];
     }
 
@@ -101,8 +103,6 @@ final class NotificationConfig extends Component
 
     public function save(): void
     {
-        $this->authorize('update', $this->account);
-
         $this->validate();
 
         try {

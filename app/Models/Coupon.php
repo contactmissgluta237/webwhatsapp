@@ -21,7 +21,9 @@ use Illuminate\Support\Carbon;
  * @property CouponType $type
  * @property float $value
  * @property CouponStatus $status
+ * @property bool $is_active
  * @property int $usage_limit
+ * @property int $per_user_limit
  * @property int $used_count
  * @property Carbon|null $valid_from
  * @property Carbon|null $valid_until
@@ -42,7 +44,9 @@ class Coupon extends Model
         'type',
         'value',
         'status',
+        'is_active',
         'usage_limit',
+        'per_user_limit',
         'used_count',
         'valid_from',
         'valid_until',
@@ -53,6 +57,7 @@ class Coupon extends Model
         'type' => CouponType::class,
         'status' => CouponStatus::class,
         'value' => 'decimal:2',
+        'is_active' => 'boolean',
         'valid_from' => 'datetime',
         'valid_until' => 'datetime',
     ];
@@ -163,13 +168,19 @@ class Coupon extends Model
         $this->increment('used_count');
 
         if ($this->used_count >= $this->usage_limit) {
-            $this->update(['status' => CouponStatus::USED()]);
+            $this->update([
+                'status' => CouponStatus::USED(),
+                'is_active' => false,
+            ]);
         }
     }
 
     public function markAsExpired(): void
     {
-        $this->update(['status' => CouponStatus::EXPIRED()]);
+        $this->update([
+            'status' => CouponStatus::EXPIRED(),
+            'is_active' => false,
+        ]);
     }
 
     // ================================================================================

@@ -6,6 +6,7 @@ namespace Tests\Unit\Services\AI;
 
 use App\Models\AiModel;
 use App\Models\WhatsAppAccount;
+use App\Services\AI\Helpers\AgentPromptHelper;
 use App\Services\AI\PromptEnhancementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
@@ -234,29 +235,25 @@ final class PromptEnhancementServiceTest extends TestCase
     #[Test]
     public function it_validates_system_prompt_structure(): void
     {
-        $service = $this->createService();
-        $reflection = new \ReflectionClass($service);
-        $constant = $reflection->getConstant('ENHANCEMENT_SYSTEM_PROMPT');
+        $systemPrompt = AgentPromptHelper::getEnhancementSystemPrompt();
 
-        $this->assertStringContainsString('expert en amélioration de prompts', $constant);
-        $this->assertStringContainsString('WhatsApp', $constant);
-        $this->assertStringContainsString('200 mots maximum', $constant);
-        $this->assertStringContainsString('UNIQUEMENT avec le texte du prompt amélioré', $constant);
+        $this->assertStringContainsString('expert en amélioration de prompts', $systemPrompt);
+        $this->assertStringContainsString('WhatsApp', $systemPrompt);
+        $this->assertStringContainsString('ANALYSE PRÉALABLE', $systemPrompt);
+        $this->assertStringContainsString('UNIQUEMENT avec le texte du prompt amélioré', $systemPrompt);
     }
 
     #[Test]
     public function it_creates_correct_ai_request_dto(): void
     {
-        // Utiliser la réflexion pour accéder aux constantes privées
-        $service = $this->createService();
-        $reflection = new \ReflectionClass($service);
-        $systemPrompt = $reflection->getConstant('ENHANCEMENT_SYSTEM_PROMPT');
+        $systemPrompt = AgentPromptHelper::getEnhancementSystemPrompt();
 
         $this->assertNotEmpty($systemPrompt);
         $this->assertIsString($systemPrompt);
 
         // Vérifier que le prompt système contient les éléments clés
         $this->assertStringContainsString('amélioration de prompts', $systemPrompt);
-        $this->assertStringContainsString('agents conversationnels WhatsApp', $systemPrompt);
+        $this->assertStringContainsString('WhatsApp', $systemPrompt);
+        $this->assertStringContainsString('RÈGLES D\'AMÉLIORATION', $systemPrompt);
     }
 }

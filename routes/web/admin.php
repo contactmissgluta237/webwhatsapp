@@ -70,6 +70,10 @@ Route::middleware(['auth', 'role:admin'])
             Route::get('/', function () {
                 return view('admin.coupons.index');
             })->name('index');
+            Route::get('/create', App\Http\Controllers\Admin\Coupons\CreateController::class)->name('create');
+            Route::get('/{coupon}/edit', App\Http\Controllers\Admin\Coupons\EditController::class)->name('edit');
+            Route::post('/{coupon}/toggle-status', App\Http\Controllers\Admin\Coupons\ToggleStatusController::class)->name('toggle-status');
+            Route::delete('/{coupon}', App\Http\Controllers\Admin\Coupons\DeleteController::class)->name('delete');
         });
 
         // Ticket management routes

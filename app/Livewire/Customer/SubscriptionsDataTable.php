@@ -35,6 +35,7 @@ final class SubscriptionsDataTable extends BaseDataTable
     public function builder(): Builder
     {
         return UserSubscription::query()
+            ->select('user_subscriptions.*')
             ->where('user_id', Auth::id())
             ->with(['package'])
             ->orderBy('user_subscriptions.created_at', 'desc');
@@ -53,7 +54,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                         <i class="la la-gift text-primary mr-2 la-lg"></i>
                         <div>
                             <div class="fw-bold">'.$value.'</div>
-                            <small class="text-muted">'.number_format($row->amount_paid ?? 0, 0, ',', ' ').' XAF</small>
+                            <small class="text-muted">'.number_format((float) $row->amount_paid ?? 0, 0, ',', ' ').' XAF</small>
                         </div>
                     </div>';
                 })
@@ -65,10 +66,10 @@ final class SubscriptionsDataTable extends BaseDataTable
                     $status = $row->getCurrentStatus();
 
                     return match ($status) {
-                        'active' => '<span class="badge badge-success"><i class="la la-check"></i> Active</span>',
-                        'expired' => '<span class="badge badge-secondary"><i class="la la-clock"></i> Expired</span>',
-                        'cancelled' => '<span class="badge badge-danger"><i class="la la-times"></i> Cancelled</span>',
-                        'suspended' => '<span class="badge badge-warning"><i class="la la-pause"></i> Suspended</span>',
+                        'active' => '<span class="badge badge-success"><i class="la la-check"></i> Actif</span>',
+                        'expired' => '<span class="badge badge-secondary"><i class="la la-clock"></i> Expiré</span>',
+                        'cancelled' => '<span class="badge badge-danger"><i class="la la-times"></i> Annulé</span>',
+                        'suspended' => '<span class="badge badge-warning"><i class="la la-pause"></i> Suspendu</span>',
                         default => '<span class="badge badge-light">'.ucfirst($status).'</span>'
                     };
                 })
@@ -78,8 +79,8 @@ final class SubscriptionsDataTable extends BaseDataTable
                 ->sortable()
                 ->format(function ($value, $row) {
                     return '<div class="text-center">
-                        <div class="small"><strong>From:</strong> '.$row->starts_at->format('d/m/Y').'</div>
-                        <div class="small"><strong>To:</strong> '.$row->ends_at->format('d/m/Y').'</div>
+                        <div class="small"><strong>Du :</strong> '.$row->starts_at->format('d/m/Y').'</div>
+                        <div class="small"><strong>Au :</strong> '.$row->ends_at->format('d/m/Y').'</div>
                     </div>';
                 })
                 ->html(),
@@ -102,18 +103,19 @@ final class SubscriptionsDataTable extends BaseDataTable
                 })
                 ->html(),
 
-            Column::make('Days remaining', 'ends_at')
+            Column::make('Jours restants', 'ends_at')
                 ->sortable()
                 ->format(function ($value, $row) {
                     $days = $row->getRemainingDays();
 
                     if ($days <= 0) {
-                        return '<span class="text-muted">Expired</span>';
+                        return '<span class="text-muted">Expiré</span>';
                     }
 
                     $class = $days <= 7 ? 'text-danger' : ($days <= 30 ? 'text-warning' : 'text-success');
+                    $dayText = $days > 1 ? ' jours' : ' jour';
 
-                    return '<span class="'.$class.' fw-bold">'.$days.' day'.($days > 1 ? 's' : '').'</span>';
+                    return '<span class="'.$class.' fw-bold">'.$days.$dayText.'</span>';
                 })
                 ->html(),
 

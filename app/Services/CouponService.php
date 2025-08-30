@@ -4,20 +4,21 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\CouponServiceInterface;
 use App\Enums\CouponStatus;
 use App\Models\Coupon;
 use App\Models\CouponUsage;
 use App\Models\User;
 use App\Models\UserSubscription;
 
-final class CouponService
+final class CouponService implements CouponServiceInterface
 {
     /**
      * Valider un code coupon pour un utilisateur et un montant
      */
-    public function validateCoupon(string $code, User $user, float $amount): array
+    public function validateCoupon(string $couponCode, User $user, float $originalPrice): array
     {
-        $coupon = Coupon::findByCode($code);
+        $coupon = Coupon::findByCode($couponCode);
 
         if (! $coupon) {
             return [
@@ -52,8 +53,8 @@ final class CouponService
             ];
         }
 
-        $discountAmount = $coupon->calculateDiscount($amount);
-        $finalPrice = $coupon->applyDiscount($amount);
+        $discountAmount = $coupon->calculateDiscount($originalPrice);
+        $finalPrice = $coupon->applyDiscount($originalPrice);
 
         return [
             'valid' => true,
@@ -94,30 +95,9 @@ final class CouponService
     }
 
     /**
-     * Créer un nouveau coupon
-     */
-    public function createCoupon(array $data): Coupon
-    {
-        $data['code'] = strtoupper($data['code'] ?? Coupon::generateUniqueCode());
-        $data['status'] = CouponStatus::ACTIVE();
-
-        return Coupon::create($data);
-    }
-
-    /**
-     * Vérifier si un utilisateur a déjà utilisé un coupon
-     */
-    public function hasUserUsedCoupon(Coupon $coupon, User $user): bool
-    {
-        return CouponUsage::where('coupon_id', $coupon->id)
-            ->where('user_id', $user->id)
-            ->exists();
-    }
-
-    /**
      * Compter le nombre d'utilisations d'un coupon par un utilisateur
      */
-    public function getUserCouponUsageCount(Coupon $coupon, User $user): int
+    private function getUserCouponUsageCount(Coupon $coupon, User $user): int
     {
         return CouponUsage::where('coupon_id', $coupon->id)
             ->where('user_id', $user->id)
@@ -150,36 +130,5 @@ final class CouponService
         }
 
         return 'Code coupon invalide.';
-    }
-
-    /**
-     * Marquer les coupons expirés
-     */
-    public function markExpiredCoupons(): int
-    {
-        $count = Coupon::where('status', CouponStatus::ACTIVE())
-            ->where('valid_until', '<', now())
-            ->count();
-
-        Coupon::where('status', CouponStatus::ACTIVE())
-            ->where('valid_until', '<', now())
-            ->update(['status' => CouponStatus::EXPIRED()]);
-
-        return $count;
-    }
-
-    /**
-     * Obtenir les statistiques d'utilisation d'un coupon
-     */
-    public function getCouponStats(Coupon $coupon): array
-    {
-        $usages = CouponUsage::where('coupon_id', $coupon->id)->get();
-
-        return [
-            'total_usages' => $usages->count(),
-            'total_discount_given' => $usages->sum('discount_amount'),
-            'average_original_price' => $usages->avg('original_price'),
-            'unique_users' => $usages->pluck('user_id')->unique()->count(),
-        ];
     }
 }

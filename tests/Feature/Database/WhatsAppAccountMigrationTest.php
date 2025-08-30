@@ -6,6 +6,7 @@ namespace Tests\Feature\Database;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class WhatsAppAccountMigrationTest extends TestCase

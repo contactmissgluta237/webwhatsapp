@@ -131,35 +131,50 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <button type="button" class="btn btn-outline-primary" 
-                                                    wire:click="openEditModal({{ $coupon->id }})"
-                                                    title="Modifier">
-                                                <i class="la la-edit"></i>
+                                            <button type="button" class="btn btn-outline-info" 
+                                                    onclick="copyCoupon('{{ $coupon->code }}')"
+                                                    title="Copier le code">
+                                                <i class="la la-copy"></i>
                                             </button>
+
+                                            <a href="{{ route('admin.coupons.edit', $coupon->id) }}" 
+                                               class="btn btn-outline-primary" 
+                                               title="Modifier">
+                                                <i class="la la-edit"></i>
+                                            </a>
                                             
                                             @if($coupon->status === \App\Enums\CouponStatus::ACTIVE())
-                                                <button type="button" class="btn btn-outline-warning" 
-                                                        wire:click="deactivateCoupon({{ $coupon->id }})"
-                                                        wire:confirm="Êtes-vous sûr de vouloir désactiver ce coupon ?"
-                                                        title="Désactiver">
-                                                    <i class="la la-pause"></i>
-                                                </button>
+                                                <form method="POST" action="{{ route('admin.coupons.toggle-status', $coupon->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="action" value="{{ \App\Enums\CouponAction::DEACTIVATE()->value }}">
+                                                    <button type="submit" class="btn btn-outline-warning" 
+                                                            onclick="return confirm('Êtes-vous sûr de vouloir désactiver ce coupon ?')"
+                                                            title="{{ \App\Enums\CouponAction::DEACTIVATE()->label() }}">
+                                                        <i class="la la-pause"></i>
+                                                    </button>
+                                                </form>
                                             @else
-                                                <button type="button" class="btn btn-outline-success" 
-                                                        wire:click="activateCoupon({{ $coupon->id }})"
-                                                        wire:confirm="Êtes-vous sûr de vouloir activer ce coupon ?"
-                                                        title="Activer">
-                                                    <i class="la la-play"></i>
-                                                </button>
+                                                <form method="POST" action="{{ route('admin.coupons.toggle-status', $coupon->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    <input type="hidden" name="action" value="{{ \App\Enums\CouponAction::ACTIVATE()->value }}">
+                                                    <button type="submit" class="btn btn-outline-success" 
+                                                            onclick="return confirm('Êtes-vous sûr de vouloir activer ce coupon ?')"
+                                                            title="{{ \App\Enums\CouponAction::ACTIVATE()->label() }}">
+                                                        <i class="la la-play"></i>
+                                                    </button>
+                                                </form>
                                             @endif
                                             
                                             @if($coupon->used_count === 0)
-                                                <button type="button" class="btn btn-outline-danger" 
-                                                        wire:click="deleteCoupon({{ $coupon->id }})"
-                                                        wire:confirm="Êtes-vous sûr de vouloir supprimer ce coupon ?"
-                                                        title="Supprimer">
-                                                    <i class="la la-trash"></i>
-                                                </button>
+                                                <form method="POST" action="{{ route('admin.coupons.delete', $coupon->id) }}" style="display: inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger" 
+                                                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce coupon ?')"
+                                                            title="Supprimer">
+                                                        <i class="la la-trash"></i>
+                                                    </button>
+                                                </form>
                                             @endif
                                         </div>
                                     </td>
@@ -327,26 +342,65 @@
     @if($showCreateModal || $showEditModal)
         <div class="modal-backdrop fade show" wire:click="closeModals"></div>
     @endif
+
+    <style>
+    .modal.show {
+        display: block !important;
+    }
+
+    .progress {
+        background-color: #f8f9fa;
+    }
+
+    .progress-bar {
+        background-color: #28a745;
+    }
+
+    code {
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #495057;
+        font-size: 0.875rem;
+    }
+    </style>
+
+    <script>
+    function copyCoupon(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showToast('Code coupon copié : ' + code, 'success');
+        }).catch(() => {
+            // Fallback pour les anciens navigateurs
+            const textArea = document.createElement('textarea');
+            textArea.value = code;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast('Code coupon copié : ' + code, 'success');
+        });
+    }
+
+    function showToast(message, type = 'success') {
+        // Créer le toast
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type} alert-dismissible fade show position-fixed shadow-none border-${type}`;
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="la la-check-circle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+        
+        // Ajouter au DOM
+        document.body.appendChild(toast);
+        
+        // Supprimer après 3 secondes
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 3000);
+    }
+    </script>
 </div>
-
-<style>
-.modal.show {
-    display: block !important;
-}
-
-.progress {
-    background-color: #f8f9fa;
-}
-
-.progress-bar {
-    background-color: #28a745;
-}
-
-code {
-    background-color: #f8f9fa;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #495057;
-    font-size: 0.875rem;
-}
-</style>

@@ -13,17 +13,13 @@ use App\Services\AI\OllamaService;
 use App\Services\AI\OpenAiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
 
-/**
- * Tests provider-agnostic mockés pour tous les services AI
- * Ces tests vérifient l'interface et le comportement sans appeler les vraies APIs
- *
- * @group ai
- * @group mocked
- */
+#[Group('ai')]
+#[Group('mocked')]
 final class ProviderAgnosticAiServiceTest extends TestCase
 {
     use RefreshDatabase;

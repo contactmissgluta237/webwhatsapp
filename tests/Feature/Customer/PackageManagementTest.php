@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Customer;
 
+use App\Enums\CouponType;
 use App\Enums\PermissionEnum;
 use App\Enums\UserRole;
+use App\Models\Coupon;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\UserSubscription;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -40,7 +43,8 @@ class PackageManagementTest extends TestCase
         $this->user->assignRole('customer');
     }
 
-    public function test_customer_can_view_packages_page(): void
+    #[Test]
+    public function customer_can_view_packages_page(): void
     {
         $response = $this->actingAs($this->user)->get(route('customer.packages.index'));
 
@@ -50,7 +54,8 @@ class PackageManagementTest extends TestCase
         $response->assertSee('Packages disponibles');
     }
 
-    public function test_packages_are_displayed_with_correct_information(): void
+    #[Test]
+    public function packages_are_displayed_with_correct_information(): void
     {
         $response = $this->actingAs($this->user)->get(route('customer.packages.index'));
 
@@ -67,7 +72,8 @@ class PackageManagementTest extends TestCase
         $response->assertSee('2000'); // Prix starter ou similar
     }
 
-    public function test_customer_with_no_wallet_cannot_subscribe_to_paid_package(): void
+    #[Test]
+    public function customer_with_no_wallet_cannot_subscribe_to_paid_package(): void
     {
         $package = Package::where('name', 'starter')->first();
 
@@ -85,7 +91,8 @@ class PackageManagementTest extends TestCase
         ]);
     }
 
-    public function test_customer_with_insufficient_wallet_cannot_subscribe(): void
+    #[Test]
+    public function customer_with_insufficient_wallet_cannot_subscribe(): void
     {
         // Créer un wallet avec un solde insuffisant
         Wallet::factory()->create([
@@ -108,7 +115,8 @@ class PackageManagementTest extends TestCase
         ]);
     }
 
-    public function test_customer_can_subscribe_to_trial_package(): void
+    #[Test]
+    public function customer_can_subscribe_to_trial_package(): void
     {
         $package = Package::where('name', 'trial')->first();
 
@@ -128,7 +136,8 @@ class PackageManagementTest extends TestCase
         ]);
     }
 
-    public function test_customer_can_subscribe_to_paid_package_with_sufficient_wallet(): void
+    #[Test]
+    public function customer_can_subscribe_to_paid_package_with_sufficient_wallet(): void
     {
         // Créer un wallet avec un solde suffisant
         $wallet = Wallet::factory()->create([
@@ -137,6 +146,7 @@ class PackageManagementTest extends TestCase
         ]);
 
         $package = Package::where('name', 'starter')->first();
+        $currentPrice = $package->getCurrentPrice(); // Utiliser le prix actuel (avec promotions)
 
         $response = $this->actingAs($this->user)
             ->post(route('customer.packages.subscribe', $package->id));
@@ -149,24 +159,31 @@ class PackageManagementTest extends TestCase
             'user_id' => $this->user->id,
             'package_id' => $package->id,
             'status' => 'active',
-            'amount_paid' => $package->price,
+            'amount_paid' => $currentPrice,
             'payment_method' => 'wallet',
         ]);
 
-        // Vérifier que le wallet a été débité
+        // Vérifier que le wallet a été débité du bon montant
         $wallet->refresh();
-        $this->assertEquals(3000, $wallet->balance); // 5000 - 2000
+        $this->assertEquals(5000 - $currentPrice, $wallet->balance);
 
-        // Vérifier qu'une transaction a été créée
+        // Vérifier qu'une transaction a été créée (peut inclure info promotion)
         $this->assertDatabaseHas('internal_transactions', [
             'wallet_id' => $wallet->id,
-            'amount' => $package->price,
+            'amount' => $currentPrice,
             'transaction_type' => 'debit',
-            'description' => "Souscription au package {$package->display_name}",
         ]);
+
+        // Vérifier que la description contient au moins le nom du package
+        $transaction = \Illuminate\Support\Facades\DB::table('internal_transactions')
+            ->where('wallet_id', $wallet->id)
+            ->where('transaction_type', 'debit')
+            ->first();
+        $this->assertStringContainsString($package->display_name, $transaction->description);
     }
 
-    public function test_customer_cannot_subscribe_twice_to_trial(): void
+    #[Test]
+    public function customer_cannot_subscribe_twice_to_trial(): void
     {
         $package = Package::where('name', 'trial')->first();
 
@@ -195,7 +212,8 @@ class PackageManagementTest extends TestCase
         $response->assertSessionHas('error', 'Vous avez déjà utilisé votre essai gratuit.');
     }
 
-    public function test_customer_cannot_subscribe_when_has_active_subscription(): void
+    #[Test]
+    public function customer_cannot_subscribe_when_has_active_subscription(): void
     {
         // Créer un abonnement actif
         $activePackage = Package::where('name', 'starter')->first();
@@ -227,7 +245,8 @@ class PackageManagementTest extends TestCase
         // Note: Le message exact peut être différent selon la logique métier
     }
 
-    public function test_packages_page_shows_current_subscription_info(): void
+    #[Test]
+    public function packages_page_shows_current_subscription_info(): void
     {
         // Créer un abonnement actif
         $package = Package::where('name', 'starter')->first();
@@ -252,7 +271,8 @@ class PackageManagementTest extends TestCase
         $response->assertSee('messages restants');
     }
 
-    public function test_subscription_buttons_are_correctly_displayed(): void
+    #[Test]
+    public function subscription_buttons_are_correctly_displayed(): void
     {
         $response = $this->actingAs($this->user)
             ->get(route('customer.packages.index'));
@@ -289,5 +309,204 @@ class PackageManagementTest extends TestCase
         // Puis vérifier que le bouton "En cours" est affiché
         // Note: Le texte peut être sensible à la casse
         $response->assertSee('En cours');
+    }
+
+    #[Test]
+    public function customer_can_subscribe_with_valid_coupon(): void
+    {
+        // Créer un wallet avec un solde suffisant
+        $wallet = Wallet::factory()->create([
+            'user_id' => $this->user->id,
+            'balance' => 5000,
+        ]);
+
+        $package = Package::where('name', 'starter')->first();
+
+        // Créer un coupon de réduction de 20%
+        $coupon = new Coupon([
+            'code' => 'DISCOUNT20',
+            'type' => CouponType::PERCENTAGE(),
+            'value' => 20.0,
+            'status' => \App\Enums\CouponStatus::ACTIVE(),
+            'is_active' => true,
+            'usage_limit' => 100,
+            'per_user_limit' => 1,
+            'used_count' => 0,
+            'valid_from' => now()->subDay(),
+            'valid_until' => now()->addMonth(),
+            'created_by' => $this->user->id,
+        ]);
+        $coupon->save();
+
+        $originalPrice = $package->getCurrentPrice();
+        $expectedFinalPrice = $originalPrice * 0.8; // 20% de réduction
+
+        $response = $this->actingAs($this->user)
+            ->post(route('customer.packages.subscribe', $package->id), [
+                'coupon_code' => 'DISCOUNT20',
+            ]);
+
+        $response->assertRedirect(route('customer.packages.index'));
+        $response->assertSessionHas('success');
+
+        // Vérifier que l'abonnement a été créé avec le prix réduit
+        $this->assertDatabaseHas('user_subscriptions', [
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'status' => 'active',
+            'amount_paid' => $expectedFinalPrice,
+            'payment_method' => 'wallet',
+        ]);
+
+        // Vérifier que le coupon a été utilisé
+        $this->assertDatabaseHas('coupon_usages', [
+            'coupon_id' => $coupon->id,
+            'user_id' => $this->user->id,
+            'original_price' => $originalPrice,
+            'discount_amount' => $originalPrice - $expectedFinalPrice,
+            'final_price' => $expectedFinalPrice,
+        ]);
+
+        // Vérifier que le wallet a été débité du bon montant
+        $wallet->refresh();
+        $this->assertEquals(5000 - $expectedFinalPrice, $wallet->balance);
+    }
+
+    #[Test]
+    public function customer_cannot_subscribe_with_invalid_coupon(): void
+    {
+        // Créer un wallet avec un solde suffisant
+        $wallet = Wallet::factory()->create([
+            'user_id' => $this->user->id,
+            'balance' => 5000,
+        ]);
+
+        $package = Package::where('name', 'starter')->first();
+
+        $response = $this->actingAs($this->user)
+            ->post(route('customer.packages.subscribe', $package->id), [
+                'coupon_code' => 'INVALID_CODE',
+            ]);
+
+        $response->assertRedirect(route('customer.packages.index'));
+        $response->assertSessionHas('error');
+
+        // Vérifier qu'aucun abonnement n'a été créé
+        $this->assertDatabaseMissing('user_subscriptions', [
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+        ]);
+
+        // Vérifier que le wallet n'a pas été débité
+        $wallet->refresh();
+        $this->assertEquals(5000, $wallet->balance);
+    }
+
+    #[Test]
+    public function customer_benefits_from_promotional_pricing(): void
+    {
+        // Créer un wallet avec un solde suffisant
+        $wallet = Wallet::factory()->create([
+            'user_id' => $this->user->id,
+            'balance' => 5000,
+        ]);
+
+        $package = Package::where('name', 'starter')->first();
+
+        // Appliquer une promotion active
+        $package->update([
+            'promotional_price' => $package->price * 0.5, // 50% de réduction
+            'promotion_starts_at' => now()->subDay(),
+            'promotion_ends_at' => now()->addWeek(),
+            'promotion_is_active' => true,
+        ]);
+
+        $promotionalPrice = $package->getCurrentPrice();
+        $this->assertTrue($package->hasActivePromotion());
+        $this->assertEquals($package->promotional_price, $promotionalPrice);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('customer.packages.subscribe', $package->id));
+
+        $response->assertRedirect(route('customer.packages.index'));
+        $response->assertSessionHas('success');
+
+        // Vérifier que l'abonnement a été créé avec le prix promotionnel
+        $this->assertDatabaseHas('user_subscriptions', [
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'status' => 'active',
+            'amount_paid' => $promotionalPrice,
+            'payment_method' => 'wallet',
+        ]);
+
+        // Vérifier que le wallet a été débité du prix promotionnel
+        $wallet->refresh();
+        $this->assertEquals(5000 - $promotionalPrice, $wallet->balance);
+    }
+
+    #[Test]
+    public function customer_can_apply_coupon_on_promotional_price(): void
+    {
+        // Créer un wallet avec un solde suffisant
+        $wallet = Wallet::factory()->create([
+            'user_id' => $this->user->id,
+            'balance' => 5000,
+        ]);
+
+        $package = Package::where('name', 'starter')->first();
+
+        // Appliquer une promotion active
+        $package->update([
+            'promotional_price' => $package->price * 0.8, // 20% de réduction de base
+            'promotion_starts_at' => now()->subDay(),
+            'promotion_ends_at' => now()->addWeek(),
+            'promotion_is_active' => true,
+        ]);
+
+        // Créer un coupon de réduction fixe
+        $coupon = new Coupon([
+            'code' => 'SAVE500',
+            'type' => CouponType::FIXED_AMOUNT(),
+            'value' => 500.0,
+            'status' => \App\Enums\CouponStatus::ACTIVE(),
+            'is_active' => true,
+            'usage_limit' => 100,
+            'per_user_limit' => 1,
+            'used_count' => 0,
+            'valid_from' => now()->subDay(),
+            'valid_until' => now()->addMonth(),
+            'created_by' => $this->user->id,
+        ]);
+        $coupon->save();
+
+        $promotionalPrice = $package->getCurrentPrice(); // Prix promotionnel
+        $expectedFinalPrice = $promotionalPrice - 500; // Application du coupon sur le prix promotionnel
+
+        $response = $this->actingAs($this->user)
+            ->post(route('customer.packages.subscribe', $package->id), [
+                'coupon_code' => 'SAVE500',
+            ]);
+
+        $response->assertRedirect(route('customer.packages.index'));
+        $response->assertSessionHas('success');
+
+        // Vérifier que l'abonnement a été créé avec le prix final (promotion + coupon)
+        $this->assertDatabaseHas('user_subscriptions', [
+            'user_id' => $this->user->id,
+            'package_id' => $package->id,
+            'status' => 'active',
+            'amount_paid' => $expectedFinalPrice,
+            'payment_method' => 'wallet',
+        ]);
+
+        // Vérifier que le coupon a été appliqué sur le prix promotionnel
+        $this->assertDatabaseHas('coupon_usages', [
+            'coupon_id' => $coupon->id,
+            'user_id' => $this->user->id,
+            'original_price' => $promotionalPrice,
+            'discount_amount' => 500,
+            'final_price' => $expectedFinalPrice,
+        ]);
     }
 }

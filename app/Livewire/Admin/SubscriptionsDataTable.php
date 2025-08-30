@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\UserSubscription;
+use Exception;
 use HarroldWafo\LaravelCustomDatatable\DataTables\BaseDataTable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,17 +28,18 @@ final class SubscriptionsDataTable extends BaseDataTable
             ->setTableWrapperAttributes([
                 'class' => 'table-responsive',
             ])
-            ->setEmptyMessage('<div class="text-center py-4 text-muted"><i class="la la-inbox la-3x d-block"></i><p class="mt-2">Aucune souscription trouvée</p></div>');
+            ->setEmptyMessage(__('subscriptions.no_subscriptions_found'));
     }
 
     protected function getExportFileName(): string
     {
-        return 'souscriptions';
+        return __('subscriptions.export_filename');
     }
 
     public function builder(): Builder
     {
         return UserSubscription::query()
+            ->select('user_subscriptions.*')
             ->with(['user', 'package'])
             ->orderBy('created_at', 'desc');
     }
@@ -44,14 +47,14 @@ final class SubscriptionsDataTable extends BaseDataTable
     public function columns(): array
     {
         return [
-            Column::make('ID', 'id')->sortable()->deselected(),
+            Column::make(__('subscriptions.id'), 'id')->sortable()->deselected(),
 
-            Column::make('Utilisateur', 'user.first_name')
+            Column::make(__('subscriptions.user'), 'user.first_name')
                 ->sortable()
                 ->searchable()
                 ->format(function ($value, $row) {
                     if (! $row->user) {
-                        return '<span class="text-muted">Utilisateur introuvable</span>';
+                        return '<span class="text-muted">'.__('subscriptions.user_not_found').'</span>';
                     }
 
                     $fullName = trim($row->user->first_name.' '.$row->user->last_name);
@@ -71,11 +74,11 @@ final class SubscriptionsDataTable extends BaseDataTable
                 })
                 ->html(),
 
-            Column::make('Package', 'package.display_name')
+            Column::make(__('subscriptions.package'), 'package.display_name')
                 ->sortable()
                 ->format(function ($value, $row) {
                     if (! $row->package) {
-                        return '<span class="text-muted">Package introuvable</span>';
+                        return '<span class="text-muted">'.__('subscriptions.package_not_found').'</span>';
                     }
 
                     $badge = '<span class="badge bg-primary">'.$value.'</span>';
@@ -83,35 +86,36 @@ final class SubscriptionsDataTable extends BaseDataTable
 
                     return $badge.$price;
                 })
-                ->html(),            Column::make('Statut', 'status')
+                ->html(),            Column::make(__('subscriptions.status'), 'status')
                 ->sortable()
                 ->format(function ($value) {
-                    $badges = [
-                        'active' => '<span class="badge bg-success">Actif</span>',
-                        'expired' => '<span class="badge bg-warning">Expiré</span>',
-                        'cancelled' => '<span class="badge bg-danger">Annulé</span>',
-                        'suspended' => '<span class="badge bg-secondary">Suspendu</span>',
-                    ];
+                    try {
+                        $status = SubscriptionStatus::make($value);
+                        $badgeClass = $status->getBadgeClass();
+                        $label = $status->label;
 
-                    return $badges[$value] ?? '<span class="badge bg-light text-dark">'.ucfirst($value).'</span>';
+                        return '<span class="badge '.$badgeClass.'">'.$label.'</span>';
+                    } catch (Exception $e) {
+                        return '<span class="badge bg-light text-dark">'.ucfirst($value).'</span>';
+                    }
                 })
                 ->html(),
 
-            Column::make('Début', 'starts_at')
-                ->sortable()
-                ->format(function ($value) {
-                    return '<strong>'.$value->format('d/m/Y').'</strong><br><small class="text-muted">'.$value->format('H:i').'</small>';
-                })
-                ->html(),
-
-            Column::make('Fin', 'ends_at')
+            Column::make(__('subscriptions.starts_at'), 'starts_at')
                 ->sortable()
                 ->format(function ($value) {
                     return '<strong>'.$value->format('d/m/Y').'</strong><br><small class="text-muted">'.$value->format('H:i').'</small>';
                 })
                 ->html(),
 
-            Column::make('Montant', 'amount_paid')
+            Column::make(__('subscriptions.ends_at'), 'ends_at')
+                ->sortable()
+                ->format(function ($value) {
+                    return '<strong>'.$value->format('d/m/Y').'</strong><br><small class="text-muted">'.$value->format('H:i').'</small>';
+                })
+                ->html(),
+
+            Column::make(__('subscriptions.amount_paid'), 'amount_paid')
                 ->sortable()
                 ->format(function ($value, $row) {
                     $amount = (float) $value;
@@ -119,11 +123,11 @@ final class SubscriptionsDataTable extends BaseDataTable
                         return '<strong>'.number_format($amount).' XAF</strong><br><small class="text-muted">'.($row->payment_method ?? 'wallet').'</small>';
                     }
 
-                    return '<span class="badge bg-success">Gratuit</span>';
+                    return '<span class="badge bg-success">'.__('subscriptions.free').'</span>';
                 })
                 ->html(),
 
-            Column::make('Usage', 'id')
+            Column::make(__('subscriptions.usage'), 'id')
                 ->format(function ($value, $row) {
                     $totalUsed = $row->getTotalMessagesUsed();
                     $percentage = $row->messages_limit > 0 ? ($totalUsed / $row->messages_limit) * 100 : 0;
@@ -146,7 +150,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                 })
                 ->html(),
 
-            Column::make('Créé le', 'created_at')
+            Column::make(__('subscriptions.created_at'), 'created_at')
                 ->sortable()
                 ->format(function ($value) {
                     return '<strong>'.$value->format('d/m/Y').'</strong><br><small class="text-muted">'.$value->diffForHumans().'</small>';
@@ -158,21 +162,15 @@ final class SubscriptionsDataTable extends BaseDataTable
     public function filters(): array
     {
         return [
-            SelectFilter::make('Package', 'package_id')
+            SelectFilter::make(__('subscriptions.package'), 'package_id')
                 ->options($this->getPackageOptions())
                 ->filter(fn (Builder $builder, string $value) => $value === '' ? $builder : $builder->where('package_id', $value)),
 
-            SelectFilter::make('Statut', 'status')
-                ->options([
-                    '' => 'Tous les statuts',
-                    'active' => 'Actif',
-                    'expired' => 'Expiré',
-                    'cancelled' => 'Annulé',
-                    'suspended' => 'Suspendu',
-                ])
+            SelectFilter::make(__('subscriptions.status'), 'status')
+                ->options($this->getStatusOptions())
                 ->filter(fn (Builder $builder, string $value) => $value === '' ? $builder : $builder->where('status', $value)),
 
-            SelectFilter::make('Utilisateur', 'user_search')
+            SelectFilter::make(__('subscriptions.user'), 'user_search')
                 ->options($this->getUserOptions())
                 ->filter(function (Builder $builder, string $value) {
                     if ($value === '') {
@@ -186,12 +184,12 @@ final class SubscriptionsDataTable extends BaseDataTable
                     });
                 }),
 
-            DateFilter::make('Créé après', 'created_after')
-                ->config(['placeholder' => 'Date minimum', 'locale' => 'fr'])
+            DateFilter::make(__('subscriptions.created_after'), 'created_after')
+                ->config(['placeholder' => __('subscriptions.min_date_placeholder'), 'locale' => app()->getLocale()])
                 ->filter(fn (Builder $builder, string $value) => $builder->whereDate('created_at', '>=', $value)),
 
-            DateFilter::make('Créé avant', 'created_before')
-                ->config(['placeholder' => 'Date maximum', 'locale' => 'fr'])
+            DateFilter::make(__('subscriptions.created_before'), 'created_before')
+                ->config(['placeholder' => __('subscriptions.max_date_placeholder'), 'locale' => app()->getLocale()])
                 ->filter(fn (Builder $builder, string $value) => $builder->whereDate('created_at', '<=', $value)),
         ];
     }
@@ -200,7 +198,7 @@ final class SubscriptionsDataTable extends BaseDataTable
     {
         $packages = Package::orderBy('sort_order')->get(['id', 'display_name']);
 
-        $options = ['' => 'Tous les packages'];
+        $options = ['' => __('subscriptions.all_packages')];
         foreach ($packages as $package) {
             $options[$package->id] = $package->display_name;
         }
@@ -217,11 +215,32 @@ final class SubscriptionsDataTable extends BaseDataTable
             ->limit(50)
             ->get(['id', 'first_name', 'last_name', 'email']);
 
-        $options = ['' => 'Tous les utilisateurs'];
+        $options = ['' => __('subscriptions.all_users')];
         foreach ($users as $user) {
             $fullName = trim($user->first_name.' '.$user->last_name);
             $options[$fullName] = $fullName.' ('.$user->email.')';
         }
+
+        return $options;
+    }
+
+    private function getStatusOptions(): array
+    {
+        $options = ['' => __('subscriptions.all_statuses')];
+        $enumValues = SubscriptionStatus::toArray();
+
+        foreach ($enumValues as $value => $enumKey) {
+            try {
+                $status = SubscriptionStatus::make($value);
+                $translationKey = 'subscriptions.status_'.$value;
+                $label = __($translationKey);
+                $options[$value] = $label;
+            } catch (Exception $e) {
+                $options[$value] = ucfirst($value);
+            }
+        }
+
+        $options['suspended'] = __('subscriptions.status_suspended');
 
         return $options;
     }

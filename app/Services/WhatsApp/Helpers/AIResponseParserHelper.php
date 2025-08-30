@@ -24,6 +24,8 @@ class AIResponseParserHelper
                 'message_preview' => substr($result->message, 0, 100),
                 'action' => $result->action->value,
                 'products_count' => count($result->productIds),
+                'unknown_information' => $result->unknownInformation,
+                'full_ai_response' => $aiResponse->response,
             ]);
 
             return $result;

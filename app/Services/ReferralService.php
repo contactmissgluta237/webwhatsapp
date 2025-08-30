@@ -22,9 +22,7 @@ final class ReferralService
     {
         $user = $subscription->user;
 
-        // Check if user has a referrer
         if (! $user->referrer_id) {
-            // No referrer, everything goes to system
             $this->recordSystemRevenue($subscription, $amount);
 
             return;
@@ -32,7 +30,6 @@ final class ReferralService
 
         $referrer = User::find($user->referrer_id);
         if (! $referrer || ! $referrer->wallet) {
-            // Referrer not found or no wallet, everything goes to system
             $this->recordSystemRevenue($subscription, $amount);
 
             return;
@@ -43,8 +40,6 @@ final class ReferralService
             $commissionPercentage = floatval($referrer->referral_commission_percentage ?? 10.00);
             $commissionAmount = ($amount * $commissionPercentage) / 100;
             $systemAmount = $amount - $commissionAmount;
-
-            // 1. Credit referrer wallet
             $transaction = $this->creditReferrerWallet($referrer, $commissionAmount, $subscription);
 
             // 2. Record referral earning

@@ -1,16 +1,3 @@
-# Liste des tâches à faire!
-
-Ce document détaille la liste des points à faire classés par ordre de priorité
-
-## penser comment update le système pour pouvoir afficher les prix promotionnels pour les packages et les utiliser! les administrateurs pourront définir les prix promotionnels, dans le mm formulaire où ils editent les packages (j'espère que ce formulaire est déjà fait, sinon il faudra le faire) (MEDIUM)
-
-
-il faut juste verifier, c déjà implémenté, il faut juste tester et optimiser!
-
-## il faut qu'on trouve un moyen d'intégrer des coupons de reduction dans le système ! ça permettra davoir des reductions et recompenser certains (MEDIUM)
-
-c mm déjà intégré, il faut juste analyser, optimiser et tester
-
 ## il faut qu'on trouve un moyen de définir de façon globale les gains en tant que parrain quand on référence une personne! puis on doit pouvoir définir ça sur une personne en particulier! super important, les grands ambassadeurs pourront gagner bcp, jusqu'à 50% (MEDIUM)
 
 c mm déjà implémenté! il faut qu'on teste juste et on optimise! en gros ladmin peut configurer le pourcentage de gain dune personne! par défaut lors de la création ça doit utiliser la valeur constante défini dans les configs! Et maintenant si on veut afficher nimporte quoi dans la devise du pays de celui qui est connectée, il nous faut un helper pour convertir pour laffichage! ça c important!
@@ -57,9 +44,6 @@ en cours, il faut bien tester!
 
 ## - Faire en sorte que si un être humain réponde, l'ia se désactive (MEDIUM)
 
-## S'assurer que chaque jour, on ait une commande qui parcours tous les utilisateurs qui ont un package premium, et leur fasse un rapport! (HIGH)
-finalemnet penser si c pas mieux dajouter ce qu'on va appeler les options, qui pourront être des plus, genre le rapport hebdomadaire. (si c pas lourd)
-
 ## Supprimer tous les fichiers inutiles (LOW)
 
 - genre les fichiers pas utilisés, pas necessaires
@@ -72,3 +56,18 @@ finalemnet penser si c pas mieux dajouter ce qu'on va appeler les options, qui p
 ## Faire en sorte que certains listeners utilisent les queues, super important! sinon ça va ralentir(HIGH)
 
 il faudra faire le tri et update certains listeners!
+
+## Mettre à jour la traduction partout! (LOW)
+
+Que ce soit dans les form requests, la base de donnée, les vues, les mails, tt doit être traduit!
+
+
+## Verifiez qu'en cas de déconnexion, lutilisateur peut rafraichir sa session!(HIGH) 
+
+si il est déconnecté, alors lutilisateur doit pouvoir raffraichir en scannatn un nouveau qrcode! sinon il ne peut plus rien recevoir ni configuré! 
+
+## synchroniser les sessions! si on supprime une session cote laravel, on doit aussi supprimé coté node js (HIGH)
+
+on doit dabord lancer la suppression côté nodejs, avant de supprimer laravel! je crois que nodejs a déjà un endpoint pour ça! 
+
+## Lors de la génération de Qrcode on doit faire expirer le qrcode après 1min, puis permettre de regénérer! Ensuite on va optimiser le fetching du qrcode pr que ce soit plus rapide (si necessaire) (HIGH)

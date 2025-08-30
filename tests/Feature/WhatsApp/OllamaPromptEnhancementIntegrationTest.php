@@ -9,16 +9,13 @@ use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Services\AI\PromptEnhancementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\Helpers\AiTestHelper;
 use Tests\TestCase;
 
-/**
- * Test d'intégration avec le vrai service Ollama
- * Ces tests nécessitent qu'Ollama soit accessible
- *
- * @group integration
- * @group ollama
- */
+#[Group('integration')]
+#[Group('ollama')]
 final class OllamaPromptEnhancementIntegrationTest extends TestCase
 {
     use RefreshDatabase;

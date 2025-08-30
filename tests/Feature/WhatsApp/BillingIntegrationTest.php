@@ -20,6 +20,7 @@ use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BillingIntegrationTest extends TestCase

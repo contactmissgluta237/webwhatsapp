@@ -1,18 +1,18 @@
 {
-  "session_2_17562281982783_e6e53fe9": {
+  "test_session_new": {
     "userId": 2,
-    "status": "connected",
-    "phoneNumber": "237676636794",
-    "lastActivity": "2025-08-28T22:46:54.921Z",
-    "createdAt": "2025-08-26T17:09:58.289Z",
-    "savedAt": "2025-08-29T16:07:29.432Z"
+    "status": "qr_code_ready",
+    "phoneNumber": null,
+    "lastActivity": "2025-08-30T17:59:42.941Z",
+    "createdAt": "2025-08-30T17:59:42.941Z",
+    "savedAt": "2025-08-30T18:07:24.529Z"
   },
-  "session_2_17563804050855_fbb8594a": {
+  "session_2_17565772445204_ea1c3051": {
     "userId": 2,
-    "status": "connected",
-    "phoneNumber": "23798703398",
-    "lastActivity": "2025-08-29T16:06:13.681Z",
-    "createdAt": "2025-08-28T11:26:45.145Z",
-    "savedAt": "2025-08-29T16:07:29.432Z"
+    "status": "initializing",
+    "phoneNumber": null,
+    "lastActivity": "2025-08-30T18:07:24.524Z",
+    "createdAt": "2025-08-30T18:07:24.524Z",
+    "savedAt": "2025-08-30T18:07:24.529Z"
   }
 }

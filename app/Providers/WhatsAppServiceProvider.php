@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Handlers\WhatsApp\WhatsAppSessionSyncHandler;
 use App\Services\WhatsApp\AIProviderService;
 use App\Services\WhatsApp\Contracts\AIProviderServiceInterface;
 use App\Services\WhatsApp\Contracts\MessageBuildServiceInterface;
@@ -14,24 +15,28 @@ use App\Services\WhatsApp\Helpers\ResponseTimingHelper;
 use App\Services\WhatsApp\MessageBuildService;
 use App\Services\WhatsApp\ResponseFormatterService;
 use App\Services\WhatsApp\WhatsAppMessageOrchestrator;
+use App\Services\WhatsApp\WhatsAppNotificationHandler;
 use Illuminate\Support\ServiceProvider;
 
 final class WhatsAppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register WhatsApp services
-     */
     public function register(): void
     {
-        // Register specialized delegate services
+        $this->registerCoreServices();
+        $this->registerUtilityServices();
+    }
+
+    public function boot(): void
+    {
+        //
+    }
+
+    private function registerCoreServices(): void
+    {
         $this->app->bind(MessageBuildServiceInterface::class, MessageBuildService::class);
         $this->app->bind(AIProviderServiceInterface::class, AIProviderService::class);
         $this->app->bind(ResponseFormatterServiceInterface::class, ResponseFormatterService::class);
 
-        // Register main orchestrator
-        $this->app->bind(WhatsAppMessageOrchestratorInterface::class, WhatsAppMessageOrchestrator::class);
-
-        // Register as singleton for performance
         $this->app->singleton(WhatsAppMessageOrchestratorInterface::class, function ($app) {
             return new WhatsAppMessageOrchestrator(
                 $app->make(MessageBuildServiceInterface::class),
@@ -42,11 +47,15 @@ final class WhatsAppServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Bootstrap services
-     */
-    public function boot(): void
+    private function registerUtilityServices(): void
     {
-        //
+        $this->app->singleton(WhatsAppSessionSyncHandler::class, function ($app) {
+            return new WhatsAppSessionSyncHandler(
+                bridgeBaseUrl: config('whatsapp.bridge.base_url'),
+                timeout: config('whatsapp.bridge.timeout', 30)
+            );
+        });
+
+        $this->app->singleton(WhatsAppNotificationHandler::class);
     }
 }

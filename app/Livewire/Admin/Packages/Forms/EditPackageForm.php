@@ -21,7 +21,7 @@ class EditPackageForm extends AbstractPackageForm
         $this->promotional_price = $package->promotional_price ? (string) $package->promotional_price : '';
         $this->promotion_starts_at = $package->promotion_starts_at ? $package->promotion_starts_at->format('Y-m-d\TH:i') : '';
         $this->promotion_ends_at = $package->promotion_ends_at ? $package->promotion_ends_at->format('Y-m-d\TH:i') : '';
-        $this->promotion_is_active = $package->promotion_is_active;
+        $this->promotion_is_active = $package->promotion_is_active ?? false;
         $this->currency = $package->currency;
         $this->messages_limit = (string) $package->messages_limit;
         $this->context_limit = (string) $package->context_limit;
@@ -68,12 +68,7 @@ class EditPackageForm extends AbstractPackageForm
 
     protected function customRequest(): FormRequest
     {
-        $request = new UpdatePackageRequest;
-
-        // Injecter l'ID du package dans la requête pour la validation unique
-        $request->merge(['package_id' => $this->package->id]);
-
-        return $request;
+        return new UpdatePackageRequest(['package_id' => $this->package->id]);
     }
 
     public function render()

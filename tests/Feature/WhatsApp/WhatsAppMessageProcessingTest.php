@@ -16,6 +16,8 @@ use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountUsage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WhatsAppMessageProcessingTest extends TestCase
@@ -87,9 +89,8 @@ class WhatsAppMessageProcessingTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider subscriptionStatesProvider
-     */
+    #[Test]
+    #[DataProvider('subscriptionStatesProvider')]
     public function test_message_processing_logic(
         int $messagesUsed,
         float $walletBalance,

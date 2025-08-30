@@ -17,6 +17,7 @@ use App\Models\WhatsAppMessage;
 use App\Services\AI\AiUsageTracker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AiUsageTrackingTest extends TestCase

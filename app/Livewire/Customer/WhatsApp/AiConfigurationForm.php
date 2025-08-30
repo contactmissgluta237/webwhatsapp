@@ -345,6 +345,30 @@ final class AiConfigurationForm extends Component
         ]);
     }
 
+    public function clearPrompt(): void
+    {
+        $this->isProgrammaticUpdate = true;
+        $previousLength = strlen($this->agent_prompt);
+        $this->agent_prompt = '';
+        $this->isProgrammaticUpdate = false;
+
+        $this->resetEnhancementState();
+
+        $this->dispatch('config-changed-live', [
+            'agent_prompt' => $this->agent_prompt,
+        ]);
+
+        $this->dispatch('show-toast', [
+            'type' => 'success',
+            'message' => __('Prompt supprimé avec succès'),
+        ]);
+
+        Log::info('🗑️ Prompt supprimé', [
+            'account_id' => $this->account->id,
+            'previous_length' => $previousLength,
+        ]);
+    }
+
     public function removeDocument(int $mediaId): void
     {
         $media = $this->account->getMedia('context_documents')->firstWhere('id', $mediaId);

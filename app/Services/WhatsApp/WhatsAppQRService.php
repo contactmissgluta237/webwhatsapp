@@ -20,8 +20,8 @@ final class WhatsAppQRService
 
     public function __construct()
     {
-        $this->bridgeUrl = config('whatsapp.node_js.base_url');
-        $this->apiToken = config('whatsapp.node_js.api_token');
+        $this->bridgeUrl = config('whatsapp.bridge.base_url');
+        $this->apiToken = config('whatsapp.bridge.api_token');
     }
 
     public function generateQRCode(string $sessionName, int $userId): array
@@ -232,13 +232,6 @@ final class WhatsAppQRService
 
             return null;
         }
-    }
-
-    public function checkSessionConnection(string $sessionId): bool
-    {
-        $status = $this->getSessionStatus($sessionId);
-
-        return $status?->isConnected() ?? false;
     }
 
     private function makeHttpRequest(string $method, string $url, array $data = [], ?int $customTimeout = null): \Illuminate\Http\Client\Response

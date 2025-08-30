@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 final class WhatsAppMessageRequestDTOTest extends TestCase

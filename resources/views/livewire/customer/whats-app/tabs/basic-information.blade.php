@@ -141,6 +141,16 @@
                                 <i class="la la-spinner la-spin"></i> {{ __('Amélioration...') }}
                             </span>
                         </button>
+                        
+                        {{-- Bouton supprimer le prompt --}}
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm ml-2"
+                                wire:click="clearPrompt"
+                                wire:loading.attr="disabled"
+                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer complètement ce prompt ?')"
+                                title="{{ __('Supprimer le prompt') }}">
+                            <i class="la la-trash"></i> {{ __('Supprimer') }}
+                        </button>
                     @endif
                 @endif
 

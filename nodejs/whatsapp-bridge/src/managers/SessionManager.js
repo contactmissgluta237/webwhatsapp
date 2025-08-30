@@ -132,6 +132,15 @@ class SessionManager {
             qrcode.generate(qr, { small: true });
         });
 
+        client.on("authenticated", () => {
+            sessionData.status = "authenticating";
+            sessionData.qrCode = null;
+            this.webhookService.notifySessionStatusUpdate(sessionId, "authenticating", null, sessionData);
+            logger.session(sessionId, "Authentication successful", {
+                userId: sessionData.userId
+            });
+        });
+
         client.on("ready", async () => {
             sessionData.status = "connected";
             sessionData.qrCode = null;

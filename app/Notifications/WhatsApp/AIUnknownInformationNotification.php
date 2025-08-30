@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace App\Notifications\WhatsApp;
 
-use App\Channels\WhatsAppNotificationChannel;
+use App\Channels\WhatsAppChannel;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
+use App\Mail\AIUnknownInformationMail;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountSetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 final class AIUnknownInformationNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     public function __construct(
-        private WhatsAppAccount $account,
-        private WhatsAppMessageRequestDTO $incomingMessage,
-        private string $aiMessage
+        private readonly WhatsAppAccount $account,
+        private readonly WhatsAppMessageRequestDTO $incomingMessage,
+        private readonly string $aiMessage,
+        private $conversationId = null
     ) {}
 
     /**
@@ -33,16 +35,25 @@ final class AIUnknownInformationNotification extends Notification implements Sho
         /** @var WhatsAppAccountSetting|null $settings */
         $settings = $this->account->settings;
 
-        if ($settings?->enable_email_notifications) {
+        Log::info('[AI_UNKNOWN_NOTIFICATION] Determining channels', [
+            'account_id' => $this->account->id,
+            'enable_email_notifications' => $settings?->enable_email_notifications,
+            'notification_email' => $settings?->notification_email,
+            'enable_whatsapp_notifications' => $settings?->enable_whatsapp_notifications,
+            'notification_whatsapp_number' => $settings?->notification_whatsapp_number,
+        ]);
+
+        if ($settings?->enable_email_notifications && $settings?->notification_email) {
             $channels[] = 'mail';
+            Log::info('[AI_UNKNOWN_NOTIFICATION] Adding mail channel');
         }
 
-        if ($settings?->enable_whatsapp_notifications) {
-            $channels[] = WhatsAppNotificationChannel::class;
+        if ($settings?->enable_whatsapp_notifications && $settings?->notification_whatsapp_number) {
+            $channels[] = WhatsAppChannel::class;
+            Log::info('[AI_UNKNOWN_NOTIFICATION] Adding WhatsApp channel');
         }
 
-        // Add push notifications if enabled
-        $channels[] = 'broadcast';
+        Log::info('[AI_UNKNOWN_NOTIFICATION] Final channels', ['channels' => $channels]);
 
         return $channels;
     }
@@ -50,17 +61,23 @@ final class AIUnknownInformationNotification extends Notification implements Sho
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): AIUnknownInformationMail
     {
-        return (new MailMessage)
-            ->subject('AI Information Request - '.($this->account->agent_name ?? $this->account->session_name))
-            ->greeting('Hello!')
-            ->line('Your AI assistant received a question it couldn\'t answer from a customer.')
-            ->line('**Customer Phone:** '.$this->incomingMessage->from)
-            ->line('**Customer Question:** '.$this->incomingMessage->body)
-            ->line('**AI Response:** '.$this->aiMessage)
-            ->action('View WhatsApp Account', url('/customer/whatsapp/'.$this->account->id))
-            ->line('Please review and provide the information to improve future responses.');
+        $mail = new AIUnknownInformationMail(
+            $this->account,
+            $this->incomingMessage,
+            $this->aiMessage,
+            $this->conversationId ?? null
+        );
+
+        /** @var WhatsAppAccountSetting|null $settings */
+        $settings = $this->account->settings;
+
+        if ($settings?->notification_email) {
+            $mail->to($settings->notification_email);
+        }
+
+        return $mail;
     }
 
     /**
@@ -71,14 +88,39 @@ final class AIUnknownInformationNotification extends Notification implements Sho
         /** @var WhatsAppAccountSetting|null $settings */
         $settings = $this->account->settings;
 
-        return [
-            'to' => $settings?->notification_whatsapp_number,
-            'message' => "🤖 *AI Information Request*\n\n".
-                "Your AI assistant needs help!\n\n".
-                "📱 *Customer:* {$this->incomingMessage->from}\n".
-                "❓ *Question:* {$this->incomingMessage->body}\n\n".
-                "The AI couldn't provide a complete answer. Please review and update your knowledge base.",
+        $cleanPhoneNumber = $settings?->notification_whatsapp_number;
+
+        Log::info('[AI_UNKNOWN_NOTIFICATION] DEBUG Before cleaning', [
+            'raw_phone' => $cleanPhoneNumber,
+            'starts_with_plus' => str_starts_with($cleanPhoneNumber ?? '', '+'),
+        ]);
+
+        if ($cleanPhoneNumber && str_starts_with($cleanPhoneNumber, '+')) {
+            $cleanPhoneNumber = ltrim($cleanPhoneNumber, '+');
+        }
+
+        Log::info('[AI_UNKNOWN_NOTIFICATION] DEBUG After cleaning', [
+            'clean_phone' => $cleanPhoneNumber,
+        ]);
+
+        $data = [
+            'to' => $cleanPhoneNumber,
+            'session_id' => $this->account->session_id,
+            'message' => '🤖 *'.__('AI Information Request')."*\n\n".
+                __('Your AI assistant needs help!')." \n\n".
+                '📱 *'.__('Customer').":* {$this->incomingMessage->getContactPhone()}\n".
+                '❓ *'.__('Question').":* {$this->incomingMessage->body}\n\n".
+                __('The AI couldn\'t provide a complete answer. Please review and update your knowledge base.'),
         ];
+
+        Log::info('[AI_UNKNOWN_NOTIFICATION] WhatsApp data prepared', [
+            'account_id' => $this->account->id,
+            'raw_phone' => $settings?->notification_whatsapp_number,
+            'clean_phone' => $cleanPhoneNumber,
+            'data' => $data,
+        ]);
+
+        return $data;
     }
 
     /**
@@ -86,14 +128,27 @@ final class AIUnknownInformationNotification extends Notification implements Sho
      */
     public function toArray(object $notifiable): array
     {
+        $conversationId = $this->conversationId ?? null;
+        $conversationUrl = $conversationId
+            ? url('/customer/whatsapp/'.$this->account->id.'/conversations/'.$conversationId)
+            : url('/customer/whatsapp/'.$this->account->id);
+
         return [
             'type' => 'ai_unknown_information',
+            'title' => __('AI Information Request'),
+            'message' => __('Customer from :phone asked a question your AI couldn\'t answer', [
+                'phone' => $this->incomingMessage->getContactPhone(),
+            ]),
             'account_id' => $this->account->id,
             'account_name' => $this->account->agent_name ?? $this->account->session_name,
-            'customer_phone' => $this->incomingMessage->from,
+            'customer_phone' => $this->incomingMessage->getContactPhone(),
             'customer_question' => $this->incomingMessage->body,
             'ai_response' => $this->aiMessage,
             'session_id' => $this->account->session_id,
+            'conversation_id' => $conversationId,
+            'conversation_url' => $conversationUrl,
+            'action_text' => __('View Conversation'),
+            'action_url' => $conversationUrl,
             'created_at' => now()->toISOString(),
         ];
     }
@@ -106,8 +161,10 @@ final class AIUnknownInformationNotification extends Notification implements Sho
         return [
             'id' => $this->id,
             'type' => 'ai_unknown_information',
-            'title' => 'AI Information Request',
-            'message' => "Customer from {$this->incomingMessage->from} asked a question your AI couldn't answer",
+            'title' => __('AI Information Request'),
+            'message' => __('Customer from :phone asked a question your AI couldn\'t answer', [
+                'phone' => $this->incomingMessage->getContactPhone(),
+            ]),
             'data' => $this->toArray($notifiable),
             'timestamp' => now()->toISOString(),
         ];

@@ -59,48 +59,6 @@ final class WhatsAppQRServiceTest extends TestCase
         $this->assertNull($result);
     }
 
-    public function test_check_session_connection_returns_true_when_connected(): void
-    {
-        $sessionId = 'test_session';
-        Http::fake([
-            '*/api/sessions/*/status' => Http::response([
-                'sessionId' => $sessionId,
-                'status' => 'connected',
-                'phoneNumber' => '123456789',
-            ], 200),
-        ]);
-
-        $isConnected = $this->service->checkSessionConnection($sessionId);
-
-        $this->assertTrue($isConnected);
-    }
-
-    public function test_check_session_connection_returns_false_when_disconnected(): void
-    {
-        $sessionId = 'test_session';
-        Http::fake([
-            '*/api/sessions/*/status' => Http::response([
-                'sessionId' => $sessionId,
-                'status' => 'disconnected',
-            ], 200),
-        ]);
-
-        $isConnected = $this->service->checkSessionConnection($sessionId);
-
-        $this->assertFalse($isConnected);
-    }
-
-    public function test_check_session_connection_returns_false_on_error(): void
-    {
-        Http::fake([
-            '*/api/sessions/*/status' => Http::response(null, 500),
-        ]);
-
-        $isConnected = $this->service->checkSessionConnection('error_session');
-
-        $this->assertFalse($isConnected);
-    }
-
     public function test_get_session_status_handles_missing_phone_number(): void
     {
         $sessionId = 'session_without_phone';

@@ -5,34 +5,40 @@
 @section('content')
 <!-- Breadcrumb start -->
 <div class="row mx-0 mt-1 mb-1">
-    <div class="col-8 p-0">
-        <h2 class="content-header-title mb-0">{{ $title }}</h2>
-        <div class="breadcrumb-wrapper">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="la la-home"></i>{{ __('Home') }}</a></li>
-                <li class="breadcrumb-item active"><a href="{{ route('admin.transactions.index') }}">{{ __('Transactions') }}</a>
-                <li class="breadcrumb-item active">{{ __('Recharge') }}</li>
-            </ol>
+    <div class="content-header-left col-md-6 col-12 mb-2">
+        <h3 class="content-header-title text-whatsapp">{{ $title }}</h3>
+        <div class="row breadcrumbs-top">
+            <div class="breadcrumb-wrapper col-12">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Accueil</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.transactions.index') }}">Transactions</a></li>
+                    <li class="breadcrumb-item active">Recharge</li>
+                </ol>
+            </div>
         </div>
     </div>
-    <div class="col-4 p-0">
-        <div class="d-flex justify-content-end">
-            <a href="{{ route('admin.transactions.index') }}" class="btn btn-info">
-                <i class="la la-reply"></i>
-                {{ __('Back') }}
+
+    <div class="content-header-right col-md-6 col-12 text-right">
+        <div class="btn-group">
+            <a href="{{ route('admin.transactions.index') }}" class="btn btn-outline-secondary">
+                <i class="la la-arrow-left"></i> Retour
             </a>
         </div>
     </div>
 </div>
 <!-- Breadcrumb end -->
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                @livewire('admin.transactions.forms.create-admin-recharge-form')
+<div class="content-body">
+    <section id="recharge-management">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-none border border-gray-light">
+                    <div class="card-body">
+                        @livewire('admin.transactions.forms.create-admin-recharge-form')
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 </div>
 @endsection

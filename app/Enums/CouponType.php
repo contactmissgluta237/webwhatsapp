@@ -25,4 +25,22 @@ class CouponType extends Enum
             'FIXED_AMOUNT' => 'Montant Fixe',
         ];
     }
+
+    public function label(): string
+    {
+        return match ($this->value) {
+            'percentage' => 'Pourcentage',
+            'fixed_amount' => 'Montant Fixe',
+            default => 'Inconnu',
+        };
+    }
+
+    public function badge(): string
+    {
+        return match ($this->value) {
+            'percentage' => 'bg-info',
+            'fixed_amount' => 'bg-primary',
+            default => 'bg-secondary',
+        };
+    }
 }

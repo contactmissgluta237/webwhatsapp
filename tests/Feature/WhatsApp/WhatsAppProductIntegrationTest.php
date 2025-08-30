@@ -13,6 +13,7 @@ use App\Models\WhatsAppAccount;
 use App\Services\WhatsApp\Contracts\WhatsAppMessageOrchestratorInterface;
 use App\Services\WhatsApp\Helpers\AIResponseParserHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class WhatsAppProductIntegrationTest extends TestCase

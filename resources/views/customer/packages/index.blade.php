@@ -123,9 +123,10 @@
                             
                             @if($currentSubscription && $currentSubscription->package_id === $package->id)
                                 <div class="mb-2">
-                                    <button class="btn btn-success w-100" disabled>
+                                    <a href="{{ route('customer.subscriptions.show', $currentSubscription->id) }}" 
+                                       class="btn btn-success w-100">
                                         <i class="la la-check-circle"></i> En cours
-                                    </button>
+                                    </a>
                                 </div>
                                 @if(!$package->isTrial())
                                     <button type="button" class="btn btn-package-{{ $package->name }} w-100" 

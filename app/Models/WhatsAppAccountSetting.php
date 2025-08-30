@@ -41,33 +41,6 @@ final class WhatsAppAccountSetting extends Model
     ];
 
     /**
-     * Clean and validate WhatsApp number format
-     */
-    public function setNotificationWhatsappNumberAttribute(?string $value): void
-    {
-        if (empty($value)) {
-            $this->attributes['notification_whatsapp_number'] = null;
-
-            return;
-        }
-
-        // Clean: remove spaces, dashes, parentheses
-        $cleaned = preg_replace('/[\s\-\(\)]/', '', $value);
-
-        // Add + if missing
-        if (! str_starts_with($cleaned, '+')) {
-            $cleaned = '+'.$cleaned;
-        }
-
-        // Validate format (+ followed by 8-15 digits)
-        if (! preg_match('/^\+\d{8,15}$/', $cleaned)) {
-            throw new \InvalidArgumentException('Invalid WhatsApp number format');
-        }
-
-        $this->attributes['notification_whatsapp_number'] = $cleaned;
-    }
-
-    /**
      * Check if any notification is enabled
      */
     public function hasNotificationsEnabled(): bool

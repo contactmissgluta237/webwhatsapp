@@ -347,4 +347,12 @@ final class WhatsAppAccount extends Model implements HasMedia
             return false;
         }
     }
+
+    /**
+     * Route notifications for the mail channel.
+     */
+    public function routeNotificationForMail(): ?string
+    {
+        return $this->settings?->notification_email ?? $this->user?->email;
+    }
 }

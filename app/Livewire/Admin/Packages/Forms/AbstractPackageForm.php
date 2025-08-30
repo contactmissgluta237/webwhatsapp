@@ -16,7 +16,7 @@ abstract class AbstractPackageForm extends Component
     public string $context_limit = '1000';
     public string $accounts_limit = '1';
     public string $products_limit = '0';
-    public string $duration_days = '';
+    public string $duration_days = '30';
     public bool $is_recurring = true;
     public bool $one_time_only = false;
     public bool $is_active = true;
@@ -29,9 +29,7 @@ abstract class AbstractPackageForm extends Component
     public bool $promotion_is_active = false;
 
     public array $availableFeatures = [
-        'weekly_reports' => 'Rapports hebdomadaires',
-        'priority_support' => 'Support prioritaire',
-        'api_access' => 'Accès API',
+        // Fonctionnalités supprimées : weekly_reports, priority_support, api_access
     ];
 
     public function rules(): array
@@ -50,6 +48,19 @@ abstract class AbstractPackageForm extends Component
     public function updated($propertyName)
     {
         $this->validateOnly($propertyName);
+
+        if ($propertyName === 'name') {
+            $this->adjustDurationByPackageName();
+        }
+    }
+
+    protected function adjustDurationByPackageName(): void
+    {
+        if (strtolower($this->name) === 'trial') {
+            $this->duration_days = '7';
+        } else {
+            $this->duration_days = '30';
+        }
     }
 
     public function getPromotionPreview()

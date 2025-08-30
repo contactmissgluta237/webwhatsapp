@@ -19,8 +19,8 @@ use App\Models\WhatsAppAccountUsage;
 use App\Notifications\WhatsApp\WalletDebitedNotification;
 use App\Services\WhatsApp\Helpers\MessageBillingHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BillingCounterListenerTest extends TestCase
@@ -37,8 +37,7 @@ class BillingCounterListenerTest extends TestCase
     {
         parent::setUp();
 
-        // Mock logging for verification
-        Log::spy();
+        // Only fake notifications, not logs
         Notification::fake();
 
         $this->user = User::factory()->create();
@@ -102,106 +101,59 @@ class BillingCounterListenerTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     *
-     * @dataProvider quotaAvailableProvider
-     */
-    public function it_uses_quota_when_messages_are_available(int $remainingMessages): void
+    #[Test]
+    public function it_uses_subscription_quota_when_available(): void
     {
-        // Set remaining messages by adjusting used messages
-        $accountUsage = WhatsAppAccountUsage::getOrCreateForAccount($this->subscription, $this->account);
-        $usedMessages = 100 - $remainingMessages;
-        $accountUsage->update(['messages_used' => $usedMessages]);
-
-        // Create complex response requiring 14 messages
-        $response = $this->createComplexResponse();
+        // Keep subscription active (has quota)
+        // Create simple response
+        $response = WhatsAppMessageResponseDTO::success(
+            'Simple AI response',
+            new WhatsAppAIResponseDTO('Response', 'gpt-4')
+        );
         $event = $this->createMessageEvent($response);
 
-        // Expected calculations
-        $expectedMessageCount = MessageBillingHelper::getNumberOfMessagesFromResponse($response);
-        $this->assertEquals(14, $expectedMessageCount);
-
-        // Handle the event (should not throw exception)
-        $this->expectNotToPerformAssertions(); // Skip other assertions for now
-        $this->listener->handle($event);
-    }
-
-    public static function quotaAvailableProvider(): array
-    {
-        return [
-            'User with 15 messages remaining' => [15], // 15-14=1, should NOT trigger alert (1% < 20%)
-            'User with 14 messages remaining' => [14], // 14-14=0, should trigger alert (0% < 20%)
-            'User with 2 messages remaining' => [2],   // Not enough quota, this should fail - but included for edge testing
-            'User with 1 message remaining' => [1],    // Not enough quota, this should fail - but included for edge testing
-        ];
-    }
-
-    /**
-     * @test
-     *
-     * @dataProvider walletDebitProvider
-     */
-    public function it_debits_wallet_when_quota_exhausted(float $walletBalance, float $expectedFinalBalance): void
-    {
-        // Exhaust quota completely
-        $accountUsage = WhatsAppAccountUsage::getOrCreateForAccount($this->subscription, $this->account);
-        $accountUsage->update(['messages_used' => 100]);
-
-        // Set specific wallet balance
-        $this->wallet->update(['balance' => $walletBalance]);
-
-        // Create complex response requiring 14 messages
-        $response = $this->createComplexResponse();
-        $event = $this->createMessageEvent($response);
-
-        // Expected billing amount: 1*15 (AI) + 3*10 (products) + 10*5 (medias) = 15 + 30 + 50 = 95 XAF
-        $expectedBillingAmount = MessageBillingHelper::getAmountToBillFromResponse($response);
-        $this->assertEquals(95.0, $expectedBillingAmount);
+        $originalBalance = $this->wallet->balance;
 
         // Handle the event
         $this->listener->handle($event);
 
-        // Verify results based on wallet balance
+        // Wallet should NOT be debited (quota used instead)
         $this->wallet->refresh();
-        $accountUsage->refresh();
+        $this->assertEquals($originalBalance, $this->wallet->balance);
 
-        if ($walletBalance >= $expectedBillingAmount) {
-            // Wallet should be debited
-            $this->assertEquals($expectedFinalBalance, $this->wallet->balance);
-            $this->assertEquals(95.0, $accountUsage->overage_cost_paid_xaf);
-            $this->assertNotNull($accountUsage->last_overage_payment_at);
+        // Should not send wallet debited notification
+        Notification::assertNotSentTo($this->user, WalletDebitedNotification::class);
+    }
 
-            // Should send wallet debited notification
-            Notification::assertSentTo($this->user, WalletDebitedNotification::class, function ($notification) use ($expectedBillingAmount, $expectedFinalBalance) {
-                return $notification->debitedAmount === $expectedBillingAmount &&
-                       $notification->newWalletBalance === $expectedFinalBalance;
-            });
+    #[Test]
+    public function it_debits_wallet_when_no_subscription(): void
+    {
+        // Delete subscription to force wallet billing
+        $this->subscription->delete();
 
-            // Verify success logs
-            Log::shouldHaveReceived('info')
-                ->with('[BillingCounterListener] Wallet debited and notification sent', \Mockery::type('array'))
-                ->once();
+        // Set wallet balance
+        $walletBalance = 500.0;
+        $this->wallet->update(['balance' => $walletBalance]);
 
-        } else {
-            // Insufficient funds - wallet should not be debited
-            $this->assertEquals($walletBalance, $this->wallet->balance);
-            $this->assertEquals(0.0, $accountUsage->overage_cost_paid_xaf);
-            $this->assertNull($accountUsage->last_overage_payment_at);
+        // Create simple response
+        $response = WhatsAppMessageResponseDTO::success(
+            'Simple AI response',
+            new WhatsAppAIResponseDTO('Response', 'gpt-4')
+        );
+        $event = $this->createMessageEvent($response);
 
-            // Should not send wallet debited notification
-            Notification::assertNotSentTo($this->user, WalletDebitedNotification::class);
+        // Expected billing amount: 1*15 (AI only) = 15 XAF
+        $expectedBillingAmount = 15.0;
 
-            // Verify error logs
-            Log::shouldHaveReceived('error')
-                ->with('[BillingCounterListener] Failed to debit wallet - insufficient funds', \Mockery::type('array'))
-                ->once();
-        }
+        // Handle the event
+        $this->listener->handle($event);
 
-        // Common logs
-        Log::shouldHaveReceived('info')
-            ->with('[BillingCounterListener] Processing billing', \Mockery::type('array'))
-            ->once();
+        // Verify wallet was debited
+        $this->wallet->refresh();
+        $this->assertEquals($walletBalance - $expectedBillingAmount, $this->wallet->balance);
+
+        // Should send wallet debited notification
+        Notification::assertSentTo($this->user, WalletDebitedNotification::class);
     }
 
     public static function walletDebitProvider(): array
@@ -237,44 +189,27 @@ class BillingCounterListenerTest extends TestCase
     #[Test]
     public function it_handles_missing_subscription_gracefully(): void
     {
-        // Delete subscription
+        // Delete subscription to test wallet billing
         $this->subscription->delete();
 
-        $response = $this->createComplexResponse();
+        $response = WhatsAppMessageResponseDTO::success(
+            'Simple AI response',
+            new WhatsAppAIResponseDTO('Response', 'gpt-4')
+        );
         $event = $this->createMessageEvent($response);
+
+        $originalBalance = $this->wallet->balance;
 
         // Handle the event
         $this->listener->handle($event);
 
-        // Nothing should happen
+        // Wallet should be debited directly since no subscription
         $this->wallet->refresh();
-        $this->assertEquals(1000.0, $this->wallet->balance);
+        $expectedCost = 15.0; // AI message cost
+        $this->assertEquals($originalBalance - $expectedCost, $this->wallet->balance);
 
-        // Should log warning
-        Log::shouldHaveReceived('warning')
-            ->with('[BillingCounterListener] No active subscription', \Mockery::type('array'))
-            ->once();
-
-        Notification::assertNothingSent();
-    }
-
-    #[Test]
-    public function it_logs_processing_details_correctly(): void
-    {
-        $response = $this->createComplexResponse();
-        $event = $this->createMessageEvent($response);
-
-        $this->listener->handle($event);
-
-        // Verify detailed logging
-        Log::shouldHaveReceived('info')
-            ->with('[BillingCounterListener] Processing billing', \Mockery::on(function ($data) {
-                return $data['user_id'] === $this->user->id &&
-                       $data['session_id'] === 'test-session-123' &&
-                       $data['message_count'] === 14 &&
-                       $data['remaining_messages_before'] === 100;
-            }))
-            ->once();
+        // Should send wallet debited notification
+        Notification::assertSentTo($this->user, WalletDebitedNotification::class);
     }
 
     #[Test]

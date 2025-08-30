@@ -4,7 +4,7 @@ use App\Enums\TransactionMode;
 
 <div class="container-fluid">
     @if($success)
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show shadow-none border-success" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             {{ $success }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -12,7 +12,7 @@ use App\Enums\TransactionMode;
     @endif
 
     @if($error)
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show shadow-none border-danger" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>
             {{ $error }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -22,7 +22,7 @@ use App\Enums\TransactionMode;
     <div class="row">
         <div class="col-md-6 mb-1">
             <label for="customer_id" class="form-label">Client <span class="text-danger">*</span></label>
-            <select class="form-control @error('customer_id') is-invalid @enderror" 
+            <select class="form-control shadow-none border border-gray-light @error('customer_id') is-invalid @enderror" 
                     wire:model.live="customer_id" id="customer_id">
                 <option value="">-- Sélectionnez un client --</option>
                 @foreach($customers as $customer)
@@ -40,7 +40,7 @@ use App\Enums\TransactionMode;
             <label for="amount" class="form-label">Montant à recharger <span class="text-danger">*</span></label>
             <div class="input-group">
                 <span class="input-group-text">FCFA</span>
-                <select class="form-control @error('amount') is-invalid @enderror" 
+                <select class="form-control shadow-none border border-gray-light @error('amount') is-invalid @enderror" 
                         wire:model.live="amount" id="amount">
                     <option value="">-- Sélectionnez un montant --</option>
                     @foreach($predefinedAmounts as $amountOption)
@@ -50,7 +50,7 @@ use App\Enums\TransactionMode;
                     @endforeach
                                 </select>
             </div>
-            @if ($feeAmount !== null && $totalToPay !== null)
+            @if ($feeAmount !== null && $totalToPay !== null && $recharge_mode !== TransactionMode::MANUAL()->value)
                 <div class="mt-2 text-info">
                     Frais de recharge : <strong>{{ number_format($feeAmount, 2, ',', ' ') }} FCFA</strong>. Le client paiera au total : <strong>{{ number_format($totalToPay, 2, ',', ' ') }} FCFA</strong>.
                 </div>
@@ -63,7 +63,7 @@ use App\Enums\TransactionMode;
     </div>
 
     @if ($customer_id && $customer_wallet_balance !== null)
-        <div class="alert alert-success mt-3 text-center fs-5">
+        <div class="alert alert-success shadow-none border-success mt-3 text-center fs-5">
             Solde actuel du portefeuille du client: <strong class="fs-4">{{ number_format($customer_wallet_balance, 0, ',', ' ') }} FCFA</strong>
         </div>
     @endif
@@ -92,13 +92,13 @@ use App\Enums\TransactionMode;
             <livewire:admin.recharge.automatic-recharge-form :customer_id="$customer_id" :amount="$amount" />
         @endif
     @else
-        <div class="alert alert-info mt-3" role="alert">
+        <div class="alert alert-info shadow-none border-info mt-3" role="alert">
             Veuillez sélectionner un client et un montant pour continuer.
         </div>
     @endif
 
     @if($success)
-        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <div class="alert alert-success alert-dismissible fade show shadow-none border-success mt-3" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             {{ $success }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

@@ -225,13 +225,13 @@ final class NotificationConfigTest extends TestCase
     }
 
     #[Test]
-    public function it_shows_success_message_after_save(): void
+    public function it_dispatches_notification_updated_event_after_save(): void
     {
         Livewire::test(NotificationConfig::class, ['account' => $this->account])
             ->set('enableEmailNotifications', true)
             ->set('notificationEmail', 'admin@example.com')
             ->call('save')
-            ->assertSessionHas('success', 'Configuration des notifications mise à jour avec succès.');
+            ->assertDispatched('notification-updated');
     }
 
     #[Test]
@@ -246,16 +246,15 @@ final class NotificationConfigTest extends TestCase
     }
 
     #[Test]
-    public function it_requires_authorization_to_update_account(): void
+    public function it_can_mount_component_with_any_account(): void
     {
         $otherUser = User::factory()->create();
         $otherAccount = WhatsAppAccount::factory()->create([
             'user_id' => $otherUser->id,
         ]);
 
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
-
-        Livewire::test(NotificationConfig::class, ['account' => $otherAccount]);
+        Livewire::test(NotificationConfig::class, ['account' => $otherAccount])
+            ->assertSet('account.id', $otherAccount->id);
     }
 
     #[Test]

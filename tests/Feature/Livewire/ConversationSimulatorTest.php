@@ -12,16 +12,13 @@ use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Group;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
-/**
- * Tests fonctionnels pour le simulateur de conversation WhatsApp
- *
- * @group livewire
- * @group whatsapp
- * @group simulator
- */
+#[Group('livewire')]
+#[Group('whatsapp')]
+#[Group('simulator')]
 final class ConversationSimulatorTest extends TestCase
 {
     use RefreshDatabase;

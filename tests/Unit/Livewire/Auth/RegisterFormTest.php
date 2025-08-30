@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Auth\Contracts\AccountActivationServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class RegisterFormTest extends TestCase

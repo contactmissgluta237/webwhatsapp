@@ -10,6 +10,7 @@ use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountUsage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PackageSubscriptionSystemTest extends TestCase
@@ -40,7 +41,7 @@ class PackageSubscriptionSystemTest extends TestCase
         $starter = Package::findByName('starter');
         $this->assertTrue($starter->isStarter());
         $this->assertFalse($starter->allowsProducts());
-        $this->assertEquals(2000, $starter->price);
+        $this->assertEquals(3000, $starter->price);
 
         $business = Package::findByName('business');
         $this->assertTrue($business->isBusiness());

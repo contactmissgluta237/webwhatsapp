@@ -8,7 +8,7 @@ use App\Enums\PaymentMethod;
             <div class="col-md-6 mb-3">
                 <label for="external_transaction_id" class="form-label">ID Transaction Externe <span class="text-danger">*</span></label>
                 <input type="text" 
-                       class="form-control @error('external_transaction_id') is-invalid @enderror" 
+                       class="form-control shadow-none border border-gray-light @error('external_transaction_id') is-invalid @enderror" 
                        wire:model="external_transaction_id"
                        id="external_transaction_id"
                        placeholder="Ex: TRX123456789">
@@ -19,7 +19,7 @@ use App\Enums\PaymentMethod;
 
             <div class="col-md-6 mb-3">
                 <label for="payment_method" class="form-label">Méthode de Paiement <span class="text-danger">*</span></label>
-                <select class="form-select @error('payment_method') is-invalid @enderror" 
+                <select class="form-select shadow-none border border-gray-light @error('payment_method') is-invalid @enderror" 
                         wire:model.live="payment_method" id="payment_method">
                     <option value="">-- Sélectionnez une méthode --</option>
                     @foreach($paymentMethods as $method)
@@ -38,7 +38,7 @@ use App\Enums\PaymentMethod;
             <div class="col-md-6 mb-3">
                 <label for="sender_name" class="form-label">Nom Expéditeur <span class="text-danger">*</span></label>
                 <input type="text" 
-                       class="form-control @error('sender_name') is-invalid @enderror" 
+                       class="form-control shadow-none border border-gray-light @error('sender_name') is-invalid @enderror" 
                        wire:model="sender_name"
                        id="sender_name"
                        placeholder="Ex: Jean Dupont">
@@ -66,7 +66,7 @@ use App\Enums\PaymentMethod;
                 @elseif($payment_method)
                     <label for="sender_account" class="form-label">Compte Expéditeur <span class="text-danger">*</span></label>
                     <input type="text" 
-                           class="form-control @error('sender_account') is-invalid @enderror" 
+                           class="form-control shadow-none border border-gray-light @error('sender_account') is-invalid @enderror" 
                            wire:model="sender_account"
                            id="sender_account"
                            placeholder="Ex: +237670000000">
@@ -87,7 +87,7 @@ use App\Enums\PaymentMethod;
             <div class="col-md-6 mb-3">
                 <label for="receiver_name" class="form-label">Nom Destinataire <span class="text-danger">*</span></label>
                 <input type="text" 
-                       class="form-control @error('receiver_name') is-invalid @enderror" 
+                       class="form-control shadow-none border border-gray-light @error('receiver_name') is-invalid @enderror" 
                        wire:model="receiver_name"
                        id="receiver_name"
                        placeholder="Ex: Marie Martin">
@@ -115,7 +115,7 @@ use App\Enums\PaymentMethod;
                 @elseif($payment_method)
                     <label for="receiver_account" class="form-label">Compte Destinataire <span class="text-danger">*</span></label>
                     <input type="text" 
-                           class="form-control @error('receiver_account') is-invalid @enderror" 
+                           class="form-control shadow-none border border-gray-light @error('receiver_account') is-invalid @enderror" 
                            wire:model="receiver_account"
                            id="receiver_account"
                            placeholder="Ex: +237680000000">
@@ -134,7 +134,7 @@ use App\Enums\PaymentMethod;
 
         <div class="mb-4">
             <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-            <textarea class="form-control @error('description') is-invalid @enderror" 
+            <textarea class="form-control shadow-none border border-gray-light @error('description') is-invalid @enderror" 
                       wire:model="description"
                       id="description" 
                       rows="3" 

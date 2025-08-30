@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Services\Customer;
 
 use App\Constants\ApplicationLimits;
+use App\Contracts\PackageSubscriptionServiceInterface;
 use App\Enums\PackageType;
 use App\Enums\SubscriptionStatus;
 use App\Events\Customer\PackageSubscriptionCreatedEvent;
-use App\Http\Requests\Customer\Packages\SubscribePackageRequest;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\UserSubscription;
@@ -16,7 +16,7 @@ use App\Services\CouponService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PackageSubscriptionService
+class PackageSubscriptionService implements PackageSubscriptionServiceInterface
 {
     public function __construct(
         private readonly CouponService $couponService
@@ -64,23 +64,6 @@ class PackageSubscriptionService
 
             return $subscription;
         });
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function subscribe(SubscribePackageRequest $request): UserSubscription
-    {
-        $user = $request->user();
-        if (! $user) {
-            throw new \Exception('User not authenticated');
-        }
-
-        return $this->subscribeDirectly(
-            $user,
-            $request->getPackage(),
-            $request->getCouponCode()
-        );
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Notifications\WhatsApp;
 
-use App\Channels\WhatsAppNotificationChannel;
+use App\Channels\WhatsAppChannel;
 use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Models\User;
 use App\Models\WhatsAppAccount;
@@ -102,7 +102,7 @@ final class AIUnknownInformationNotificationTest extends TestCase
         $notification = $this->createNotification();
         $channels = $notification->via($this->account);
 
-        $this->assertContains(WhatsAppNotificationChannel::class, $channels);
+        $this->assertContains(WhatsAppChannel::class, $channels);
     }
 
     #[Test]
@@ -114,7 +114,7 @@ final class AIUnknownInformationNotificationTest extends TestCase
         $notification = $this->createNotification();
         $channels = $notification->via($this->account);
 
-        $this->assertNotContains(WhatsAppNotificationChannel::class, $channels);
+        $this->assertNotContains(WhatsAppChannel::class, $channels);
     }
 
     #[Test]
@@ -193,7 +193,7 @@ final class AIUnknownInformationNotificationTest extends TestCase
         $this->assertContains('database', $channels);
         $this->assertContains('broadcast', $channels);
         $this->assertNotContains('mail', $channels);
-        $this->assertNotContains(WhatsAppNotificationChannel::class, $channels);
+        $this->assertNotContains(WhatsAppChannel::class, $channels);
     }
 
     #[Test]

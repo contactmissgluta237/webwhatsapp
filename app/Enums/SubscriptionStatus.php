@@ -11,26 +11,31 @@ use Spatie\Enum\Laravel\Enum;
  * @method static self CANCELLED()
  * @method static self EXPIRED()
  * @method static self PENDING()
+ * @method static self SUSPENDED()
+ * @method static array values()
+ * @method static array labels()
  */
 final class SubscriptionStatus extends Enum
 {
-    protected static function values(): array
+    public static function values(): array
     {
         return [
             'ACTIVE' => 'active',
             'CANCELLED' => 'cancelled',
             'EXPIRED' => 'expired',
             'PENDING' => 'pending',
+            'SUSPENDED' => 'suspended',
         ];
     }
 
-    protected static function labels(): array
+    public static function labels(): array
     {
         return [
-            'active' => 'Actif',
-            'cancelled' => 'Annulé',
-            'expired' => 'Expiré',
-            'pending' => 'En attente',
+            'active' => __('subscriptions.status_active'),
+            'cancelled' => __('subscriptions.status_cancelled'),
+            'expired' => __('subscriptions.status_expired'),
+            'pending' => __('subscriptions.status_pending'),
+            'suspended' => __('subscriptions.status_suspended'),
         ];
     }
 
@@ -41,6 +46,7 @@ final class SubscriptionStatus extends Enum
             'cancelled' => 'bg-secondary',
             'expired' => 'bg-danger',
             'pending' => 'bg-warning',
+            'suspended' => 'bg-secondary',
         };
     }
 
