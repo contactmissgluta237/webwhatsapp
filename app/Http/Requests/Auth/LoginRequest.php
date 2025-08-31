@@ -55,15 +55,15 @@ class LoginRequest extends FormRequest
     public static function getMessages(): array
     {
         return [
-            'email.required' => 'L\'adresse email est requise.',
-            'email.email' => 'L\'adresse email doit être valide.',
-            'phone_number.required' => 'Le numéro de téléphone complet est requis.',
-            'phone_number_only.required' => 'Veuillez saisir votre numéro de téléphone.',
-            'phone_number_only.min' => 'Le numéro de téléphone doit contenir au moins 8 chiffres.',
-            'phone_number_only.max' => 'Le numéro de téléphone ne doit pas dépasser 15 chiffres.',
-            'password.required' => 'Le mot de passe est requis.',
-            'country_id.required' => 'Veuillez sélectionner l\'indicateur de votre pays.',
-            'country_id.exists' => 'L\'indicateur pays sélectionné n\'existe pas.',
+            'email.required' => __('validation.auth.email.required'),
+            'email.email' => __('validation.auth.email.email'),
+            'phone_number.required' => __('validation.auth.phone_number.required'),
+            'phone_number_only.required' => __('validation.auth.phone_number_only.required'),
+            'phone_number_only.min' => __('validation.auth.phone_number_only.min'),
+            'phone_number_only.max' => __('validation.auth.phone_number_only.max'),
+            'password.required' => __('validation.auth.password.required'),
+            'country_id.required' => __('validation.auth.country_id.required'),
+            'country_id.exists' => __('validation.auth.country_id.exists'),
         ];
     }
 }

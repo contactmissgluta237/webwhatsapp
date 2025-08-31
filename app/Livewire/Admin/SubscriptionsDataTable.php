@@ -82,7 +82,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                     }
 
                     $badge = '<span class="badge bg-primary">'.$value.'</span>';
-                    $price = '<br><small class="text-muted">'.number_format((float) $row->package->price).' XAF</small>';
+                    $price = '<br><small class="text-muted">'.\App\Helpers\CurrencyHelper::formatUsd((float) $row->package->price).'</small>';
 
                     return $badge.$price;
                 })
@@ -120,7 +120,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                 ->format(function ($value, $row) {
                     $amount = (float) $value;
                     if ($amount > 0) {
-                        return '<strong>'.number_format($amount).' XAF</strong><br><small class="text-muted">'.($row->payment_method ?? 'wallet').'</small>';
+                        return '<strong>'.\App\Helpers\CurrencyHelper::formatUsd($amount).'</strong><br><small class="text-muted">'.($row->payment_method ?? 'wallet').'</small>';
                     }
 
                     return '<span class="badge bg-success">'.__('subscriptions.free').'</span>';
@@ -236,7 +236,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                 $label = __($translationKey);
                 $options[$value] = $label;
             } catch (Exception $e) {
-                $options[$value] = ucfirst($value);
+                $options[$value] = ucfirst((string) $value);
             }
         }
 

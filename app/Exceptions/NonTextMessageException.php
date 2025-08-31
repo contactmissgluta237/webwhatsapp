@@ -23,6 +23,6 @@ final class NonTextMessageException extends Exception
 
     public function getDefaultResponse(): string
     {
-        return "Désolé, je ne peux comprendre que les messages texte pour le moment. Veuillez m'envoyer votre message sous forme de texte et je serai ravi de vous aider ! 😊";
+        return __("Désolé, je ne peux comprendre que les messages texte pour le moment. Veuillez m'envoyer votre message sous forme de texte et je serai ravi de vous aider ! 😊");
     }
 }

@@ -54,7 +54,7 @@ final class SubscriptionsDataTable extends BaseDataTable
                         <i class="la la-gift text-primary mr-2 la-lg"></i>
                         <div>
                             <div class="fw-bold">'.$value.'</div>
-                            <small class="text-muted">'.number_format((float) $row->amount_paid ?? 0, 0, ',', ' ').' XAF</small>
+                            <small class="text-muted">'.\App\Helpers\CurrencyHelper::formatUsd((float) $row->amount_paid ?? 0).'</small>
                         </div>
                     </div>';
                 })

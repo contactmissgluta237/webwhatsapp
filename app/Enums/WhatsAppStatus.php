@@ -48,15 +48,15 @@ final class WhatsAppStatus extends Enum
     public function getBadgeClass(): string
     {
         return match ($this->value) {
-            'reconnecting' => 'bg-orange-100 text-orange-800',
-            'disconnected' => 'bg-gray-100 text-gray-800',
-            'connecting' => 'bg-yellow-100 text-yellow-800',
-            'connected' => 'bg-green-100 text-green-800',
-            'error' => 'bg-red-100 text-red-800',
-            'initializing' => 'bg-blue-100 text-blue-800',
-            'waiting_qr' => 'bg-purple-100 text-purple-800',
-            'failed' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
+            'reconnecting' => 'badge-warning',
+            'disconnected' => 'badge-secondary',
+            'connecting' => 'badge-warning',
+            'connected' => 'badge-success',
+            'error' => 'badge-danger',
+            'initializing' => 'badge-info',
+            'waiting_qr' => 'badge-primary',
+            'failed' => 'badge-danger',
+            default => 'badge-secondary',
         };
     }
 

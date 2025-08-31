@@ -87,7 +87,7 @@ class SystemAccountTransactionDataTable extends BaseDataTable
     {
         return Column::make('Montant', 'amount')
             ->sortable()
-            ->format(fn ($value) => number_format($value, 0, ',', ' ').' FCFA');
+            ->format(fn (float $value): string => \App\Helpers\CurrencyHelper::formatUsd($value));
     }
 
     private function getSenderNameColumn(): Column

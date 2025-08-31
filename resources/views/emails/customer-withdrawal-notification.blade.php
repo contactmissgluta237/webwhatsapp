@@ -17,7 +17,7 @@
         style="background-color: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; margin: 25px 0;">
         <h3 style="color: #2d3748; margin-bottom: 15px; font-size: 18px;">📋 Détails du retrait</h3>
         <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
-            <p style="margin: 8px 0;"><strong>Montant :</strong> {{ number_format($transaction->amount, 0, ',', ' ') }} FCFA
+            <p style="margin: 8px 0;"><strong>Montant :</strong> {{ \App\Helpers\CurrencyHelper::formatUsd($transaction->amount) }}
             </p>
             <p style="margin: 8px 0;"><strong>Méthode de paiement :</strong> {{ $transaction->payment_method->label }}</p>
             <p style="margin: 8px 0;"><strong>Compte destinataire :</strong> {{ $transaction->receiver_account }}</p>

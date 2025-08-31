@@ -7,12 +7,16 @@ namespace App\Listeners;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\AdminNewTicketSyncNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-final class NotifyAdminOfNewTicketSyncListener extends BaseListener
+final class NotifyAdminOfNewTicketSyncListener extends BaseListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     protected function getEventIdentifiers($event): array
     {
         return [

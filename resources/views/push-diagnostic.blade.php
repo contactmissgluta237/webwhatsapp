@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnostic Push Notifications</title>
+    <title>{{ __('Push Notifications Diagnostic') }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
     <meta name="user-id" content="{{ auth()->id() }}">
@@ -14,8 +14,8 @@
         <div class="bg-white rounded-lg shadow-lg p-8">
             <div class="text-center mb-8">
                 <div class="text-6xl mb-4">🔧</div>
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">Diagnostic Push Notifications</h1>
-                <p class="text-gray-600">Vérification complète de la configuration</p>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ __('Push Notifications Diagnostic') }}</h1>
+                <p class="text-gray-600">{{ __('Complete configuration verification') }}</p>
             </div>
 
             <!-- Status global -->

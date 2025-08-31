@@ -102,8 +102,12 @@ class WhatsAppAccountDataTable extends BaseDataTable
                 ->format(function ($value, $row) {
                     $freshAccount = \App\Models\WhatsAppAccount::find($row->id);
 
-                    if ($freshAccount->agent_enabled && $freshAccount->ai_model_id) {
+                    if ($freshAccount->hasAiAgent()) {
                         return '<span class="badge badge-success"><i class="la la-robot"></i> '.__('Actif').'</span>';
+                    }
+
+                    if ($freshAccount->agent_enabled && $freshAccount->ai_model_id && ! $freshAccount->hasValidPrompt()) {
+                        return '<span class="badge badge-warning"><i class="la la-exclamation-triangle"></i> '.__('Prompt requis').'</span>';
                     }
 
                     return '<span class="badge badge-secondary"><i class="la la-robot"></i> '.__('Inactif').'</span>';
@@ -165,10 +169,18 @@ class WhatsAppAccountDataTable extends BaseDataTable
                     }
 
                     if ($value === '1') {
-                        return $builder->where('agent_enabled', true)->whereNotNull('ai_model_id');
+                        return $builder->where('agent_enabled', true)
+                            ->whereNotNull('ai_model_id')
+                            ->whereNotNull('agent_prompt')
+                            ->where('agent_prompt', '!=', '');
                     }
 
-                    return $builder->where('agent_enabled', false)->orWhereNull('ai_model_id');
+                    return $builder->where(function ($query) {
+                        $query->where('agent_enabled', false)
+                            ->orWhereNull('ai_model_id')
+                            ->orWhereNull('agent_prompt')
+                            ->orWhere('agent_prompt', '');
+                    });
                 }),
 
             DateFilter::make(__('Créé après'), 'created_at')

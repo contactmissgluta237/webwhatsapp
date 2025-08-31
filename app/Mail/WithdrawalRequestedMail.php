@@ -15,7 +15,7 @@ class WithdrawalRequestedMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Nouvelle demande de retrait')
+        return $this->subject(__('emails.withdrawal_requested.subject'))
             ->markdown('emails.transactions.requested');
     }
 }

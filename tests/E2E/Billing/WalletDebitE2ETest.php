@@ -49,8 +49,8 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
      * Scénario:
      * - Customer avec 0 messages restants dans son quota
      * - Wallet avec 1000 XAF (suffisant)
-     * - Envoi d'une réponse complexe (AI + 3 produits + 6 médias) = 10 messages = 75 XAF
-     * - Vérification que 75 XAF sont débités du wallet
+     * - Envoi d'une réponse complexe (AI + 3 produits) = 4 messages = 45 XAF
+     * - Vérification que 45 XAF sont débités du wallet
      * - Notification WalletDebitedNotification envoyée
      * - Logs de débit wallet présents
      */
@@ -172,8 +172,8 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         // ============================================================
         echo "\n🔍 [E2E] Test avec wallet insuffisant...\n";
 
-        // Mettre seulement 50 XAF dans le wallet (insuffisant pour 75 XAF)
-        $lowBalance = 50.0;
+        // Mettre seulement 30 XAF dans le wallet (insuffisant pour 45 XAF)
+        $lowBalance = 30.0;
         $this->wallet->update(['balance' => $lowBalance]);
 
         $messageRequest = $this->generateMessageRequest('Encore des produits please');

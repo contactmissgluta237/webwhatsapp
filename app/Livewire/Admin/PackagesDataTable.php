@@ -97,8 +97,8 @@ final class PackagesDataTable extends BaseDataTable
                 ->sortable()
                 ->format(function ($value, $row) {
                     if ($row->hasActivePromotion()) {
-                        $originalPrice = $row->price == 0 ? 'GRATUIT' : number_format((float) $row->price, 0, ',', ' ').' XAF';
-                        $promoPrice = $row->promotional_price == 0 ? 'GRATUIT' : number_format((float) $row->promotional_price, 0, ',', ' ').' XAF';
+                        $originalPrice = $row->price == 0 ? 'GRATUIT' : \App\Helpers\CurrencyHelper::formatUsd((float) $row->price);
+                        $promoPrice = $row->promotional_price == 0 ? 'GRATUIT' : \App\Helpers\CurrencyHelper::formatUsd((float) $row->promotional_price);
 
                         return '<div>
                             <span class="text-muted text-decoration-line-through small">'.$originalPrice.'</span><br>
@@ -111,7 +111,7 @@ final class PackagesDataTable extends BaseDataTable
                         return '<span class="text-success fw-bold">GRATUIT</span>';
                     }
 
-                    return '<span class="text-dark fw-bold">'.number_format((float) $value, 0, ',', ' ').' XAF</span>';
+                    return '<span class="text-dark fw-bold">'.\App\Helpers\CurrencyHelper::formatUsd((float) $value).'</span>';
                 })
                 ->html(),
 

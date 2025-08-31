@@ -24,9 +24,7 @@ class MessageUsageLogFactory extends Factory
         $aiCost = config('whatsapp.billing.costs.ai_message', 15);
         $productCount = fake()->numberBetween(0, 2);
         $productCost = $productCount * config('whatsapp.billing.costs.product_message', 10);
-        $mediaCount = fake()->numberBetween(0, 3);
-        $mediaCost = $mediaCount * config('whatsapp.billing.costs.media', 5);
-        $totalCost = $aiCost + $productCost + $mediaCost;
+        $totalCost = $aiCost + $productCost;
 
         return [
             'whatsapp_message_id' => WhatsAppMessage::factory(),
@@ -34,10 +32,8 @@ class MessageUsageLogFactory extends Factory
             'whatsapp_conversation_id' => WhatsAppConversation::factory(),
             'user_id' => User::factory(),
             'ai_message_cost' => $aiCost,
-            'product_messages_count' => $productCount,
-            'product_messages_cost' => $productCost,
-            'media_count' => $mediaCount,
-            'media_cost' => $mediaCost,
+            'product_count' => $productCount,
+            'product_cost' => $productCost,
             'total_cost' => $totalCost,
             'billing_type' => fake()->randomElement(BillingType::cases()),
         ];
@@ -67,29 +63,23 @@ class MessageUsageLogFactory extends Factory
 
         return $this->state(fn (array $attributes) => [
             'ai_message_cost' => $aiCost,
-            'product_messages_count' => 0,
-            'product_messages_cost' => 0,
-            'media_count' => 0,
-            'media_cost' => 0,
+            'product_count' => 0,
+            'product_cost' => 0,
             'total_cost' => $aiCost,
         ]);
     }
 
-    public function withProductsAndMedia(): static
+    public function withProducts(): static
     {
         $aiCost = config('whatsapp.billing.costs.ai_message', 15);
         $productCount = fake()->numberBetween(1, 3);
         $productCost = $productCount * config('whatsapp.billing.costs.product_message', 10);
-        $mediaCount = fake()->numberBetween(1, 5);
-        $mediaCost = $mediaCount * config('whatsapp.billing.costs.media', 5);
-        $totalCost = $aiCost + $productCost + $mediaCost;
+        $totalCost = $aiCost + $productCost;
 
         return $this->state(fn (array $attributes) => [
             'ai_message_cost' => $aiCost,
-            'product_messages_count' => $productCount,
-            'product_messages_cost' => $productCost,
-            'media_count' => $mediaCount,
-            'media_cost' => $mediaCost,
+            'product_count' => $productCount,
+            'product_cost' => $productCost,
             'total_cost' => $totalCost,
         ]);
     }

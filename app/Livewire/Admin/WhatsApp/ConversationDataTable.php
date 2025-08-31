@@ -143,7 +143,7 @@ class ConversationDataTable extends CustomerConversationDataTable
                     }
 
                     return '<div class="text-center">
-                        <div class="fw-bold text-danger">'.number_format($totalCost, 0).' XAF</div>
+                        <div class="fw-bold text-danger">'.\App\Helpers\CurrencyHelper::formatUsd($totalCost).'</div>
                         <small class="text-muted">'.$requestCount.' req.</small>
                         '.($lastUsed ? '<br><small class="text-info">'.$lastUsed->format('d/m H:i').'</small>' : '').'
                     </div>';

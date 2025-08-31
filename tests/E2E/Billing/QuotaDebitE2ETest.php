@@ -23,8 +23,8 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
      *
      * Scénario:
      * - Customer avec 100 messages dans son package starter
-     * - Envoi d'une réponse complexe (AI + 3 produits + 6 médias) = 10 messages
-     * - Vérification que 10 messages sont déduits du quota
+     * - Envoi d'une réponse complexe (AI + 3 produits) = 4 messages
+     * - Vérification que 4 messages sont déduits du quota
      * - Aucun débit wallet
      * - Logs de facturation présents
      */
@@ -59,7 +59,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
 
         echo "🧮 Messages calculés: {$expectedMessageCount}\n";
         echo "🧮 Coût calculé: {$expectedBillingAmount} XAF\n";
-        echo "🧮 Détail: 1 AI + 3 produits + 6 médias = {$expectedMessageCount} messages\n";
+        echo "🧮 Détail: 1 AI + 3 produits = {$expectedMessageCount} messages\n";
 
         // Dispatcher l'événement
         echo "🚀 Dispatch de MessageProcessedEvent...\n";
@@ -175,16 +175,15 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
         $complexCount = MessageBillingHelper::getNumberOfMessagesFromResponse($complexResponse);
         $complexCost = MessageBillingHelper::getAmountToBillFromResponse($complexResponse);
 
-        // 1 AI + 3 produits + 6 médias (2+1+3) = 10 messages
-        $this->assertEquals(10, $complexCount);
-        // 1*15 (AI) + 3*10 (produits) + 6*5 (médias) = 15 + 30 + 30 = 75 XAF
-        $this->assertEquals(75.0, $complexCost);
+        // 1 AI + 3 produits = 4 messages
+        $this->assertEquals(4, $complexCount);
+        // 1*15 (AI) + 3*10 (produits) = 15 + 30 = 45 XAF
+        $this->assertEquals(45.0, $complexCost);
 
         echo "✅ Réponse complexe: {$complexCount} messages = {$complexCost} XAF\n";
         echo "   📱 1 message IA = 15 XAF\n";
         echo "   📦 3 messages produits = 30 XAF\n";
-        echo "   🖼️  6 médias = 30 XAF\n";
-        echo "   🧮 Total = 75 XAF\n";
+        echo "   🧮 Total = 45 XAF\n";
 
         echo "🎉 Calculs vérifiés avec succès!\n";
     }

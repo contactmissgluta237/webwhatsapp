@@ -53,16 +53,16 @@ class ForgotPasswordFormRequest extends FormRequest
     public static function getMessages(): array
     {
         return [
-            'email.required' => 'L\'adresse email est obligatoire.',
-            'email.email' => 'Veuillez entrer une adresse email valide.',
-            'email.exists' => 'Cette adresse email n\'existe pas dans nos enregistrements.',
-            'phoneNumber.required' => 'Le numéro de téléphone est obligatoire.',
-            'phoneNumber.exists' => 'Ce numéro de téléphone n\'existe pas dans nos enregistrements.',
-            'country_id.required' => 'Veuillez sélectionner l\'indicateur de votre pays.',
-            'country_id.exists' => 'L\'indicateur pays sélectionné n\'existe pas.',
-            'phone_number_only.required' => 'Veuillez saisir votre numéro de téléphone.',
-            'phone_number_only.min' => 'Le numéro de téléphone doit contenir au moins 8 chiffres.',
-            'phone_number_only.max' => 'Le numéro de téléphone ne doit pas dépasser 15 chiffres.',
+            'email.required' => __('validation.auth.email.required'),
+            'email.email' => __('validation.auth.email.email'),
+            'email.exists' => __('validation.auth.email.exists'),
+            'phoneNumber.required' => __('validation.auth.phoneNumber.required'),
+            'phoneNumber.exists' => __('validation.auth.phoneNumber.exists'),
+            'country_id.required' => __('validation.auth.country_id.required'),
+            'country_id.exists' => __('validation.auth.country_id.exists'),
+            'phone_number_only.required' => __('validation.auth.phone_number_only.required'),
+            'phone_number_only.min' => __('validation.auth.phone_number_only.min'),
+            'phone_number_only.max' => __('validation.auth.phone_number_only.max'),
         ];
     }
 }

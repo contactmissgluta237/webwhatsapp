@@ -9,6 +9,7 @@ Route::middleware(['auth'])
 
         Route::get('/', App\Http\Controllers\Customer\WhatsApp\Account\IndexController::class)->name('index');
         Route::get('/create', App\Http\Controllers\Customer\WhatsApp\Account\CreateController::class)->name('create');
+        Route::get('/sessions/{account}/refresh', App\Http\Controllers\Customer\WhatsApp\Account\RefreshController::class)->name('refresh');
 
         // actions
         Route::get('/configure-ai/{account}', App\Http\Controllers\Customer\WhatsApp\Account\ConfigureAiController::class)->name('configure-ai');

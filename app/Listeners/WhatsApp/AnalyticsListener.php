@@ -6,6 +6,8 @@ namespace App\Listeners\WhatsApp;
 
 use App\Events\WhatsApp\MessageProcessedEvent;
 use App\Listeners\BaseListener;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -19,8 +21,10 @@ use Illuminate\Support\Facades\Log;
  * - AI model performance tracking
  * - Error rate monitoring
  */
-final class AnalyticsListener extends BaseListener
+final class AnalyticsListener extends BaseListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     /**
      * Extracts unique identifiers for MessageProcessedEvent
      */

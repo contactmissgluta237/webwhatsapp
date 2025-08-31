@@ -152,5 +152,19 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'default_currency' => 'XAF', // Franc CFA par défaut
+    'default_currency' => 'USD',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mappings des gateways de paiement
+    |--------------------------------------------------------------------------
+    */
+
+    'gateway_mappings' => [
+        'mycoolpay' => [
+            'mobile_money' => 'XAF',
+            'orange_money' => 'XAF',
+            'bank_card' => 'EUR',
+        ],
+    ],
 ];

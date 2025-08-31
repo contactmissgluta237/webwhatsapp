@@ -22,7 +22,7 @@ class AccountActivationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Activation de votre compte',
+            subject: __('emails.account_activation.subject'),
         );
     }
 

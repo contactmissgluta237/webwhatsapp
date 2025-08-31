@@ -19,8 +19,8 @@ final class ToggleStatusController extends Controller
 
         $product->update(['is_active' => $isActive]);
 
-        $status = $isActive ? 'activé' : 'désactivé';
+        $status = $isActive ? __('Activé') : __('Désactivé');
 
-        return back()->with('success', "Produit {$status} avec succès.");
+        return back()->with('success', __('Produit :status avec succès.', ['status' => strtolower($status)]));
     }
 }

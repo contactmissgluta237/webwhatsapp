@@ -32,6 +32,10 @@ final class ToggleAiController extends Controller
 
     private function enableAgent(Request $request, WhatsAppAccount $account): RedirectResponse
     {
+        if (! $account->hasValidPrompt()) {
+            return $this->redirectWithError('Impossible d\'activer l\'agent IA : aucun prompt configuré. Veuillez d\'abord configurer un prompt pour votre agent.');
+        }
+
         $handler = app(AgentActivationHandler::class);
         $result = $handler->handle($request->user());
 

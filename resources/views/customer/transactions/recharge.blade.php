@@ -1,17 +1,17 @@
 @extends('modern.layouts.master')
 
-@section('title', __('Recharger mon compte'))
+@section('title', __('Recharge Account'))
 
 @section('content')
     <div class="row mx-0 mt-1 mb-1">
         <div class="content-header-left col-md-6 col-12 mb-2">
-            <h3 class="content-header-title">{{ __('Recharger mon compte') }}</h3>
+            <h3 class="content-header-title">{{ __('Recharge Account') }}</h3>
             <div class="row breadcrumbs-top">
                 <div class="breadcrumb-wrapper col-12">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">Accueil</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('customer.transactions.index') }}">Transactions</a></li>
-                        <li class="breadcrumb-item active">{{ __('Recharger') }}</li>
+                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">{{ __('Home') }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('customer.transactions.index') }}">{{ __('Transactions') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('Recharge') }}</li>
                     </ol>
                 </div>
             </div>
@@ -19,7 +19,7 @@
 
         <div class="content-header-right col-md-6 col-12 text-right">
             <a href="{{ route('customer.transactions.index') }}" class="btn btn-outline-whatsapp">
-                <i class="la la-arrow-left mr-1"></i> {{ __('Retour') }}
+                <i class="la la-arrow-left mr-1"></i> {{ __('Back') }}
             </a>
         </div>
     </div>

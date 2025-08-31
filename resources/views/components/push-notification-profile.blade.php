@@ -4,7 +4,7 @@
     <div class="card-header">
         <h4 class="card-title">
             <i class="ft-bell mr-2"></i>
-            Notifications Push
+            {{ __('Push Notifications') }}
         </h4>
     </div>
     <div class="card-body">
@@ -26,20 +26,20 @@
                 <div class="border rounded p-3 h-100">
                     <h6 class="font-weight-bold mb-2">
                         <i class="ft-info text-info mr-1"></i>
-                        Compatibilité
+                        {{ __('Compatibility') }}
                     </h6>
                     <div id="browser-support-info">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="small">Navigateur:</span>
-                            <span id="browser-name" class="badge badge-secondary small">Détection...</span>
+                            <span class="small">{{ __('Browser:') }}</span>
+                            <span id="browser-name" class="badge badge-secondary small">{{ __('Detection...') }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="small">Support Push:</span>
-                            <span id="push-support" class="badge badge-secondary small">Vérification...</span>
+                            <span class="small">{{ __('Push Support:') }}</span>
+                            <span id="push-support" class="badge badge-secondary small">{{ __('Checking...') }}</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="small">Connexion:</span>
-                            <span id="connection-type" class="badge badge-secondary small">HTTPS requis</span>
+                            <span class="small">{{ __('Connection:') }}</span>
+                            <span id="connection-type" class="badge badge-secondary small">{{ __('HTTPS required') }}</span>
                         </div>
                     </div>
                 </div>
@@ -48,13 +48,13 @@
                 <div class="border rounded p-3 h-100">
                     <h6 class="font-weight-bold mb-2">
                         <i class="ft-settings text-primary mr-1"></i>
-                        Paramètres
+                        {{ __('Settings') }}
                     </h6>
                     <div class="form-group mb-2">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="auto-show-float" checked>
                             <label class="custom-control-label small" for="auto-show-float">
-                                Afficher les invitations automatiques
+                                {{ __('Show automatic invitations') }}
                             </label>
                         </div>
                     </div>
@@ -62,17 +62,17 @@
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="sound-notifications">
                             <label class="custom-control-label small" for="sound-notifications">
-                                Sons de notification (navigateur)
+                                {{ __('Notification sounds (browser)') }}
                             </label>
                         </div>
                     </div>
                     <div class="form-group mb-0">
-                        <label class="small text-muted">Position de l'invitation:</label>
+                        <label class="small text-muted">{{ __('Invitation position:') }}</label>
                         <select class="form-control form-control-sm" id="float-position">
-                            <option value="bottom-right">Bas droite</option>
-                            <option value="bottom-left">Bas gauche</option>
-                            <option value="top-right">Haut droite</option>
-                            <option value="top-left">Haut gauche</option>
+                            <option value="bottom-right">{{ __('Bottom right') }}</option>
+                            <option value="bottom-left">{{ __('Bottom left') }}</option>
+                            <option value="top-right">{{ __('Top right') }}</option>
+                            <option value="top-left">{{ __('Top left') }}</option>
                         </select>
                     </div>
                 </div>

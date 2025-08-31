@@ -35,17 +35,17 @@ class UpdateProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'first_name.required' => 'Le prénom est requis.',
-            'first_name.string' => 'Le prénom doit être une chaîne de caractères.',
-            'first_name.max' => 'Le prénom ne doit pas dépasser 255 caractères.',
-            'last_name.required' => 'Le nom de famille est requis.',
-            'last_name.string' => 'Le nom de famille doit être une chaîne de caractères.',
-            'last_name.max' => 'Le nom de famille ne doit pas dépasser 255 caractères.',
-            'email.required' => 'L\'email est requis.',
-            'email.email' => 'L\'email doit être valide.',
-            'email.unique' => 'Cet email est déjà utilisé.',
-            'phone_number.string' => 'Le numéro de téléphone doit être une chaîne de caractères.',
-            'phone_number.unique' => 'Ce numéro de téléphone est déjà utilisé.',
+            'first_name.required' => __('validation.profile.first_name.required'),
+            'first_name.string' => __('validation.profile.first_name.string'),
+            'first_name.max' => __('validation.profile.first_name.max'),
+            'last_name.required' => __('validation.profile.last_name.required'),
+            'last_name.string' => __('validation.profile.last_name.string'),
+            'last_name.max' => __('validation.profile.last_name.max'),
+            'email.required' => __('validation.profile.email.required'),
+            'email.email' => __('validation.profile.email.email'),
+            'email.unique' => __('validation.profile.email.unique'),
+            'phone_number.string' => __('validation.profile.phone_number.string'),
+            'phone_number.unique' => __('validation.profile.phone_number.unique'),
         ];
     }
 }

@@ -160,7 +160,7 @@
                                                     <div class="message-cost">
                                                         @if($message->messageUsageLog && $message->messageUsageLog->isWalletDirect())
                                                             <span class="badge badge-danger" style="font-size: 9px;">
-                                                                Débit du wallet: {{ number_format($message->messageUsageLog->total_cost, 0) }} XAF
+                                                                Débit du wallet: {{ \App\Helpers\CurrencyHelper::formatUsd($message->messageUsageLog->total_cost) }}
                                                             </span>
                                                         @endif
                                                     </div>

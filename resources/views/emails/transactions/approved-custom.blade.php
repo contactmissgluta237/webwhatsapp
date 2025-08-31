@@ -5,7 +5,7 @@
 
 Bonjour {{ $transaction->wallet->user->first_name }},
 
-Votre demande de retrait d'un montant de **{{ number_format($transaction->amount, 0, ',', ' ') }} FCFA** a été approuvée avec succès.
+Votre demande de retrait d'un montant de **{{ \App\Helpers\CurrencyHelper::formatUsd($transaction->amount) }}** a été approuvée avec succès.
 
 Le montant a été déduit de votre portefeuille.
 

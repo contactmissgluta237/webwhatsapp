@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\DTOs\WhatsApp;
 
 use App\DTOs\BaseDTO;
-use App\Services\CurrencyService;
 
 final class ProductDataDTO extends BaseDTO
 {
@@ -26,14 +25,10 @@ final class ProductDataDTO extends BaseDTO
             $mediaUrls[] = $media->getFullUrl();
         }
 
-        $user = $product->user;
-        $currencyService = app(CurrencyService::class);
-        $userCurrency = $currencyService->getUserCurrency($user);
-
         $formattedProductMessage = self::formatProductMessage(
             $product->title,
             $product->description,
-            $currencyService->formatPrice((float) $product->price, $userCurrency)
+            $product->getFormattedPrice()
         );
 
         return new self(

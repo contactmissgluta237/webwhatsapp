@@ -30,9 +30,9 @@ class CreateUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'selectedRoles.required' => 'Veuillez sélectionner au moins un rôle.',
-            'selectedRoles.min' => 'Veuillez sélectionner au moins un rôle.',
-            'selectedRoles.*.exists' => 'Le rôle sélectionné n\'est pas valide.',
+            'selectedRoles.required' => __('validation.admin.selectedRoles.required'),
+            'selectedRoles.min' => __('validation.admin.selectedRoles.min'),
+            'selectedRoles.*.exists' => __('validation.admin.selectedRoles.exists'),
         ];
     }
 }

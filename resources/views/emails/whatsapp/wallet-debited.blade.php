@@ -14,8 +14,8 @@
     <div class="otp-container" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
         <div style="color: white; font-size: 18px; font-weight: 600; margin-bottom: 15px;">📊 Détails du débit</div>
         <div style="color: white; font-size: 16px;">
-            <p><strong>Montant débité :</strong> {{ number_format($debitedAmount, 0, ',', ' ') }} XAF</p>
-            <p><strong>Nouveau solde :</strong> {{ number_format($newBalance, 0, ',', ' ') }} XAF</p>
+            <p><strong>Montant débité :</strong> {{ \App\Helpers\CurrencyHelper::formatUsd($debitedAmount) }}</p>
+            <p><strong>Nouveau solde :</strong> {{ \App\Helpers\CurrencyHelper::formatUsd($newBalance) }}</p>
             <p><strong>Date :</strong> {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
     </div>

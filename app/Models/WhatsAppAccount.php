@@ -254,7 +254,12 @@ final class WhatsAppAccount extends Model implements HasMedia
 
     public function hasAiAgent(): bool
     {
-        return $this->agent_enabled && $this->ai_model_id !== null;
+        return $this->agent_enabled && $this->ai_model_id !== null && $this->hasValidPrompt();
+    }
+
+    public function hasValidPrompt(): bool
+    {
+        return ! empty(trim($this->agent_prompt ?? ''));
     }
 
     public function enableAiAgent(int $aiModelId, ?string $prompt = null, ?string $triggerWords = null, ?string $responseTime = null): void

@@ -23,11 +23,18 @@
             Notifications
         </a>
 
+        {{-- Refresh Session --}}
+        <a class="dropdown-item py-2" href="{{ route('whatsapp.refresh', $account->id) }}">
+            <i class="la la-refresh text-info mr-2"></i>
+            Rafraîchir la session
+        </a>
+
         <div class="dropdown-divider"></div>
 
         @php
             $freshAccount = \App\Models\WhatsAppAccount::find($account->id);
-            $isAgentActive = $freshAccount->agent_enabled && $freshAccount->ai_model_id;
+            $isAgentActive = $freshAccount->hasAiAgent();
+            $hasValidPrompt = $freshAccount->hasValidPrompt();
             $handler = app(\App\Handlers\WhatsApp\AgentActivationHandler::class);
             $activationResult = $handler->handle(auth()->user());
         @endphp
@@ -43,7 +50,7 @@
                 </button>
             </form>
         @else
-            @if($activationResult->canActivate)
+            @if($activationResult->canActivate && $hasValidPrompt)
                 <form method="POST" action="{{ route('whatsapp.toggle-ai', $account->id) }}" style="display: inline; width: 100%;">
                     @csrf
                     <input type="hidden" name="enable" value="1">
@@ -54,6 +61,15 @@
                         Activer l'agent IA
                     </button>
                 </form>
+            @elseif(!$hasValidPrompt)
+                <div class="dropdown-item py-2 text-muted" title="Aucun prompt configuré">
+                    <i class="la la-exclamation-triangle text-warning mr-2"></i>
+                    <span class="text-muted">Prompt requis</span>
+                    <br>
+                    <small class="text-muted" style="font-size: 0.75rem;">
+                        Configurez un prompt avant d'activer l'agent
+                    </small>
+                </div>
             @else
                 <div class="dropdown-item py-2 text-muted" title="{{ $activationResult->reason }}">
                     <i class="la la-lock text-muted mr-2"></i>

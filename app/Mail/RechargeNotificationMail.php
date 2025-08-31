@@ -21,7 +21,7 @@ class RechargeNotificationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Recharge de compte effectuée - '.number_format($this->transaction->amount, 0, ',', ' ').' FCFA',
+            subject: __('emails.recharge_notification.subject', ['amount' => number_format($this->transaction->amount, 0, ',', ' ')]),
         );
     }
 

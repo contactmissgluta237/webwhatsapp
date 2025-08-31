@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\View\Components;
 
-use App\Services\CurrencyService;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -19,20 +18,16 @@ final class UserCurrency extends Component
 
     public function render(): View|Closure|string
     {
-        $currencyService = app(CurrencyService::class);
         $user = Auth::user();
-        $userCurrency = $currencyService->getUserCurrency($user);
 
         if ($this->onlySymbol) {
-            $currencyInfo = $currencyService->getCurrencyInfo($userCurrency);
-
-            return $currencyInfo['symbol'] ?? $userCurrency;
+            return '$';
         }
 
         if ($this->amount !== null) {
-            return $currencyService->formatPrice($this->amount, $userCurrency);
+            return \App\Helpers\CurrencyHelper::formatUsd($this->amount);
         }
 
-        return $userCurrency;
+        return 'USD';
     }
 }

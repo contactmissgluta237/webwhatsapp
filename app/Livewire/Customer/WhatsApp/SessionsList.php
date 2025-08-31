@@ -61,6 +61,11 @@ class SessionsList extends Component
         session()->flash('message', 'Liste des sessions actualisée.');
     }
 
+    public function refreshSession(int $accountId): void
+    {
+        $this->redirectRoute('whatsapp.refresh', $accountId);
+    }
+
     public function render()
     {
         return view('livewire.customer.whatsapp.sessions-list');

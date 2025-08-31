@@ -35,13 +35,13 @@ class UpdatePasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'current_password.required' => 'Le mot de passe actuel est requis.',
-            'current_password.string' => 'Le mot de passe actuel doit être une chaîne de caractères.',
-            'password.required' => 'Le nouveau mot de passe est requis.',
-            'password.string' => 'Le mot de passe doit être une chaîne de caractères.',
-            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
-            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
-            'password.regex' => 'Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).',
+            'current_password.required' => __('validation.profile.current_password.required'),
+            'current_password.string' => __('validation.profile.current_password.string'),
+            'password.required' => __('validation.auth.password.required'),
+            'password.string' => __('validation.profile.first_name.string'),
+            'password.confirmed' => __('validation.profile.password.confirmed'),
+            'password.min' => __('validation.profile.password.min'),
+            'password.regex' => __('Le mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial (@$!%*?&).'),
         ];
     }
 }

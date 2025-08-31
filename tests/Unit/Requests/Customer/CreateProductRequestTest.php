@@ -154,16 +154,16 @@ class CreateProductRequestTest extends BaseRequestTestCase
         $messages = $request->messages();
 
         $expectedMessages = [
-            'title.required' => 'Le titre est obligatoire.',
-            'title.max' => 'Le titre ne peut pas dépasser 255 caractères.',
-            'description.required' => 'La description est obligatoire.',
-            'description.max' => 'La description ne peut pas dépasser 1000 caractères.',
-            'price.required' => 'Le prix est obligatoire.',
-            'price.numeric' => 'Le prix doit être un nombre.',
-            'price.min' => 'Le prix doit être supérieur à 0.',
-            'mediaFiles.*.file' => 'Le fichier uploadé n\'est pas valide.',
-            'mediaFiles.*.mimes' => 'Les fichiers autorisés sont : jpeg, jpg, png, gif, pdf, doc, docx.',
-            'mediaFiles.*.max' => 'La taille maximale d\'un fichier est de 10 Mo.',
+            'title.required' => 'validation.product.title.required',
+            'title.max' => 'validation.product.title.max',
+            'description.required' => 'validation.product.description.required',
+            'description.max' => 'validation.product.description.max',
+            'price.required' => 'validation.product.price.required',
+            'price.numeric' => 'validation.product.price.numeric',
+            'price.min' => 'validation.product.price.min',
+            'mediaFiles.*.file' => 'validation.product.mediaFiles.file',
+            'mediaFiles.*.mimes' => 'validation.product.mediaFiles.mimes',
+            'mediaFiles.*.max' => 'validation.product.mediaFiles.max',
         ];
 
         foreach ($expectedMessages as $key => $expectedMessage) {

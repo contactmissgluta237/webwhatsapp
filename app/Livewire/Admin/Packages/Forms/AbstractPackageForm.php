@@ -73,7 +73,7 @@ abstract class AbstractPackageForm extends Component
 
             return [
                 'show' => true,
-                'text' => 'Prix barré: '.number_format($normalPrice).' XAF → Nouveau prix: '.number_format($promoPrice)." XAF (-{$discount}%)",
+                'text' => 'Prix barré: '.\App\Helpers\CurrencyHelper::formatUsd($normalPrice).' → Nouveau prix: '.\App\Helpers\CurrencyHelper::formatUsd($promoPrice)." (-{$discount}%)",
             ];
         }
 

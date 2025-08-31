@@ -39,7 +39,7 @@ final class ConversationSimulator extends Component
 
     private function loadCurrentConfiguration(): void
     {
-        $this->currentPrompt = $this->account->agent_prompt ?? 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
+        $this->currentPrompt = $this->account->agent_prompt ?? '';
         $this->currentContextualInfo = $this->account->contextual_information ?? '';
         $this->currentModelId = $this->account->ai_model_id;
         $this->currentResponseTime = $this->account->response_time ?? 'random';
@@ -69,10 +69,10 @@ final class ConversationSimulator extends Component
 
         // Mettre à jour la configuration en temps réel pour la simulation
         if (isset($data['agent_prompt'])) {
-            $this->currentPrompt = $data['agent_prompt'] ?: 'Tu es un assistant WhatsApp utile et professionnel. Tu ne donnes jamais de fausses informations comme des coordonnées inventées (adresses, téléphones, emails, sites web). Si tu ne connais pas une information précise, tu le dis honnêtement.';
+            $this->currentPrompt = $data['agent_prompt'] ?: '';
             Log::info('📝 Prompt mis à jour en temps réel', [
                 'new_prompt_length' => strlen($this->currentPrompt),
-                'new_prompt_preview' => substr($this->currentPrompt, 0, 100).'...',
+                'new_prompt_preview' => $this->currentPrompt ? substr($this->currentPrompt, 0, 100).'...' : 'Aucun prompt',
             ]);
         }
 
@@ -395,7 +395,7 @@ final class ConversationSimulator extends Component
     private function formatProductMessage(\App\Models\UserProduct $product): string
     {
         return sprintf(
-            "📱 *%s*\n💰 Prix: %s FCFA\n📝 %s",
+            "📱 *%s*\n💰 Prix: %s\n📝 %s",
             $product->title,
             number_format((float) $product->price, 0, ',', ' '),
             $product->description ?? 'Aucune description disponible'

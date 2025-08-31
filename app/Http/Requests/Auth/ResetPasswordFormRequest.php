@@ -56,14 +56,14 @@ class ResetPasswordFormRequest extends FormRequest
     public static function getMessages(): array
     {
         return [
-            'identifier.required' => 'L\'identifiant est requis.',
-            'identifier.email' => 'L\'email doit être valide.',
-            'identifier.exists' => 'Aucun compte n\'est associé à cet identifiant.',
-            'identifier.string' => 'Le numéro de téléphone doit être une chaîne de caractères.',
-            'password.required' => 'Le mot de passe est requis.',
-            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
-            'token.required' => 'Le code de réinitialisation est requis.',
-            'token.string' => 'Le code de réinitialisation doit être une chaîne de caractères.',
+            'identifier.required' => __('validation.auth.identifier.required'),
+            'identifier.email' => __('validation.auth.identifier.email'),
+            'identifier.exists' => __('validation.auth.identifier.exists'),
+            'identifier.string' => __('validation.auth.identifier.string'),
+            'password.required' => __('validation.auth.password.required'),
+            'password.confirmed' => __('validation.profile.password.confirmed'),
+            'token.required' => __('validation.auth.token.required'),
+            'token.string' => __('validation.auth.token.string'),
         ];
     }
 }

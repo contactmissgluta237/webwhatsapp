@@ -10,21 +10,19 @@ final class MessageBillingHelper
 {
     /**
      * Calculate total messages to debit from subscription quota.
-     * AI response = 1, each product = 1, each media = 1.
+     * AI response = 1, each product = 1 (media no longer counted).
      */
     public static function getNumberOfMessagesFromResponse(WhatsAppMessageResponseDTO $response): int
     {
         $total = $response->hasAiResponse && $response->aiResponse !== null ? 1 : 0;
-
-        foreach ($response->products as $product) {
-            $total += 1 + count($product->mediaUrls);
-        }
+        $total += count($response->products);
 
         return $total;
     }
 
     /**
      * Calculate total billing amount in XAF based on configuration costs.
+     * AI message cost + product cost * number of products (media no longer charged).
      */
     public static function getAmountToBillFromResponse(WhatsAppMessageResponseDTO $response): float
     {
@@ -34,10 +32,7 @@ final class MessageBillingHelper
             $total += config('whatsapp.billing.costs.ai_message', 15);
         }
 
-        foreach ($response->products as $product) {
-            $total += config('whatsapp.billing.costs.product_message', 10);
-            $total += count($product->mediaUrls) * config('whatsapp.billing.costs.media', 5);
-        }
+        $total += count($response->products) * config('whatsapp.billing.costs.product_message', 10);
 
         return $total;
     }

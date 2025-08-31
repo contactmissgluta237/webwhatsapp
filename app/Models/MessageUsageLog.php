@@ -19,10 +19,8 @@ use Illuminate\Support\Carbon;
  * @property int $whatsapp_conversation_id
  * @property int $user_id
  * @property float $ai_message_cost
- * @property int $product_messages_count
- * @property float $product_messages_cost
- * @property int $media_count
- * @property float $media_cost
+ * @property int $product_count
+ * @property float $product_cost
  * @property float $total_cost
  * @property BillingType $billing_type
  * @property Carbon $created_at
@@ -50,18 +48,15 @@ class MessageUsageLog extends Model
         'whatsapp_conversation_id',
         'user_id',
         'ai_message_cost',
-        'product_messages_count',
-        'product_messages_cost',
-        'media_count',
-        'media_cost',
+        'product_count',
+        'product_cost',
         'total_cost',
         'billing_type',
     ];
 
     protected $casts = [
         'ai_message_cost' => 'decimal:2',
-        'product_messages_cost' => 'decimal:2',
-        'media_cost' => 'decimal:2',
+        'product_cost' => 'decimal:2',
         'total_cost' => 'decimal:2',
         'billing_type' => BillingType::class,
     ];
@@ -119,19 +114,11 @@ class MessageUsageLog extends Model
     }
 
     /**
-     * Check if this usage includes product messages.
+     * Check if this usage includes products.
      */
     public function hasProducts(): bool
     {
-        return $this->product_messages_count > 0;
-    }
-
-    /**
-     * Check if this usage includes media.
-     */
-    public function hasMedia(): bool
-    {
-        return $this->media_count > 0;
+        return $this->product_count > 0;
     }
 
     // ================================================================================

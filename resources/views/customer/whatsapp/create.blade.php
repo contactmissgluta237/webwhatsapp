@@ -19,11 +19,45 @@
         }
 
         .instructions-panel {
-            background: #f8f9fa;
+            background: white;
             border-radius: 15px;
             padding: 2rem;
-            border-left: 5px solid #28a745;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            height: fit-content;
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .instruction-step:hover {
+            background: rgba(37, 211, 102, 0.05);
+            border-color: rgba(37, 211, 102, 0.2);
+            transform: translateX(5px);
+        }
+
+        .step-content {
+            flex: 1;
+            padding-top: 0.25rem;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-description {
+            font-size: 0.875rem;
+            color: #6c757d;
+            line-height: 1.4;
         }
 
         .step-number {

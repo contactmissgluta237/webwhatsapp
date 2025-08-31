@@ -52,6 +52,8 @@ final class AiConfigurationRequest extends FormRequest
             'ai_model_id.exists' => __('Le modèle sélectionné est invalide.'),
             'agent_prompt.max' => __('Le prompt ne peut pas dépasser 2000 caractères.'),
             'trigger_words.max' => __('Les mots déclencheurs ne peuvent pas dépasser 500 caractères.'),
+            'contextual_information.max' => __('Les informations contextuelles ne peuvent pas dépasser 5000 caractères.'),
+            'ignore_words.max' => __('Les mots à ignorer ne peuvent pas dépasser 500 caractères.'),
             'response_time.in' => __('Le délai de réponse sélectionné est invalide.'),
         ];
     }

@@ -193,12 +193,12 @@ class Package extends Model
 
         $now = now();
 
-        // Si pas de dates définies, la promotion est active
+        // If no dates are defined, the promotion is active
         if (! $this->promotion_starts_at && ! $this->promotion_ends_at) {
             return true;
         }
 
-        // Vérifier si on est dans la période de promotion
+        // Check if we are within the promotion period
         $startsOk = ! $this->promotion_starts_at || $now >= $this->promotion_starts_at;
         $endsOk = ! $this->promotion_ends_at || $now <= $this->promotion_ends_at;
 
@@ -240,7 +240,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format((float) $currentPrice, 0, ',', ' ').' '.$this->currency;
+        return \App\Helpers\CurrencyHelper::formatUsd((float) $currentPrice);
     }
 
     public function getFormattedPromotionalPrice(): string
@@ -253,7 +253,7 @@ class Package extends Model
             return 'Gratuit';
         }
 
-        return number_format((float) $this->promotional_price, 0, ',', ' ').' '.$this->currency;
+        return \App\Helpers\CurrencyHelper::formatUsd((float) $this->promotional_price);
     }
 
     public function getDisplayFeatures(): array

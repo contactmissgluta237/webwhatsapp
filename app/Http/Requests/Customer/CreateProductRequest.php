@@ -32,16 +32,16 @@ final class CreateProductRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'Le titre est obligatoire.',
-            'title.max' => 'Le titre ne peut pas dépasser 255 caractères.',
-            'description.required' => 'La description est obligatoire.',
-            'description.max' => 'La description ne peut pas dépasser 1000 caractères.',
-            'price.required' => 'Le prix est obligatoire.',
-            'price.numeric' => 'Le prix doit être un nombre.',
-            'price.min' => 'Le prix doit être supérieur à 0.',
-            'mediaFiles.*.file' => 'Le fichier uploadé n\'est pas valide.',
-            'mediaFiles.*.mimes' => 'Les fichiers autorisés sont : jpeg, jpg, png, gif, pdf, doc, docx.',
-            'mediaFiles.*.max' => 'La taille maximale d\'un fichier est de 10 Mo.',
+            'title.required' => __('validation.product.title.required'),
+            'title.max' => __('validation.product.title.max'),
+            'description.required' => __('validation.product.description.required'),
+            'description.max' => __('validation.product.description.max'),
+            'price.required' => __('validation.product.price.required'),
+            'price.numeric' => __('validation.product.price.numeric'),
+            'price.min' => __('validation.product.price.min'),
+            'mediaFiles.*.file' => __('validation.product.mediaFiles.file'),
+            'mediaFiles.*.mimes' => __('validation.product.mediaFiles.mimes'),
+            'mediaFiles.*.max' => __('validation.product.mediaFiles.max'),
         ];
     }
 }

@@ -96,7 +96,7 @@
                                         <td class="fw-bold text-muted">
                                             <i class="la la-money text-whatsapp mr-2"></i>Montant payé
                                         </td>
-                                        <td class="text-whatsapp fw-bold">{{ number_format($subscription->amount_paid ?? 0, 0, ',', ' ') }} XAF</td>
+                                        <td class="text-whatsapp fw-bold">{{ \App\Helpers\CurrencyHelper::formatUsd($subscription->amount_paid ?? 0) }}</td>
                                     </tr>
                                     @if($subscription->payment_method)
                                         <tr>

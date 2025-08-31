@@ -19,7 +19,7 @@
         <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
             <p style="margin: 8px 0;"><strong>Client :</strong> {{ $customer->full_name }}
                 ({{ $customer->email ?: $customer->phone_number }})</p>
-            <p style="margin: 8px 0;"><strong>Montant :</strong> {{ number_format($transaction->amount, 0, ',', ' ') }} FCFA
+            <p style="margin: 8px 0;"><strong>Montant :</strong> {{ \App\Helpers\CurrencyHelper::formatUsd($transaction->amount) }}
             </p>
             <p style="margin: 8px 0;"><strong>Méthode de paiement :</strong> {{ $transaction->payment_method->label }}</p>
             <p style="margin: 8px 0;"><strong>Compte destinataire :</strong> {{ $transaction->receiver_account }}</p>

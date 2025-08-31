@@ -92,4 +92,12 @@ class Wallet extends Model
     {
         return $this->hasMany(ExternalTransaction::class, 'user_id', 'user_id');
     }
+
+    /**
+     * Formate le solde en USD
+     */
+    public function getFormattedBalance(): string
+    {
+        return \App\Helpers\CurrencyHelper::formatUsd((float) $this->balance);
+    }
 }

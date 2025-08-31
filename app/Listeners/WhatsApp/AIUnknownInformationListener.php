@@ -10,11 +10,15 @@ use App\Listeners\BaseListener;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountSetting;
 use App\Notifications\WhatsApp\AIUnknownInformationNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
-final class AIUnknownInformationListener extends BaseListener
+final class AIUnknownInformationListener extends BaseListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     protected function getEventIdentifiers($event): array
     {
         return [

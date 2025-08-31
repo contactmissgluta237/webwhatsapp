@@ -11,18 +11,17 @@ return [
     */
 
     'predefined_amounts' => [
-        500,
-        1000,
-        2000,
-        5000,
-        10000,
-        25000,
-        50000,
+        1,
+        3,
+        5,
+        10,
+        20,
+        50,
+        100,
     ],
 
     'fees' => [
-        // fees in percentage
         'withdrawal' => 3,
-        'recharge' => 2,
+        'recharge' => 0,
     ],
 ];

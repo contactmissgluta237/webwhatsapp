@@ -64,6 +64,13 @@ class BillingCounterListenerTest extends TestCase
             'session_id' => 'test-session-123',
         ]);
 
+        // Create a conversation for the account
+        $conversation = \App\Models\WhatsAppConversation::factory()->create([
+            'whatsapp_account_id' => $this->account->id,
+            'chat_id' => '+237123456789@c.us',
+            'contact_phone' => '+237123456789',
+        ]);
+
         $this->listener = app(StoreMessagesListener::class);
 
         // Set billing costs
@@ -74,8 +81,8 @@ class BillingCounterListenerTest extends TestCase
     }
 
     /**
-     * Create complex response: AI + 3 products with 2, 3, 5 medias = 14 total messages
-     * (1 AI + 3 product messages + 10 medias)
+     * Create complex response: AI + 3 products = 4 total messages
+     * (1 AI + 3 products, medias no longer counted)
      */
     private function createComplexResponse(): WhatsAppMessageResponseDTO
     {
@@ -158,12 +165,12 @@ class BillingCounterListenerTest extends TestCase
 
     public static function walletDebitProvider(): array
     {
-        // Required amount is 95 XAF for complex response
+        // Required amount is 45 XAF for complex response
         return [
-            'Wallet with excess funds (500 XAF)' => [500.0, 405.0], // 500 - 95 = 405
-            'Wallet with exact amount (95 XAF)' => [95.0, 0.0],     // 95 - 95 = 0
+            'Wallet with excess funds (500 XAF)' => [500.0, 455.0], // 500 - 45 = 455
+            'Wallet with exact amount (45 XAF)' => [45.0, 0.0],     // 45 - 45 = 0
             'Wallet with just 5 XAF' => [5.0, 5.0],               // Insufficient, no debit
-            'Wallet with 94 XAF (1 short)' => [94.0, 94.0],       // Insufficient, no debit
+            'Wallet with 44 XAF (1 short)' => [44.0, 44.0],       // Insufficient, no debit
         ];
     }
 
@@ -221,10 +228,10 @@ class BillingCounterListenerTest extends TestCase
         $messageCount = MessageBillingHelper::getNumberOfMessagesFromResponse($response);
         $billingAmount = MessageBillingHelper::getAmountToBillFromResponse($response);
 
-        // Expected: 1 AI + 3 products + 10 medias = 14 messages
-        $this->assertEquals(14, $messageCount);
+        // Expected: 1 AI + 3 products = 4 messages
+        $this->assertEquals(4, $messageCount);
 
-        // Expected: 15 (AI) + 30 (3*10 products) + 50 (10*5 medias) = 95 XAF
-        $this->assertEquals(95.0, $billingAmount);
+        // Expected: 15 (AI) + 30 (3*10 products) = 45 XAF
+        $this->assertEquals(45.0, $billingAmount);
     }
 }

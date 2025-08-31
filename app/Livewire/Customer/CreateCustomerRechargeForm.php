@@ -227,6 +227,7 @@ class CreateCustomerRechargeForm extends Component
         $gateway = $gatewayFactory->fromCountry(Country::find($this->country_id));
         $paymentRequest = new PaymentIdentifierRequestDTO(
             phoneNumber: $phoneNumber,
+            paymentMethod: $this->payment_method,
         );
 
         return $gateway->initiatePayment($transaction, $paymentRequest);

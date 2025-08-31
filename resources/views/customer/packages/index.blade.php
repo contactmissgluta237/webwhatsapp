@@ -1,16 +1,16 @@
 @extends('modern.layouts.master')
 
-@section('title', 'Packages disponibles')
+@section('title', __('Available Packages'))
 
 @section('content')
     <div class="row mx-0 mt-1 mb-1">
         <div class="content-header-left col-md-6 col-12 mb-2">
-            <h3 class="content-header-title text-whatsapp">Packages disponibles</h3>
+            <h3 class="content-header-title text-whatsapp">{{ __('Available Packages') }}</h3>
             <div class="row breadcrumbs-top">
                 <div class="breadcrumb-wrapper col-12">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">Accueil</a></li>
-                        <li class="breadcrumb-item active">Packages</li>
+                        <li class="breadcrumb-item"><a href="{{ route('customer.dashboard') }}">{{ __('Home') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('Packages') }}</li>
                     </ol>
                 </div>
             </div>
@@ -20,18 +20,18 @@
     <div class="content-body">
         @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Succès!</strong> {{ session('success') }}
+            <strong>{{ __('Success!') }}</strong> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         @endif
 
         @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Erreur!</strong> {{ session('error') }}
+            <strong>{{ __('Error!') }}</strong> {{ session('error') }}
             @if(session('recharge_needed'))
                 <br><br>
                 <a href="{{ route('customer.wallet.index') }}" class="btn btn-warning btn-sm">
-                    <i class="la la-credit-card-plus"></i> Recharger mon wallet
+                    <i class="la la-credit-card-plus"></i> {{ __('Recharge my wallet') }}
                 </a>
             @endif
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -41,7 +41,7 @@
         @if($currentSubscription)
         <div class="alert alert-success" role="alert" style="border-left: 4px solid #25D366;">
             <i class="la la-check-circle text-success me-2"></i>
-            <strong>Abonnement actuel:</strong> {{ $currentSubscription->package->display_name }} 
+            <strong>{{ __('Current subscription:') }}</strong> {{ $currentSubscription->package->display_name }} 
             - Expire le {{ $currentSubscription->ends_at->format('d/m/Y') }}
             - {{ $currentSubscription->getRemainingMessages() }} messages restants
         </div>
@@ -66,13 +66,13 @@
                                         @if($package->hasActivePromotion())
                                             {{-- Prix barré et badge promotion --}}
                                             <div class="original-price mb-1">
-                                                <span class="text-decoration-line-through text-muted">{{ number_format($package->price) }} XAF</span>
+                                                <span class="text-decoration-line-through text-muted">{{ \App\Helpers\CurrencyHelper::formatUsd($package->price) }}</span>
                                                 <span class="badge bg-warning text-dark ms-1">-{{ $package->getPromotionalDiscountPercentage() }}%</span>
                                             </div>
                                             {{-- Prix promotionnel --}}
-                                            <span class="price-currency-{{ $package->name }} promotional-price">{{ number_format($package->promotional_price) }}</span> <span class="price-currency-{{ $package->name }}">XAF</span>
+                                            <span class="price-currency-{{ $package->name }} promotional-price">{{ \App\Helpers\CurrencyHelper::formatUsd($package->promotional_price) }}</span>
                                         @else
-                                            <span class="price-currency-{{ $package->name }}">{{ number_format($package->price) }}</span> <span class="price-currency-{{ $package->name }}">XAF</span>
+                                            <span class="price-currency-{{ $package->name }}">{{ \App\Helpers\CurrencyHelper::formatUsd($package->price) }}</span>
                                         @endif
                                         <div class="pricing-duration">/ mois</div>
                                     </div>

@@ -89,7 +89,7 @@ class ReferralDataTable extends BaseDataTable
                 ->format(function (int $value, User $row): string {
                     $gain = $this->calculateReferralEarnings($row);
 
-                    return number_format($gain, 0, ',', ' ').' FCFA';
+                    return \App\Helpers\CurrencyHelper::formatUsd($gain);
                 })
                 ->html(),
 

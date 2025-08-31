@@ -70,7 +70,7 @@ class CouponDataTable extends BaseDataTable
                         return $value.'%';
                     }
 
-                    return number_format($value).' XAF';
+                    return \App\Helpers\CurrencyHelper::formatUsd($value);
                 }),
 
             Column::make('Utilisation', 'used_count')

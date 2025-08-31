@@ -20,12 +20,10 @@ return new class extends Migration
             $table->foreignId('whatsapp_conversation_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             
-            // Coût détaillé
+            // Coût détaillé (plus de médias facturés)
             $table->decimal('ai_message_cost', 8, 2)->default(0);
-            $table->integer('product_messages_count')->default(0);
-            $table->decimal('product_messages_cost', 8, 2)->default(0);
-            $table->integer('media_count')->default(0);
-            $table->decimal('media_cost', 8, 2)->default(0);
+            $table->integer('product_count')->default(0);
+            $table->decimal('product_cost', 8, 2)->default(0);
             $table->decimal('total_cost', 8, 2);
             
             // Type de facturation

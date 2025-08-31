@@ -29,9 +29,9 @@ class UpdateAvatarRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'avatar.required' => 'Veuillez sélectionner une image.',
-            'avatar.image' => 'Le fichier doit être une image.',
-            'avatar.max' => 'L\'image ne doit pas dépasser 2MB.',
+            'avatar.required' => __('validation.profile.avatar.required'),
+            'avatar.image' => __('validation.profile.avatar.image'),
+            'avatar.max' => __('validation.profile.avatar.max'),
         ];
     }
 }

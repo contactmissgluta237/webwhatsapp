@@ -95,7 +95,7 @@ class ConversationDataTable extends BaseDataTable
                         return '<span class="text-muted">0 XAF</span>';
                     }
 
-                    return '<span class="badge badge-danger">'.number_format($walletCost, 0).' XAF</span>';
+                    return '<span class="badge badge-danger">'.\App\Helpers\CurrencyHelper::formatUsd($walletCost).'</span>';
                 })
                 ->html(),
 

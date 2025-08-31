@@ -415,8 +415,8 @@ class User extends Authenticatable implements HasMedia
 
     public function getCurrentUsageTracker(): ?WhatsAppAccountUsage
     {
-        // Cette méthode pourrait être obsolète avec la nouvelle architecture
-        // Retourner null car on track maintenant par compte WhatsApp
+        // This method might be obsolete with the new architecture
+        // Return null since we now track by WhatsApp account
         return null;
     }
 

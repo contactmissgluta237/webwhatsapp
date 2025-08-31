@@ -6,11 +6,15 @@ use App\Enums\UserRole;
 use App\Mail\AdminInitiatedWithdrawalNotificationMail;
 use App\Mail\AdminWithdrawalNotificationMail;
 use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Mail;
 
-class AdminWithdrawalNotificationListener extends BaseListener
+class AdminWithdrawalNotificationListener extends BaseListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     protected function getEventIdentifiers($event): array
     {
         return [

@@ -34,9 +34,9 @@ class ActivateAccountFormRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'otpCode.required' => 'Le code d\'activation est obligatoire.',
-            'otpCode.min' => 'Le code doit contenir au moins 4 caractères.',
-            'otpCode.max' => 'Le code ne doit pas dépasser 6 caractères.',
+            'otpCode.required' => __('validation.auth.otpCode.required'),
+            'otpCode.min' => __('validation.auth.otpCode.min'),
+            'otpCode.max' => __('validation.auth.otpCode.max'),
         ];
     }
 }

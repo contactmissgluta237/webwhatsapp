@@ -3,13 +3,13 @@
 @section('content')
     <p>Bonjour {{ $customer->first_name }},</p>
 
-    <p>Nous vous informons qu'un retrait de <strong>{{ number_format($transaction->amount, 0, ',', ' ') }} FCFA</strong> a
+    <p>Nous vous informons qu'un retrait de <strong>{{ \App\Helpers\CurrencyHelper::formatUsd($transaction->amount) }}</strong> a
         été initié sur votre compte par un administrateur.</p>
 
     <p>Détails de la transaction :</p>
     <ul>
         <li><strong>ID de transaction externe :</strong> {{ $transaction->external_transaction_id }}</li>
-        <li><strong>Montant :</strong> {{ number_format($transaction->amount, 0, ',', ' ') }} FCFA</li>
+        <li><strong>Montant :</strong> {{ \App\Helpers\CurrencyHelper::formatUsd($transaction->amount) }}</li>
         <li><strong>Méthode de paiement :</strong> {{ $transaction->payment_method->label }}</li>
         <li><strong>Compte de l'expéditeur :</strong> {{ $transaction->sender_account }}</li>
         <li><strong>Compte du destinataire :</strong> {{ $transaction->receiver_account }}</li>

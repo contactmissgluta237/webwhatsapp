@@ -108,7 +108,7 @@ final class UserProduct extends Model implements HasMedia
 
     public function getFormattedPrice(): string
     {
-        return number_format((float) $this->price, 0, ',', ' ').' XAF';
+        return \App\Helpers\CurrencyHelper::formatUsd((float) $this->price);
     }
 
     public function hasImages(): bool

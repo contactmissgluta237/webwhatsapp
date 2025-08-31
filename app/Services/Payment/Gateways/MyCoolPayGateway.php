@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Payment\Gateways;
 
+use App\Enums\PaymentGateway;
+use App\Enums\PaymentMethod;
 use App\Enums\TransactionStatus;
 use App\Events\ExternalTransactionWebhookProcessedEvent;
 use App\Models\ExternalTransaction;
@@ -46,9 +48,15 @@ final class MyCoolPayGateway implements PaymentGatewayInterface
         $transaction->load(['wallet.user']);
         $user = $transaction->wallet->user;
 
+        $conversion = \App\Helpers\CurrencyHelper::convertForGateway(
+            (float) $transaction->amount, // USD
+            PaymentGateway::MYCOOLPAY()->value,
+            $request->paymentMethod ?? PaymentMethod::MOBILE_MONEY()->value
+        );
+
         $payload = [
-            'transaction_amount' => $transaction->amount,
-            'transaction_currency' => $user->currency ?? 'XAF',
+            'transaction_amount' => $conversion['amount'],
+            'transaction_currency' => $conversion['currency'],
             'transaction_reason' => $transaction->description ?? 'Account recharge',
             'app_transaction_ref' => $transaction->external_transaction_id,
             'customer_phone_number' => $request->phoneNumber,

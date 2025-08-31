@@ -388,8 +388,17 @@ final class AiConfigurationForm extends Component
 
         // Check activation limits if trying to enable agent
         if ($this->agent_enabled && ! $this->account->agent_enabled) {
+            if (empty(trim($this->agent_prompt))) {
+                $this->dispatch('configuration-saved', [
+                    'type' => 'error',
+                    'message' => 'Impossible d\'activer l\'agent IA sans prompt configuré.',
+                ]);
+
+                return;
+            }
+
             $handler = app(AgentActivationHandler::class);
-            $result = $handler->handle(auth()->user());
+            $result = $handler->handle($this->account->user);
 
             if (! $result->canActivate) {
                 $this->dispatch('configuration-saved', [

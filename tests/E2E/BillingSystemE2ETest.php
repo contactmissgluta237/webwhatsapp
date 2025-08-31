@@ -92,10 +92,10 @@ class BillingSystemE2ETest extends TestCase
             products: [$productWithMedia]
         );
 
-        // Expected: 1 AI + 1 product message + 2 media = 4 messages
-        $this->assertEquals(4, MessageBillingHelper::getNumberOfMessagesFromResponse($fullResponse));
-        // Expected: 15 (AI) + 10 (product) + 10 (2 media × 5) = 35 XAF
-        $this->assertEquals(35.0, MessageBillingHelper::getAmountToBillFromResponse($fullResponse));
+        // Expected: 1 AI + 1 product = 2 messages
+        $this->assertEquals(2, MessageBillingHelper::getNumberOfMessagesFromResponse($fullResponse));
+        // Expected: 15 (AI) + 10 (product) = 25 XAF
+        $this->assertEquals(25.0, MessageBillingHelper::getAmountToBillFromResponse($fullResponse));
     }
 
     #[Test]
@@ -198,18 +198,18 @@ class BillingSystemE2ETest extends TestCase
 
         Event::dispatch($event);
 
-        // Verify wallet debited: 15 (AI) + 10 (product) + 10 (2×5 media) = 35 XAF
+        // Verify wallet debited: 15 (AI) + 10 (product) = 25 XAF
         $this->wallet->refresh();
-        $this->assertEquals(965.00, $this->wallet->balance); // 1000 - 35
+        $this->assertEquals(975.00, $this->wallet->balance); // 1000 - 25
 
         // Verify overage tracking
         $accountUsage->refresh();
-        $this->assertEquals(35.0, $accountUsage->overage_cost_paid_xaf);
+        $this->assertEquals(25.0, $accountUsage->overage_cost_paid_xaf);
         $this->assertNotNull($accountUsage->last_overage_payment_at);
 
         // Should send wallet debited notification
         Notification::assertSentTo($this->user, WalletDebitedNotification::class, function ($notification) {
-            return $notification->debitedAmount === 35.0 && $notification->newWalletBalance === 965.0;
+            return $notification->debitedAmount === 25.0 && $notification->newWalletBalance === 975.0;
         });
     }
 
@@ -225,7 +225,7 @@ class BillingSystemE2ETest extends TestCase
         $accountUsage = WhatsAppAccountUsage::getOrCreateForAccount($this->subscription, $this->account);
         $accountUsage->update(['messages_used' => 100]);
 
-        // Try expensive operation requiring 35 XAF
+        // Try expensive operation requiring 25 XAF
         $productWithMedia = new ProductDataDTO('Product', ['img1.jpg', 'img2.jpg']);
 
         $response = WhatsAppMessageResponseDTO::success(
@@ -304,9 +304,9 @@ class BillingSystemE2ETest extends TestCase
         $accountUsage->refresh();
         $this->wallet->refresh();
 
-        // Should have debited 15 (AI) + 10 (product) + 5 (media) = 30 XAF
-        $this->assertEquals(970.0, $this->wallet->balance);
-        $this->assertEquals(30.0, $accountUsage->overage_cost_paid_xaf);
+        // Should have debited 15 (AI) + 10 (product) = 25 XAF
+        $this->assertEquals(975.0, $this->wallet->balance);
+        $this->assertEquals(25.0, $accountUsage->overage_cost_paid_xaf);
 
         // Should have sent wallet debited notification
         Notification::assertSentTo($this->user, WalletDebitedNotification::class);

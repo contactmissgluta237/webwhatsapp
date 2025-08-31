@@ -11,6 +11,7 @@ final readonly class PaymentIdentifierRequestDTO
         public ?string $cardNumber = null,
         public ?string $cvv = null,
         public ?int $expiryMonth = null,
-        public ?int $expiryYear = null
+        public ?int $expiryYear = null,
+        public ?string $paymentMethod = null
     ) {}
 }

@@ -22,7 +22,8 @@
       "mcp__laravel-boost__list-available-env-vars",
       "mcp__laravel-boost__get-config",
       "mcp__laravel-boost__search-docs",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(./vendor/bin/pint:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -8,10 +8,14 @@ use App\DTOs\AI\AiResponseDTO;
 use App\Events\WhatsApp\AiResponseGenerated;
 use App\Services\AI\AiUsageTracker;
 use Exception;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
-class TrackAiUsageListener
+class TrackAiUsageListener implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     public function __construct(
         private readonly AiUsageTracker $aiUsageTracker
     ) {}

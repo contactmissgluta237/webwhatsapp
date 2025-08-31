@@ -53,7 +53,7 @@
                                                         <div class="flex-grow-1">
                                                             <div class="d-flex justify-content-between align-items-start">
                                                                 <h6 class="mb-1">{{ $product->title }}</h6>
-                                                                <span class="badge bg-primary ms-2">{{ number_format($product->price, 0, ',', ' ') }} XAF</span>
+                                                                <span class="badge bg-primary ms-2">{{ \App\Helpers\CurrencyHelper::formatUsd($product->price) }}</span>
                                                             </div>
                                                             <p class="mb-0 text-muted small">{{ Str::limit($product->description, 80) }}</p>
                                                         </div>
@@ -115,7 +115,7 @@
                                             <div class="flex-grow-1">
                                                 <div class="d-flex justify-content-between align-items-start">
                                                     <h6 class="mb-1">{{ $product->title }}</h6>
-                                                    <span class="badge bg-success ms-2">{{ number_format($product->price, 0, ',', ' ') }} XAF</span>
+                                                    <span class="badge bg-success ms-2">{{ \App\Helpers\CurrencyHelper::formatUsd($product->price) }}</span>
                                                 </div>
                                                 <p class="mb-0 text-muted small">{{ Str::limit($product->description, 100) }}</p>
                                             </div>
