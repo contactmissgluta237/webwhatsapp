@@ -77,7 +77,9 @@ class AiConfigurationFormDynamicLimitTest extends TestCase
 
         // Test prompt exceeding limit - should have errors
         $invalidPrompt = str_repeat('A', 2200);
-        $component->set('agent_prompt', $invalidPrompt);
+        $component->set('agent_prompt', $invalidPrompt)
+                  ->set('agent_enabled', true)
+                  ->call('save');
 
         $component->assertHasErrors('agent_prompt');
     }

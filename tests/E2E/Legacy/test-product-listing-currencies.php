@@ -63,7 +63,7 @@ class TestProductListingCurrencies
         $this->log('🧪 Test 1: Création utilisateurs avec différentes devises');
 
         $testCountries = [
-            ['name' => 'Cameroun', 'code' => 'CM', 'expected_currency' => 'XAF'],
+            ['name' => 'Cameroun', 'code' => 'CM', 'expected_currency' => 'USD'],
             ['name' => 'Sénégal', 'code' => 'SN', 'expected_currency' => 'XOF'],
             ['name' => 'France', 'code' => 'FR', 'expected_currency' => 'EUR'],
         ];

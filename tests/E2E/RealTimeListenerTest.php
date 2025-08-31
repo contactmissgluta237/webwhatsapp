@@ -40,7 +40,7 @@ try {
     echo "   - Session: {$account->session_id}\n";
     echo '   - Téléphone: '.($account->phone_number ?? 'Non connecté')."\n";
     echo "   - Utilisateur: {$user->name} (ID: {$user->id})\n";
-    echo '   - Wallet balance: '.($user->wallet->balance ?? '0')." XAF\n";
+    echo '   - Wallet balance: '.($user->wallet->balance ?? '0')." USD\n";
     echo '   - Subscription active: '.($user->activeSubscription ? 'OUI' : 'NON')."\n";
     if ($user->activeSubscription) {
         echo "   - Messages restants: {$user->activeSubscription->getRemainingMessages()}\n";
@@ -77,14 +77,14 @@ try {
             ['https://example.com/product1_image1.jpg', 'https://example.com/product1_image2.jpg'],
             $product1->description,
             $product1->price,
-            'XAF'
+            'USD'
         ),
         new ProductDataDTO(
             $product2->title,
             ['https://example.com/product2_image1.jpg', 'https://example.com/product2_video1.mp4'],
             $product2->description,
             $product2->price,
-            'XAF'
+            'USD'
         ),
     ];
 
@@ -132,7 +132,7 @@ try {
     $initialMessagesUsed = $user->activeSubscription?->getUsageForAccount($account)?->messages_used ?? 0;
 
     echo "💾 État initial sauvegardé:\n";
-    echo "   - Wallet balance: {$initialWalletBalance} XAF\n";
+    echo "   - Wallet balance: {$initialWalletBalance} USD\n";
     echo "   - Messages utilisés: {$initialMessagesUsed}\n\n";
 
     // 7. ⚠️ PAS DE MOCK - TEST EN RÉEL SUR LE COMPTE ID=9 ⚠️
@@ -168,11 +168,11 @@ try {
         echo "💳 MODE: Débit sur QUOTA de subscription\n";
         echo "   - Messages débités: {$messagesDébités}\n";
         echo "   - Messages restants: {$user->activeSubscription->getRemainingMessages()}\n";
-        echo "   - Wallet balance: {$finalWalletBalance} XAF (inchangé)\n";
+        echo "   - Wallet balance: {$finalWalletBalance} USD (inchangé)\n";
     } else {
         echo "💰 MODE: Débit sur WALLET\n";
-        echo "   - Montant débité: {$walletDébité} XAF\n";
-        echo "   - Nouveau balance: {$finalWalletBalance} XAF\n";
+        echo "   - Montant débité: {$walletDébité} USD\n";
+        echo "   - Nouveau balance: {$finalWalletBalance} USD\n";
     }
 
     echo "\n🎯 VÉRIFICATION DE LA NOUVELLE FORMULE:\n";
@@ -189,10 +189,10 @@ try {
     if ($latestUsageLog) {
         echo "📋 DERNIER LOG D'USAGE CRÉÉ:\n";
         echo "   - ID: {$latestUsageLog->id}\n";
-        echo "   - AI Cost: {$latestUsageLog->ai_message_cost} XAF\n";
+        echo "   - AI Cost: {$latestUsageLog->ai_message_cost} USD\n";
         echo "   - Product Count: {$latestUsageLog->product_count}\n";
-        echo "   - Product Cost: {$latestUsageLog->product_cost} XAF\n";
-        echo "   - Total Cost: {$latestUsageLog->total_cost} XAF\n";
+        echo "   - Product Cost: {$latestUsageLog->product_cost} USD\n";
+        echo "   - Total Cost: {$latestUsageLog->total_cost} USD\n";
         echo "   - Billing Type: {$latestUsageLog->billing_type->value}\n";
         echo "   - Created: {$latestUsageLog->created_at}\n";
     }

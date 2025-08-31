@@ -65,9 +65,9 @@ class SimpleMailE2ETest extends BaseE2EBillingTest
         $accountUsage->update(['messages_used' => 100]);
 
         $messageRequest2 = $this->generateMessageRequest('Test débit wallet');
-        $aiResponse2 = $this->generateSimpleAIResponse(); // 15 XAF
+        $aiResponse2 = $this->generateSimpleAIResponse(); // 15 USD
 
-        echo "📊 État avant: quota épuisé (100/100), wallet: {$this->wallet->balance} XAF\n";
+        echo "📊 État avant: quota épuisé (100/100), wallet: {$this->wallet->balance} USD\n";
         echo "🚀 Dispatch événement...\n";
 
         $this->dispatchMessageProcessedEvent($messageRequest2, $aiResponse2);
@@ -95,8 +95,8 @@ class SimpleMailE2ETest extends BaseE2EBillingTest
 
         echo "\n📊 État final système:\n";
         echo "   📱 Messages quota: {$accountUsage->messages_used}/100\n";
-        echo "   💳 Wallet débité: {$accountUsage->overage_cost_paid_xaf} XAF\n";
-        echo "   💰 Solde wallet: {$this->wallet->balance} XAF\n";
+        echo "   💳 Wallet débité: {$accountUsage->overage_cost_paid_xaf} USD\n";
+        echo "   💰 Solde wallet: {$this->wallet->balance} USD\n";
 
         echo "\n🎉 [E2E] Test emails en queue - SUCCESS!\n";
         echo "════════════════════════════════════════\n";

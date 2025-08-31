@@ -63,7 +63,7 @@ class BillingIntegrationTest extends TestCase
         // Create wallet
         $this->user->wallet()->create([
             'balance' => 1000.0,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Create active subscription

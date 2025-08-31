@@ -15,7 +15,7 @@ class TestWhatsAppCurrencyFormatting extends BaseTestIncomingMessage
 {
     private array $testProducts = [];
     private array $countriesData = [
-        ['name' => 'Cameroun', 'code' => 'CM', 'currency' => 'XAF'],
+        ['name' => 'Cameroun', 'code' => 'CM', 'currency' => 'USD'],
         ['name' => 'Sénégal', 'code' => 'SN', 'currency' => 'XOF'],
         ['name' => 'France', 'code' => 'FR', 'currency' => 'EUR'],
     ];

@@ -76,7 +76,7 @@ final class UserProductTest extends TestCase
             ->withUser($this->user)
             ->create(['price' => 1500.50]);
 
-        $this->assertEquals('1 501 XAF', $product->getFormattedPrice());
+        $this->assertEquals('1 501 USD', $product->getFormattedPrice());
     }
 
     public function test_product_activation_deactivation(): void

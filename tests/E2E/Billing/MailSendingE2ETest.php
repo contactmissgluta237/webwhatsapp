@@ -82,13 +82,13 @@ class MailSendingE2ETest extends BaseE2EBillingTest
 
         // Action: Déclencher débit wallet
         $messageRequest = $this->generateMessageRequest('Message nécessitant débit wallet');
-        $aiResponse = $this->generateSimpleAIResponse(); // 15 XAF
+        $aiResponse = $this->generateSimpleAIResponse(); // 15 USD
 
         $expectedCost = MessageBillingHelper::getAmountToBillFromResponse($aiResponse);
         $expectedNewBalance = $initialBalance - $expectedCost;
 
-        echo "🧮 Coût attendu: {$expectedCost} XAF\n";
-        echo "🧮 Balance attendue: {$expectedNewBalance} XAF\n";
+        echo "🧮 Coût attendu: {$expectedCost} USD\n";
+        echo "🧮 Balance attendue: {$expectedNewBalance} USD\n";
 
         echo "🚀 Dispatch pour déclencher débit wallet...\n";
         $this->dispatchMessageProcessedEvent($messageRequest, $aiResponse);
@@ -173,8 +173,8 @@ class MailSendingE2ETest extends BaseE2EBillingTest
 
         echo "\n📊 État final système:\n";
         echo "   📱 Messages quota utilisés: {$accountUsage->messages_used}/100\n";
-        echo "   💳 Overage payé: {$accountUsage->overage_cost_paid_xaf} XAF\n";
-        echo "   💰 Balance wallet: {$this->wallet->balance} XAF\n";
+        echo "   💳 Overage payé: {$accountUsage->overage_cost_paid_xaf} USD\n";
+        echo "   💰 Balance wallet: {$this->wallet->balance} USD\n";
 
         echo "\n🎉 [E2E] Scénario complet emails - SUCCESS!\n";
         echo "════════════════════════════════════════\n";

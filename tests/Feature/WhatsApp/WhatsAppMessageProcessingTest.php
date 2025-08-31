@@ -44,7 +44,7 @@ class WhatsAppMessageProcessingTest extends TestCase
         // Créer un wallet pour l'utilisateur
         $this->user->wallet()->create([
             'balance' => 0,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
     }
 

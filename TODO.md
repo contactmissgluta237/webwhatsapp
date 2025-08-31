@@ -53,3 +53,5 @@ Juste le rendre plus agréable, plus beau! et de façon générale on dirait que
 
 ## Permettre qu'on puisse désactiver lia sur une conversation. Ou plus loin, le désactiver pr un temps. (LOW)
 il faudra se rassurer qu'avant de répondre à une converstaion existante, l'ia verifie que agent_enabled sur la conversation! 
+
+## Se rassurer qu'on verifie bien que le statut du compte est connecté avant de répondre! il nous faut mm une methode should answer qui fait toutes les verifications possibles! genre si l'ia est active, si le compte a le credit ou les messages! si la conversation est activée pr l'ia, etc... (LOW)

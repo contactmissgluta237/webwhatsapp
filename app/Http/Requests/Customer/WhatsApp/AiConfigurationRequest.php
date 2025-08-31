@@ -5,11 +5,21 @@ declare(strict_types=1);
 namespace App\Http\Requests\Customer\WhatsApp;
 
 use App\Constants\ValidationLimits;
+use App\Models\User;
 use App\Rules\PromptLengthRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 final class AiConfigurationRequest extends FormRequest
 {
+    private bool $agentEnabled = false;
+
+    public function __construct(bool $agentEnabled = false)
+    {
+        parent::__construct();
+        $this->agentEnabled = $agentEnabled;
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -17,16 +27,16 @@ final class AiConfigurationRequest extends FormRequest
 
     public function rules(): array
     {
-        $agentEnabled = $this->boolean('agent_enabled');
-
         // Get user's dynamic context limit based on their package
-        $contextLimit = auth()->user()?->getPromptLimit() ?? config('whatsapp.ai.limits.context_default_max_length', 3000);
+        /** @var User|null $user */
+        $user = Auth::user();
+        $contextLimit = $user?->getPromptLimit() ?? config('whatsapp.ai.limits.context_default_max_length', 3000);
 
         return [
             'agent_name' => 'required|string|max:'.ValidationLimits::AGENT_NAME_MAX_LENGTH,
             'agent_enabled' => 'boolean',
-            'ai_model_id' => $agentEnabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
-            'agent_prompt' => $agentEnabled ? ['required', 'string', new PromptLengthRule(config('whatsapp.ai.limits.agent_prompt_max_length', 3000))] : ['nullable', 'string', new PromptLengthRule(config('whatsapp.ai.limits.agent_prompt_max_length', 3000))],
+            'ai_model_id' => $this->agentEnabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
+            'agent_prompt' => $this->agentEnabled ? ['required', 'string', new PromptLengthRule($contextLimit)] : ['nullable', 'string', new PromptLengthRule($contextLimit)],
             'trigger_words' => 'nullable|string|max:'.ValidationLimits::TRIGGER_WORDS_MAX_LENGTH,
             'contextual_information' => ['nullable', 'string', new PromptLengthRule($contextLimit)],
             'ignore_words' => 'nullable|string|max:'.ValidationLimits::IGNORE_WORDS_MAX_LENGTH,

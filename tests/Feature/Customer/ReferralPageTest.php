@@ -78,14 +78,14 @@ class ReferralPageTest extends TestCase
         // Créer des filleuls
         $referral1 = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
             'referrer_id' => $referrer->id,
         ]);
         $referral1->assignRole('customer');
 
         $referral2 = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
             'referrer_id' => $referrer->id,
         ]);
         $referral2->assignRole('customer');
@@ -106,7 +106,7 @@ class ReferralPageTest extends TestCase
         // Créer au moins un référral pour que la section s'affiche
         $referral = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
             'referrer_id' => $referrer->id,
         ]);
         $referral->assignRole('customer');
@@ -114,7 +114,7 @@ class ReferralPageTest extends TestCase
         $this->actingAs($referrer)
             ->get(route('customer.referrals.index'))
             ->assertOk()
-            ->assertSee('0 XAF'); // Format de devise XAF pour les gains
+            ->assertSee('0 USD'); // Format de devise USD pour les gains
     }
 
     #[Test]
@@ -125,7 +125,7 @@ class ReferralPageTest extends TestCase
         // Créer un filleul actif
         $activeReferral = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
             'referrer_id' => $referrer->id,
             'is_active' => true,
         ]);
@@ -151,7 +151,7 @@ class ReferralPageTest extends TestCase
     {
         $admin = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $admin->assignRole('admin');
 
@@ -176,7 +176,7 @@ class ReferralPageTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 

@@ -63,10 +63,10 @@ class CouponSubscriptionE2ETest extends TestCase
 
         $this->referrer->wallet()->create([
             'balance' => 0.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
-        // Create customer (referred user) with 1000 XAF wallet
+        // Create customer (referred user) with 1000 USD wallet
         $this->customer = User::factory()->customer()->create([
             'first_name' => 'Client',
             'last_name' => 'Référé',
@@ -75,8 +75,8 @@ class CouponSubscriptionE2ETest extends TestCase
         ]);
 
         $this->customer->wallet()->create([
-            'balance' => 1500.00, // Suffisant pour 1000 XAF (avec coupon) mais pas pour 2000 XAF (sans coupon)
-            'currency' => 'XAF',
+            'balance' => 1500.00, // Suffisant pour 1000 USD (avec coupon) mais pas pour 2000 USD (sans coupon)
+            'currency' => 'USD',
         ]);
 
         // Create 50% percentage coupon
@@ -143,7 +143,7 @@ class CouponSubscriptionE2ETest extends TestCase
         $this->customer->wallet->refresh();
         $this->assertEquals(500.00, $this->customer->wallet->balance); // 1500 - 1000 = 500
 
-        // Vérifier que le parrain a reçu sa commission (10% de 2000 = 200 XAF sur prix original)
+        // Vérifier que le parrain a reçu sa commission (10% de 2000 = 200 USD sur prix original)
         $this->referrer->wallet->refresh();
         $this->assertEquals(100.00, $this->referrer->wallet->balance);
 
@@ -170,7 +170,7 @@ class CouponSubscriptionE2ETest extends TestCase
         $this->assertEquals(1000.00, $couponUsage->discount_amount);
         $this->assertEquals(1000.00, $couponUsage->final_price);
 
-        // ÉTAPE 4: Recharger le compte client de 2000 XAF
+        // ÉTAPE 4: Recharger le compte client de 2000 USD
         $this->customer->wallet->update(['balance' => 2000.00]);
         $this->assertEquals(2000.00, $this->customer->wallet->fresh()->balance);
 
@@ -192,7 +192,7 @@ class CouponSubscriptionE2ETest extends TestCase
         $this->customer->wallet->refresh();
         $this->assertEquals(0.00, $this->customer->wallet->balance); // 2000 - 2000 = 0
 
-        // Vérifier que le parrain a reçu une nouvelle commission (10% de 2000 = 200 XAF)
+        // Vérifier que le parrain a reçu une nouvelle commission (10% de 2000 = 200 USD)
         $this->referrer->wallet->refresh();
         $this->assertEquals(300.00, $this->referrer->wallet->balance); // 100 + 200 = 300
 
@@ -206,8 +206,8 @@ class CouponSubscriptionE2ETest extends TestCase
         $response->assertStatus(200);
         $response->assertSee($this->customer->full_name);
         $response->assertSee('Starter'); // Package name
-        $response->assertSee('1,000 XAF'); // Premier montant payé (format number_format)
-        $response->assertSee('2,000 XAF'); // Deuxième montant payé (format number_format)
+        $response->assertSee('1,000 USD'); // Premier montant payé (format number_format)
+        $response->assertSee('2,000 USD'); // Deuxième montant payé (format number_format)
 
         // Vérifier que l'admin voit le coupon utilisé dans la liste des coupons
         $response = $this->actingAs($this->admin)->get(route('admin.coupons.index'));
@@ -222,9 +222,9 @@ class CouponSubscriptionE2ETest extends TestCase
 
         // ÉTAPE 7: Vérifications finales sur les revenus du système
         // Le système devrait avoir reçu:
-        // 1ère souscription: 1000 - 100 (commission) = 900 XAF
-        // 2ème souscription: 2000 - 200 (commission) = 1800 XAF
-        // Total système: 2700 XAF
+        // 1ère souscription: 1000 - 100 (commission) = 900 USD
+        // 2ème souscription: 2000 - 200 (commission) = 1800 USD
+        // Total système: 2700 USD
 
         $totalSystemRevenue = \DB::table('system_revenues')
             ->where('source_type', 'subscription')
@@ -296,7 +296,7 @@ class CouponSubscriptionE2ETest extends TestCase
 
         $customer2->wallet()->create([
             'balance' => 2000.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Utiliser le coupon

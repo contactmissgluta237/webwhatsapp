@@ -53,7 +53,7 @@ class TicketCreationTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 
@@ -73,7 +73,7 @@ class TicketCreationTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 
@@ -102,7 +102,7 @@ class TicketCreationTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 
@@ -134,7 +134,7 @@ class TicketCreationTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 
@@ -164,7 +164,7 @@ class TicketCreationTest extends TestCase
     {
         $admin = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         $adminRole = Role::create(['name' => 'admin']);

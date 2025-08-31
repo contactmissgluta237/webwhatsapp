@@ -57,19 +57,19 @@ class ExternalTransactionListTest extends TestCase
 
         $this->customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $this->customer->assignRole('customer');
 
         $this->otherCustomer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $this->otherCustomer->assignRole('customer');
 
         $this->admin = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $this->admin->assignRole('admin');
 

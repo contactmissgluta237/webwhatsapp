@@ -37,7 +37,7 @@ class CouponSystemTest extends TestCase
         // Créer un wallet
         $this->user->wallet()->create([
             'balance' => 10000.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Créer un package test

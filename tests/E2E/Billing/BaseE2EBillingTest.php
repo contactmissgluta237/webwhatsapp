@@ -49,14 +49,14 @@ abstract class BaseE2EBillingTest extends TestCase
             'email_verified_at' => now(),
             'is_active' => true,
             'country_id' => null, // Skip country for E2E test
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Create wallet for customer
         $this->wallet = Wallet::create([
             'user_id' => $this->customer->id,
-            'balance' => 1000.00, // 1000 XAF
-            'currency' => 'XAF',
+            'balance' => 1000.00, // 1000 USD
+            'currency' => 'USD',
         ]);
 
         // Create starter package
@@ -65,7 +65,7 @@ abstract class BaseE2EBillingTest extends TestCase
             'display_name' => 'Starter E2E Test',
             'description' => 'Package starter pour les tests E2E',
             'price' => 500.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
             'messages_limit' => 100,
             'context_limit' => 20,
             'accounts_limit' => 2,
@@ -121,15 +121,15 @@ abstract class BaseE2EBillingTest extends TestCase
     {
         $products = [
             new ProductDataDTO(
-                '🍕 Pizza Margherita - Délicieuse pizza avec tomate, mozzarella et basilic frais. Prix: 3500 XAF',
+                '🍕 Pizza Margherita - Délicieuse pizza avec tomate, mozzarella et basilic frais. Prix: 3500 USD',
                 ['https://example.com/pizza1.jpg', 'https://example.com/pizza2.jpg']
             ),
             new ProductDataDTO(
-                '🍔 Burger Classic - Burger juteux avec bœuf, salade, tomate et sauce spéciale. Prix: 2500 XAF',
+                '🍔 Burger Classic - Burger juteux avec bœuf, salade, tomate et sauce spéciale. Prix: 2500 USD',
                 ['https://example.com/burger1.jpg']
             ),
             new ProductDataDTO(
-                '🥤 Coca Cola - Boisson rafraîchissante 33cl. Prix: 500 XAF',
+                '🥤 Coca Cola - Boisson rafraîchissante 33cl. Prix: 500 USD',
                 ['https://example.com/coca1.jpg', 'https://example.com/coca2.jpg', 'https://example.com/coca3.jpg']
             ),
         ];

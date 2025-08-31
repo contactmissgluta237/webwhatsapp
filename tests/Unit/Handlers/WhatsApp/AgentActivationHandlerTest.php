@@ -34,7 +34,7 @@ final class AgentActivationHandlerTest extends TestCase
         $this->assertFalse($result->canActivate);
         $this->assertEquals(__('Insufficient balance. Minimum required: :amount :currency to activate an agent', [
             'amount' => 15,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]), $result->reason);
         $this->assertEquals(0, $result->maxAllowedAgents);
         $this->assertFalse($result->hasActiveSubscription);

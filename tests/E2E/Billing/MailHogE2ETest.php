@@ -55,10 +55,10 @@ class MailHogE2ETest extends BaseE2EBillingTest
         $accountUsage->update(['messages_used' => 100]);
 
         $messageRequest2 = $this->generateMessageRequest('Test débit wallet pour MailHog');
-        $aiResponse2 = $this->generateSimpleAIResponse(); // 15 XAF
+        $aiResponse2 = $this->generateSimpleAIResponse(); // 15 USD
 
         $initialBalance = $this->wallet->balance;
-        echo "📊 Balance wallet avant: {$initialBalance} XAF\n";
+        echo "📊 Balance wallet avant: {$initialBalance} USD\n";
 
         // Dispatch l'événement
         $this->dispatchMessageProcessedEvent($messageRequest2, $aiResponse2);
@@ -67,8 +67,8 @@ class MailHogE2ETest extends BaseE2EBillingTest
         $finalBalance = $this->wallet->balance;
         $debitedAmount = $initialBalance - $finalBalance;
 
-        echo "📊 Balance wallet après: {$finalBalance} XAF\n";
-        echo "💳 Montant débité: {$debitedAmount} XAF\n";
+        echo "📊 Balance wallet après: {$finalBalance} USD\n";
+        echo "💳 Montant débité: {$debitedAmount} USD\n";
         echo "📧 ✅ Email WalletDebitedMail envoyé vers MailHog!\n";
 
         // ============================================================
@@ -87,7 +87,7 @@ class MailHogE2ETest extends BaseE2EBillingTest
         echo "\n📊 [MailHog] Détails des emails envoyés:\n";
         echo "📧 Destinataire: {$this->customer->email}\n";
         echo "📧 Email 1: LowQuotaMail ({$remainingAfter} messages restants)\n";
-        echo "📧 Email 2: WalletDebitedMail ({$debitedAmount} XAF débités)\n";
+        echo "📧 Email 2: WalletDebitedMail ({$debitedAmount} USD débités)\n";
 
         echo "\n🎉 [MailHog] Test terminé - Va vérifier tes emails! 📬\n";
 

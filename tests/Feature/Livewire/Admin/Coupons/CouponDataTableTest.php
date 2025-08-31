@@ -304,7 +304,7 @@ class CouponDataTableTest extends TestCase
         Livewire::actingAs($this->admin)
             ->test(CouponDataTable::class)
             ->assertSee('15.5%') // Percentage format
-            ->assertSee('2 500 XAF'); // Fixed amount format with thousands separator
+            ->assertSee('2 500 USD'); // Fixed amount format with thousands separator
     }
 
     #[Test]

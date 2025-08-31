@@ -41,7 +41,7 @@ class BillingSystemE2ETest extends TestCase
         $this->user = User::factory()->create();
         $this->wallet = Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 1000.00, // 1000 XAF
+            'balance' => 1000.00, // 1000 USD
         ]);
 
         $package = Package::factory()->create([
@@ -94,7 +94,7 @@ class BillingSystemE2ETest extends TestCase
 
         // Expected: 1 AI + 1 product = 2 messages
         $this->assertEquals(2, MessageBillingHelper::getNumberOfMessagesFromResponse($fullResponse));
-        // Expected: 15 (AI) + 10 (product) = 25 XAF
+        // Expected: 15 (AI) + 10 (product) = 25 USD
         $this->assertEquals(25.0, MessageBillingHelper::getAmountToBillFromResponse($fullResponse));
     }
 
@@ -198,7 +198,7 @@ class BillingSystemE2ETest extends TestCase
 
         Event::dispatch($event);
 
-        // Verify wallet debited: 15 (AI) + 10 (product) = 25 XAF
+        // Verify wallet debited: 15 (AI) + 10 (product) = 25 USD
         $this->wallet->refresh();
         $this->assertEquals(975.00, $this->wallet->balance); // 1000 - 25
 
@@ -225,7 +225,7 @@ class BillingSystemE2ETest extends TestCase
         $accountUsage = WhatsAppAccountUsage::getOrCreateForAccount($this->subscription, $this->account);
         $accountUsage->update(['messages_used' => 100]);
 
-        // Try expensive operation requiring 25 XAF
+        // Try expensive operation requiring 25 USD
         $productWithMedia = new ProductDataDTO('Product', ['img1.jpg', 'img2.jpg']);
 
         $response = WhatsAppMessageResponseDTO::success(
@@ -304,7 +304,7 @@ class BillingSystemE2ETest extends TestCase
         $accountUsage->refresh();
         $this->wallet->refresh();
 
-        // Should have debited 15 (AI) + 10 (product) = 25 XAF
+        // Should have debited 15 (AI) + 10 (product) = 25 USD
         $this->assertEquals(975.0, $this->wallet->balance);
         $this->assertEquals(25.0, $accountUsage->overage_cost_paid_xaf);
 

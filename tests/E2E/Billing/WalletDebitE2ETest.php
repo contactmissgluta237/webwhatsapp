@@ -48,9 +48,9 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
      *
      * Scénario:
      * - Customer avec 0 messages restants dans son quota
-     * - Wallet avec 1000 XAF (suffisant)
-     * - Envoi d'une réponse complexe (AI + 3 produits) = 4 messages = 45 XAF
-     * - Vérification que 45 XAF sont débités du wallet
+     * - Wallet avec 1000 USD (suffisant)
+     * - Envoi d'une réponse complexe (AI + 3 produits) = 4 messages = 45 USD
+     * - Vérification que 45 USD sont débités du wallet
      * - Notification WalletDebitedNotification envoyée
      * - Logs de débit wallet présents
      */
@@ -71,7 +71,7 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         echo "✅ Customer: {$this->customer->email}\n";
         echo "✅ Quota restant: {$remainingMessages} messages (épuisé)\n";
         echo "✅ Messages utilisés: {$accountUsage->messages_used}/100\n";
-        echo "✅ Wallet balance: {$initialWalletBalance} XAF\n";
+        echo "✅ Wallet balance: {$initialWalletBalance} USD\n";
 
         // ============================================================
         // ACTION: Générer et dispatcher l'événement
@@ -86,9 +86,9 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         $expectedBillingAmount = MessageBillingHelper::getAmountToBillFromResponse($aiResponse);
 
         echo "🧮 Messages calculés: {$expectedMessageCount}\n";
-        echo "🧮 Coût à débiter: {$expectedBillingAmount} XAF\n";
-        echo "🧮 Balance wallet avant: {$initialWalletBalance} XAF\n";
-        echo '🧮 Balance attendue après: '.($initialWalletBalance - $expectedBillingAmount)." XAF\n";
+        echo "🧮 Coût à débiter: {$expectedBillingAmount} USD\n";
+        echo "🧮 Balance wallet avant: {$initialWalletBalance} USD\n";
+        echo '🧮 Balance attendue après: '.($initialWalletBalance - $expectedBillingAmount)." USD\n";
 
         // Dispatcher l'événement
         echo "🚀 Dispatch de MessageProcessedEvent...\n";
@@ -112,12 +112,12 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         $expectedNewBalance = $initialWalletBalance - $expectedBillingAmount;
         $this->assertEquals($expectedNewBalance, $this->wallet->balance,
             "❌ Wallet mal débité. Attendu: {$expectedNewBalance}, Reçu: {$this->wallet->balance}");
-        echo "✅ Wallet débité: {$initialWalletBalance} - {$expectedBillingAmount} = {$this->wallet->balance} XAF\n";
+        echo "✅ Wallet débité: {$initialWalletBalance} - {$expectedBillingAmount} = {$this->wallet->balance} USD\n";
 
         // Vérifier l'overage comptabilisé
         $this->assertEquals($expectedBillingAmount, $accountUsage->overage_cost_paid_xaf,
             "❌ Overage cost incorrect. Attendu: {$expectedBillingAmount}, Reçu: {$accountUsage->overage_cost_paid_xaf}");
-        echo "✅ Overage cost: {$accountUsage->overage_cost_paid_xaf} XAF\n";
+        echo "✅ Overage cost: {$accountUsage->overage_cost_paid_xaf} USD\n";
 
         // Vérifier les timestamps
         $this->assertNotNull($accountUsage->last_message_at);
@@ -142,8 +142,8 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         // ============================================================
         echo "\n📧 [E2E] Vérification notifications wallet débit...\n";
         echo "📧 VÉRIFIER: Email WalletDebitedNotification envoyé à {$this->customer->email}\n";
-        echo "📧 VÉRIFIER: Contenu email - Montant débité: {$expectedBillingAmount} XAF\n";
-        echo "📧 VÉRIFIER: Contenu email - Nouveau solde: {$this->wallet->balance} XAF\n";
+        echo "📧 VÉRIFIER: Contenu email - Montant débité: {$expectedBillingAmount} USD\n";
+        echo "📧 VÉRIFIER: Contenu email - Nouveau solde: {$this->wallet->balance} USD\n";
         echo "📧 VÉRIFIER: Notification push WalletDebitedNotification\n";
         echo "📧 VÉRIFIER: Notification database créée avec type 'whatsapp_wallet_debited'\n";
 
@@ -155,9 +155,9 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         echo "📊 RÉSUMÉ:\n";
         echo "   👤 Customer: {$this->customer->email}\n";
         echo "   📦 Quota épuisé: 100/100 messages utilisés\n";
-        echo "   💳 Wallet débité: {$expectedBillingAmount} XAF\n";
-        echo "   💰 Nouveau solde: {$this->wallet->balance} XAF\n";
-        echo "   📊 Overage payé: {$accountUsage->overage_cost_paid_xaf} XAF\n";
+        echo "   💳 Wallet débité: {$expectedBillingAmount} USD\n";
+        echo "   💰 Nouveau solde: {$this->wallet->balance} USD\n";
+        echo "   📊 Overage payé: {$accountUsage->overage_cost_paid_xaf} USD\n";
         echo "   📧 Notifications: WalletDebitedNotification envoyée\n";
         echo "════════════════════════════════════════\n";
     }
@@ -172,7 +172,7 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         // ============================================================
         echo "\n🔍 [E2E] Test avec wallet insuffisant...\n";
 
-        // Mettre seulement 30 XAF dans le wallet (insuffisant pour 45 XAF)
+        // Mettre seulement 30 USD dans le wallet (insuffisant pour 45 USD)
         $lowBalance = 30.0;
         $this->wallet->update(['balance' => $lowBalance]);
 
@@ -181,8 +181,8 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
 
         $expectedBillingAmount = MessageBillingHelper::getAmountToBillFromResponse($aiResponse);
 
-        echo "✅ Wallet balance réduite: {$lowBalance} XAF\n";
-        echo "💰 Coût requis: {$expectedBillingAmount} XAF\n";
+        echo "✅ Wallet balance réduite: {$lowBalance} USD\n";
+        echo "💰 Coût requis: {$expectedBillingAmount} USD\n";
         echo "❌ Fonds insuffisants: {$lowBalance} < {$expectedBillingAmount}\n";
 
         // ============================================================
@@ -202,7 +202,7 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         // Le wallet ne doit PAS être débité
         $this->assertEquals($lowBalance, $this->wallet->balance,
             '❌ Wallet débité malgré fonds insuffisants');
-        echo "✅ Wallet inchangé: {$this->wallet->balance} XAF\n";
+        echo "✅ Wallet inchangé: {$this->wallet->balance} USD\n";
 
         // Aucun overage ne doit être comptabilisé
         $this->assertEquals(0.0, $accountUsage->overage_cost_paid_xaf,
@@ -235,11 +235,11 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
 
         // Calculer le coût d'une réponse simple et ajuster le wallet
         $simpleResponse = $this->generateSimpleAIResponse();
-        $exactAmount = MessageBillingHelper::getAmountToBillFromResponse($simpleResponse); // 15 XAF
+        $exactAmount = MessageBillingHelper::getAmountToBillFromResponse($simpleResponse); // 15 USD
 
         $this->wallet->update(['balance' => $exactAmount]);
 
-        echo "✅ Wallet ajusté à: {$exactAmount} XAF (montant exact)\n";
+        echo "✅ Wallet ajusté à: {$exactAmount} USD (montant exact)\n";
 
         // Dispatcher
         $messageRequest = $this->generateMessageRequest('Simple question');
@@ -250,7 +250,7 @@ class WalletDebitE2ETest extends BaseE2EBillingTest
         $this->assertEquals(0.0, $this->wallet->balance,
             '❌ Le wallet devrait être à 0 après débit exact');
 
-        echo "✅ Wallet après débit exact: {$this->wallet->balance} XAF\n";
+        echo "✅ Wallet après débit exact: {$this->wallet->balance} USD\n";
         echo "🎉 Test montant exact - SUCCESS!\n";
     }
 }

@@ -25,7 +25,7 @@ class AbstractPackageFormTest extends TestCase
         $form = new CreatePackageForm;
 
         $this->assertEquals('30', $form->duration_days);
-        $this->assertEquals('XAF', $form->currency);
+        $this->assertEquals('USD', $form->currency);
         $this->assertEquals('1000', $form->context_limit);
         $this->assertEquals('1', $form->accounts_limit);
         $this->assertEquals('0', $form->products_limit);

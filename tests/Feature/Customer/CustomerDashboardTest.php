@@ -51,7 +51,7 @@ class CustomerDashboardTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 
@@ -71,7 +71,7 @@ class CustomerDashboardTest extends TestCase
     {
         $admin = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $admin->assignRole('admin');
 

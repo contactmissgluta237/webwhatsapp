@@ -149,11 +149,11 @@ final class WhatsAppMessageResponseDTOTest extends TestCase
     {
         // Arrange - Créer des produits fictifs pour test (sans vérifier toArray)
         $product1 = new ProductDataDTO(
-            formattedProductMessage: "🛍️ *MacBook Pro M3*\n\n💰 **2 500 000 XAF**\n\n📝 Ordinateur portable haute performance\n\n📞 Interested? Contact us for more information!",
+            formattedProductMessage: "🛍️ *MacBook Pro M3*\n\n💰 **2 500 000 $**\n\n📝 Ordinateur portable haute performance\n\n📞 Interested? Contact us for more information!",
             mediaUrls: ['https://example.com/macbook-1.jpg']
         );
         $product2 = new ProductDataDTO(
-            formattedProductMessage: "🛍️ *iPhone 15 Pro*\n\n💰 **1 500 000 XAF**\n\n📝 Smartphone dernière génération\n\n📞 Interested? Contact us for more information!",
+            formattedProductMessage: "🛍️ *iPhone 15 Pro*\n\n💰 **1 500 000 $**\n\n📝 Smartphone dernière génération\n\n📞 Interested? Contact us for more information!",
             mediaUrls: ['https://example.com/iphone-1.jpg']
         );
 

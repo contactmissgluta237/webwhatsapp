@@ -130,23 +130,23 @@ class NotificationE2ETest extends BaseE2EBillingTest
 
         echo "📊 État initial:\n";
         echo "   - Quota: 100/100 messages utilisés (épuisé)\n";
-        echo "   - Wallet: {$this->wallet->balance} XAF\n";
+        echo "   - Wallet: {$this->wallet->balance} USD\n";
 
         // ============================================================
         // ACTION: Envoyer message nécessitant débit wallet
         // ============================================================
         echo "\n📤 [E2E] Envoi message nécessitant débit wallet...\n";
 
-        $aiResponse = $this->generateSimpleAIResponse(); // 1 message = 15 XAF
+        $aiResponse = $this->generateSimpleAIResponse(); // 1 message = 15 USD
         $messageRequest = $this->generateMessageRequest('Message en dépassement');
 
         $billingAmount = MessageBillingHelper::getAmountToBillFromResponse($aiResponse);
         $initialBalance = $this->wallet->balance;
         $expectedNewBalance = $initialBalance - $billingAmount;
 
-        echo "🧮 Coût du message: {$billingAmount} XAF\n";
-        echo "🧮 Balance avant: {$initialBalance} XAF\n";
-        echo "🧮 Balance attendue après: {$expectedNewBalance} XAF\n";
+        echo "🧮 Coût du message: {$billingAmount} USD\n";
+        echo "🧮 Balance avant: {$initialBalance} USD\n";
+        echo "🧮 Balance attendue après: {$expectedNewBalance} USD\n";
 
         // Clear les notifications pour test propre
         Notification::fake();
@@ -163,8 +163,8 @@ class NotificationE2ETest extends BaseE2EBillingTest
         $this->wallet->refresh();
         $finalBalance = $this->wallet->balance;
 
-        echo "✅ Balance finale: {$finalBalance} XAF\n";
-        echo '✅ Montant débité: '.($initialBalance - $finalBalance)." XAF\n";
+        echo "✅ Balance finale: {$finalBalance} USD\n";
+        echo '✅ Montant débité: '.($initialBalance - $finalBalance)." USD\n";
 
         // Vérifier que WalletDebitedNotification a été envoyée
         Notification::assertSentTo($this->customer, \App\Notifications\WhatsApp\WalletDebitedNotification::class);
@@ -185,8 +185,8 @@ class NotificationE2ETest extends BaseE2EBillingTest
         echo "\n📧 [E2E] Détails pour vérification manuelle email...\n";
         echo "📧 Destinataire: {$this->customer->email}\n";
         echo "📧 Type: WalletDebitedNotification\n";
-        echo "📧 Montant débité: {$billingAmount} XAF\n";
-        echo "📧 Nouveau solde: {$finalBalance} XAF\n";
+        echo "📧 Montant débité: {$billingAmount} USD\n";
+        echo "📧 Nouveau solde: {$finalBalance} USD\n";
         echo "📧 Raison: Dépassement de quota WhatsApp\n";
 
         echo "\n🎉 [E2E] Test notification débit wallet - SUCCESS!\n";
@@ -249,8 +249,8 @@ class NotificationE2ETest extends BaseE2EBillingTest
         $accountUsage->refresh();
 
         echo "✅ Messages utilisés quota: {$accountUsage->messages_used}\n";
-        echo "✅ Overage cost payé: {$accountUsage->overage_cost_paid_xaf} XAF\n";
-        echo "✅ Balance wallet finale: {$this->wallet->balance} XAF\n";
+        echo "✅ Overage cost payé: {$accountUsage->overage_cost_paid_xaf} USD\n";
+        echo "✅ Balance wallet finale: {$this->wallet->balance} USD\n";
 
         // Vérifier que les deux types de notifications ont été envoyés
         Notification::assertCount(2);

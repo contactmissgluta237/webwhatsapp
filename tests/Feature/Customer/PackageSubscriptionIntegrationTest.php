@@ -286,7 +286,7 @@ class PackageSubscriptionIntegrationTest extends TestCase
         // 1. Réduire le solde du wallet
         $this->wallet->update(['balance' => 1000]);
 
-        $package = Package::where('name', 'pro')->first(); // 5000 XAF
+        $package = Package::where('name', 'pro')->first(); // 5000 USD
 
         // 2. Tenter la souscription
         $response = $this->actingAs($this->user)

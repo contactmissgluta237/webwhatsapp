@@ -88,14 +88,14 @@ final class ProductMessageStorageTest extends TestCase
         // Arrange
         $products = [
             new ProductDataDTO(
-                formattedProductMessage: '🛍️ *iPhone 15*\n\n💰 **850,000 XAF**\n\n📝 Latest iPhone model',
+                formattedProductMessage: '🛍️ *iPhone 15*\n\n💰 **850,000 USD**\n\n📝 Latest iPhone model',
                 mediaUrls: [
                     'https://example.com/iphone1.jpg',
                     'https://example.com/iphone2.jpg',
                 ]
             ),
             new ProductDataDTO(
-                formattedProductMessage: '🛍️ *MacBook Air*\n\n💰 **1,200,000 XAF**\n\n📝 Ultra-light laptop',
+                formattedProductMessage: '🛍️ *MacBook Air*\n\n💰 **1,200,000 USD**\n\n📝 Ultra-light laptop',
                 mediaUrls: [
                     'https://example.com/macbook.mp4',
                     'https://example.com/macbook.jpg',

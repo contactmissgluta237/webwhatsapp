@@ -9,11 +9,13 @@ use App\Enums\ResponseTime;
 use App\Handlers\WhatsApp\AgentActivationHandler;
 use App\Http\Requests\Customer\WhatsApp\AiConfigurationRequest;
 use App\Models\AiModel;
+use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Rules\PromptLengthRule;
 use App\Services\AI\Contracts\PromptEnhancementInterface;
 use App\Services\AI\Helpers\AgentPromptHelper;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -96,7 +98,17 @@ final class AiConfigurationForm extends Component
     #[Computed]
     public function userContextLimit(): int
     {
-        return auth()->user()->getPromptLimit();
+        /** @var User $user */
+        $user = Auth::user();
+        return $user->getPromptLimit();
+    }
+
+    #[Computed]
+    public function userPromptLimit(): int
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        return $user->getPromptLimit();
     }
 
     #[Computed]
@@ -113,7 +125,7 @@ final class AiConfigurationForm extends Component
         }
 
         $currentLength = strlen($this->agent_prompt);
-        $limit = $this->agentPromptLimit();
+        $limit = $this->userPromptLimit();
 
         return (int) round(($currentLength / $limit) * 100);
     }
@@ -174,7 +186,9 @@ final class AiConfigurationForm extends Component
         $this->resetErrorBag('contextual_information');
 
         if ($this->contextual_information) {
-            $contextLimit = auth()->user()->getPromptLimit();
+            /** @var User $user */
+            $user = Auth::user();
+            $contextLimit = $user->getPromptLimit();
             $contextRule = new PromptLengthRule($contextLimit);
 
             $contextRule->validate('contextual_information', $this->contextual_information, function (string $message) {
@@ -383,7 +397,7 @@ final class AiConfigurationForm extends Component
 
     public function save(): void
     {
-        $request = new AiConfigurationRequest;
+        $request = new AiConfigurationRequest($this->agent_enabled);
         $this->validate($request->rules(), $request->messages());
 
         // Check activation limits if trying to enable agent

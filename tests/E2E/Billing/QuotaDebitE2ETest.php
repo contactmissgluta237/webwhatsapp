@@ -42,7 +42,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
 
         echo "✅ Customer: {$this->customer->email}\n";
         echo "✅ Package: {$this->starterPackage->display_name} ({$initialMessages} messages)\n";
-        echo "✅ Wallet: {$initialWalletBalance} XAF\n";
+        echo "✅ Wallet: {$initialWalletBalance} USD\n";
         echo "✅ WhatsApp Account: {$this->whatsappAccount->phone_number}\n";
 
         // ============================================================
@@ -58,7 +58,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
         $expectedBillingAmount = MessageBillingHelper::getAmountToBillFromResponse($aiResponse);
 
         echo "🧮 Messages calculés: {$expectedMessageCount}\n";
-        echo "🧮 Coût calculé: {$expectedBillingAmount} XAF\n";
+        echo "🧮 Coût calculé: {$expectedBillingAmount} USD\n";
         echo "🧮 Détail: 1 AI + 3 produits = {$expectedMessageCount} messages\n";
 
         // Dispatcher l'événement
@@ -90,7 +90,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
         // Vérifier que le wallet n'a PAS été débité
         $this->assertEquals($initialWalletBalance, $this->wallet->balance,
             "❌ Wallet débité par erreur. Balance devrait être {$initialWalletBalance}, mais est {$this->wallet->balance}");
-        echo "✅ Wallet balance inchangée: {$this->wallet->balance} XAF\n";
+        echo "✅ Wallet balance inchangée: {$this->wallet->balance} USD\n";
 
         // Vérifier qu'aucun overage n'a été comptabilisé
         $this->assertEquals(0, $accountUsage->overage_messages_used,
@@ -148,7 +148,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
         echo "   📱 WhatsApp: {$this->whatsappAccount->phone_number}\n";
         echo "   ➖ Messages utilisés: {$accountUsage->messages_used}\n";
         echo "   ➕ Messages restants: {$remainingMessages}\n";
-        echo "   💰 Wallet balance: {$this->wallet->balance} XAF (inchangée)\n";
+        echo "   💰 Wallet balance: {$this->wallet->balance} USD (inchangée)\n";
         echo "   🚫 Overage: 0 (aucun débit wallet)\n";
         echo "════════════════════════════════════════\n";
     }
@@ -168,7 +168,7 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
         $this->assertEquals(1, $simpleCount);
         $this->assertEquals(15.0, $simpleCost); // 1 * 15 (AI)
 
-        echo "✅ Réponse simple: {$simpleCount} message = {$simpleCost} XAF\n";
+        echo "✅ Réponse simple: {$simpleCount} message = {$simpleCost} USD\n";
 
         // Test avec réponse complexe
         $complexResponse = $this->generateComplexAIResponse();
@@ -177,13 +177,13 @@ class QuotaDebitE2ETest extends BaseE2EBillingTest
 
         // 1 AI + 3 produits = 4 messages
         $this->assertEquals(4, $complexCount);
-        // 1*15 (AI) + 3*10 (produits) = 15 + 30 = 45 XAF
+        // 1*15 (AI) + 3*10 (produits) = 15 + 30 = 45 USD
         $this->assertEquals(45.0, $complexCost);
 
-        echo "✅ Réponse complexe: {$complexCount} messages = {$complexCost} XAF\n";
-        echo "   📱 1 message IA = 15 XAF\n";
-        echo "   📦 3 messages produits = 30 XAF\n";
-        echo "   🧮 Total = 45 XAF\n";
+        echo "✅ Réponse complexe: {$complexCount} messages = {$complexCost} USD\n";
+        echo "   📱 1 message IA = 15 USD\n";
+        echo "   📦 3 messages produits = 30 USD\n";
+        echo "   🧮 Total = 45 USD\n";
 
         echo "🎉 Calculs vérifiés avec succès!\n";
     }

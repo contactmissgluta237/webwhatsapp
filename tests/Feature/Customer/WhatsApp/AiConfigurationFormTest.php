@@ -59,7 +59,7 @@ final class AiConfigurationFormTest extends TestCase
     {
         Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 10, // Less than required 15 XAF
+            'balance' => 10, // Less than required 15 USD
         ]);
 
         Livewire::test(AiConfigurationForm::class, ['account' => $this->account])
@@ -74,7 +74,7 @@ final class AiConfigurationFormTest extends TestCase
     {
         Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 1000, // More than required 15 XAF
+            'balance' => 1000, // More than required 15 USD
         ]);
 
         Livewire::test(AiConfigurationForm::class, ['account' => $this->account])

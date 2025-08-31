@@ -37,7 +37,7 @@ class ReferralSystemTest extends TestCase
         // Créer son wallet
         $this->referrer->wallet()->create([
             'balance' => 0.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Créer un utilisateur référé
@@ -52,7 +52,7 @@ class ReferralSystemTest extends TestCase
         // Créer son wallet
         $this->referredUser->wallet()->create([
             'balance' => 5000.00,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
 
         // Créer un package test

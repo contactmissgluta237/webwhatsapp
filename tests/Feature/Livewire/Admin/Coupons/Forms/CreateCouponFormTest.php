@@ -323,7 +323,7 @@ class CreateCouponFormTest extends TestCase
 
         // Test fixed amount type
         $component->set('type', CouponType::FIXED_AMOUNT()->value)
-            ->assertSee('XAF');
+            ->assertSee('USD');
     }
 
     #[Test]

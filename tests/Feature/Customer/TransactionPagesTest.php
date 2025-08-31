@@ -80,7 +80,7 @@ class TransactionPagesTest extends TestCase
         $this->actingAs($customer)
             ->get(route('customer.transactions.recharge'))
             ->assertOk()
-            ->assertSee('1 500 XAF'); // Utilise le format de devise XAF
+            ->assertSee('1 500 USD'); // Utilise le format de devise USD
     }
 
     #[Test]
@@ -91,7 +91,7 @@ class TransactionPagesTest extends TestCase
         $this->actingAs($customer)
             ->get(route('customer.transactions.withdrawal'))
             ->assertOk()
-            ->assertSee('2 500 XAF'); // Utilise le format de devise XAF
+            ->assertSee('2 500 USD'); // Utilise le format de devise USD
     }
 
     #[Test]
@@ -181,7 +181,7 @@ class TransactionPagesTest extends TestCase
     {
         $admin = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $admin->assignRole('admin');
 
@@ -244,7 +244,7 @@ class TransactionPagesTest extends TestCase
     {
         $customer = User::factory()->create([
             'country_id' => 1,
-            'currency' => 'XAF',
+            'currency' => 'USD',
         ]);
         $customer->assignRole('customer');
 

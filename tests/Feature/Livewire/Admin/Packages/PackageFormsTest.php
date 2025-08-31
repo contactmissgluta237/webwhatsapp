@@ -37,7 +37,7 @@ class PackageFormsTest extends TestCase
         Livewire::test(CreatePackageForm::class)
             ->assertSet('duration_days', '30')
             ->assertSet('availableFeatures', [])
-            ->assertSet('currency', 'XAF')
+            ->assertSet('currency', 'USD')
             ->assertSet('is_active', true)
             ->assertSet('is_recurring', true)
             ->assertSet('one_time_only', false);
@@ -92,7 +92,7 @@ class PackageFormsTest extends TestCase
             ->set('display_name', 'Test Package')
             ->set('description', 'A test package')
             ->set('price', '1000')
-            ->set('currency', 'XAF')
+            ->set('currency', 'USD')
             ->set('messages_limit', '500')
             ->set('context_limit', '1000')
             ->set('accounts_limit', '1')

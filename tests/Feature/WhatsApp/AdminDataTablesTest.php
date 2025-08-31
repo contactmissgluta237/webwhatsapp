@@ -118,11 +118,11 @@ class AdminDataTablesTest extends TestCase
         $component = Livewire::test(AdminWhatsAppAccountDataTable::class);
 
         // Assert - Should display AI cost information
-        $expectedCost = 1.95; // 3 logs * 0.65 XAF each
+        $expectedCost = 1.95; // 3 logs * 0.65 USD each
         $expectedRequests = 3;
         $expectedTokens = 450; // 3 logs * 150 tokens each
 
-        $component->assertSee(number_format($expectedCost, 0).' XAF');
+        $component->assertSee(number_format($expectedCost, 0).' USD');
         $component->assertSee($expectedRequests.' AI req.');
         $component->assertSee(number_format($expectedTokens).' tokens');
     }
@@ -167,7 +167,7 @@ class AdminDataTablesTest extends TestCase
         $conversationComponent = Livewire::test(AdminConversationDataTable::class);
         $conversationComponent->assertSee('All users'); // User filter
         $conversationComponent->assertSee('With AI activity'); // AI activity filter
-        $conversationComponent->assertSee('Low (< 500 XAF)'); // Cost range filter
+        $conversationComponent->assertSee('Low (< 500 USD)'); // Cost range filter
     }
 
     #[Test]
