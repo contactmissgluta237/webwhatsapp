@@ -66,8 +66,9 @@ Que ce soit dans les form requests, la base de donnée, les vues, les mails, tt 
 
 si il est déconnecté, alors lutilisateur doit pouvoir raffraichir en scannatn un nouveau qrcode! sinon il ne peut plus rien recevoir ni configuré! 
 
-## synchroniser les sessions! si on supprime une session cote laravel, on doit aussi supprimé coté node js (HIGH)
-
 on doit dabord lancer la suppression côté nodejs, avant de supprimer laravel! je crois que nodejs a déjà un endpoint pour ça! 
 
-## Lors de la génération de Qrcode on doit faire expirer le qrcode après 1min, puis permettre de regénérer! Ensuite on va optimiser le fetching du qrcode pr que ce soit plus rapide (si necessaire) (HIGH)
+## Lors de la génération de Qrcode on doit faire expirer le qrcode après 1min, puis permettre de regénérer! Ensuite on va optimiser le fetching du qrcode pr que ce soit plus rapide (si necessaire) (MEDIUM)
+
+
+## Implémenter le fait que si le client veut fixer un rendez vous l'ia doit notifier le propriétaire du compte (MEDIUM)

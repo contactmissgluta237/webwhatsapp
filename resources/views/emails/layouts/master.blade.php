@@ -34,10 +34,12 @@
         }
         
         .logo {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             color: white;
             margin-bottom: 20px;
+            white-space: nowrap;
+            word-break: keep-all;
         }
         
         .email-header h1 {
@@ -136,6 +138,25 @@
         .security-notice p {
             color: #054A42;
             font-size: 14px;
+        }
+        
+        .highlight-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #075E54;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 30px 0;
+        }
+        
+        .highlight-box h3 {
+            color: #054A42;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
         }
         
         .email-footer {

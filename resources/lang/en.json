@@ -257,5 +257,21 @@
     "Enhanced prompt cannot be empty": "Enhanced prompt cannot be empty",
     "No AI model available for prompt enhancement": "No AI model available for prompt enhancement",
     "AI could not enhance the prompt": "AI could not enhance the prompt",
-    "Unable to enhance prompt: all AI services are unavailable": "Unable to enhance prompt: all AI services are unavailable"
+    "Unable to enhance prompt: all AI services are unavailable": "Unable to enhance prompt: all AI services are unavailable",
+    "AI Information Request": "AI Information Request",
+    "Your AI assistant needs help!": "Your AI assistant needs help!",
+    "Customer": "Customer",
+    "Question": "Question",
+    "AI Response": "AI Response",
+    "The AI couldn't provide a complete answer. Please review and update your knowledge base.": "The AI couldn't provide a complete answer. Please review and update your knowledge base.",
+    "Customer from :phone asked a question your AI couldn't answer": "Customer from :phone asked a question your AI couldn't answer",
+    "View Conversation": "View Conversation",
+    "Hello!": "Hello!",
+    "Your AI assistant received a question it couldn't fully answer from a customer. Please review the details below and update your knowledge base to improve future responses.": "Your AI assistant received a question it couldn't fully answer from a customer. Please review the details below and update your knowledge base to improve future responses.",
+    "Customer Request Details": "Customer Request Details",
+    "Account": "Account",
+    "AI Response Provided": "AI Response Provided",
+    "This information request requires your attention to ensure customers receive accurate and complete responses in the future.": "This information request requires your attention to ensure customers receive accurate and complete responses in the future.",
+    "Best regards,": "Best regards,",
+    "The :app_name Team": "The :app_name Team"
 }

@@ -16,13 +16,14 @@ use App\Notifications\WhatsApp\AIUnknownInformationNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 final class AIUnknownInformationE2ETest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_processes_complete_flow_and_formats_phone_number_correctly(): void
     {
         // Arrange - Créer les données de test

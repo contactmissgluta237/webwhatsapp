@@ -26,14 +26,26 @@ class AIUnknownInformationMail extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        return new Envelope(
+        $userLocale = $this->account->user->locale ?? config('app.locale', 'fr');
+        $currentLocale = app()->getLocale();
+        app()->setLocale($userLocale);
+
+        $envelope = new Envelope(
             subject: __('AI Information Request').' - '.($this->account->agent_name ?? $this->account->session_name),
         );
+
+        app()->setLocale($currentLocale);
+
+        return $envelope;
     }
 
     public function content(): Content
     {
-        return new Content(
+        $userLocale = $this->account->user->locale ?? config('app.locale', 'fr');
+        $currentLocale = app()->getLocale();
+        app()->setLocale($userLocale);
+
+        $content = new Content(
             view: 'emails.ai-unknown-information',
             with: [
                 'account' => $this->account,
@@ -42,6 +54,10 @@ class AIUnknownInformationMail extends Mailable implements ShouldQueue
                 'conversationId' => $this->conversationId,
             ]
         );
+
+        app()->setLocale($currentLocale);
+
+        return $content;
     }
 
     public function attachments(): array

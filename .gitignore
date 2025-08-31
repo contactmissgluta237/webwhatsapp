@@ -35,3 +35,4 @@ vendor/composer/tmp-*
 mkcert*
 /nodejs/whatsapp-bridge/.local-chromium/
 .history/
+nodejs/whatsapp-bridge/src/data/active_sessions.json

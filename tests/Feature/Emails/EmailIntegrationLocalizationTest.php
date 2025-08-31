@@ -145,7 +145,7 @@ class EmailIntegrationLocalizationTest extends TestCase
             Mail::send('emails.otp', [
                 'otp' => '789012',
                 'maskedIdentifier' => $this->maskEmail($user->email),
-                'resetUrl' => route('password.reset', ['token' => 'test-token']),
+                'resetUrl' => route('password.request'),
             ], function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject(__('emails.otp.subject'));
@@ -174,17 +174,17 @@ class EmailIntegrationLocalizationTest extends TestCase
 
             // Vérifier que le contenu contient les bonnes traductions
             if ($expectedLocale === 'fr') {
-                $this->assertStringContains('Bienvenue', $renderedContent);
-                $this->assertStringContains('Activez votre compte', $renderedContent);
+                $this->assertStringContainsString('Bienvenue', $renderedContent);
+                $this->assertStringContainsString('Activez votre compte', $renderedContent);
             } else {
-                $this->assertStringContains('Welcome', $renderedContent);
-                $this->assertStringContains('Activate Your Account', $renderedContent);
+                $this->assertStringContainsString('Welcome', $renderedContent);
+                $this->assertStringContainsString('Activate Your Account', $renderedContent);
             }
 
             // Vérifier que le HTML est valide (contient les éléments de base)
-            $this->assertStringContains('<!DOCTYPE html', $renderedContent);
-            $this->assertStringContains('email-wrapper', $renderedContent);
-            $this->assertStringContains('otp-container', $renderedContent);
+            $this->assertStringContainsString('<!DOCTYPE html', $renderedContent);
+            $this->assertStringContainsString('email-wrapper', $renderedContent);
+            $this->assertStringContainsString('otp-container', $renderedContent);
 
         } finally {
             app()->setLocale($originalLocale);

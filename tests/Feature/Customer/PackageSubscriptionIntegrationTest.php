@@ -72,8 +72,6 @@ class PackageSubscriptionIntegrationTest extends TestCase
     public function test_subscription_integrates_with_usage_tracking(): void
     {
         $this->markTestSkipped('WhatsAppAccountUsage::incrementUsage() method not implemented yet');
-
-        return;
         // 1. Créer un abonnement
         $package = Package::where('name', 'starter')->first();
         $subscription = UserSubscription::create([
@@ -110,8 +108,6 @@ class PackageSubscriptionIntegrationTest extends TestCase
     public function test_subscription_overage_billing_integration(): void
     {
         $this->markTestSkipped('UserSubscription::canAffordMessage() method not implemented yet');
-
-        return;
         // 1. Créer un abonnement avec usage quasi-complet
         $package = Package::where('name', 'starter')->first();
         $subscription = UserSubscription::create([
@@ -222,8 +218,6 @@ class PackageSubscriptionIntegrationTest extends TestCase
     public function test_subscription_limits_enforcement(): void
     {
         $this->markTestSkipped('WhatsAppAccountUsage::incrementUsage() method not implemented yet');
-
-        return;
         $proPackage = Package::where('name', 'pro')->first();
 
         // 1. Créer un abonnement pro (2 comptes autorisés)

@@ -34,12 +34,14 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password
  * @property int|null $country_id
  * @property string $currency
+ * @property string|null $locale
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $phone_verified_at
  * @property Carbon|null $last_login_at
  * @property bool $is_active
  * @property string|null $affiliation_code
  * @property float $referral_commission_percentage
+ * @property int|null $referrer_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -49,6 +51,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $avatar_url
  *
  * == Relationships ==
+ * @property-read User|null $referrer
+ * @property-read Collection|User[] $referrals
  * @property-read Customer|null $customer
  * @property-read Country|null $country
  * @property-read Wallet|null $wallet
@@ -62,6 +66,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection|WhatsAppAccount[] $whatsappAccounts
  * @property-read Collection|ReferralEarning[] $referralEarnings
  * @property-read Collection|CouponUsage[] $couponUsages
+ * @property-read Collection|PushSubscription[] $pushSubscriptions
  *
  * @method MorphMany|PushSubscription active()
  */

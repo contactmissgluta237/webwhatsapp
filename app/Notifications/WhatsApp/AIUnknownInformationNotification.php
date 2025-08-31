@@ -9,25 +9,21 @@ use App\DTOs\WhatsApp\WhatsAppMessageRequestDTO;
 use App\Mail\AIUnknownInformationMail;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppAccountSetting;
+use App\Models\WhatsAppConversation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
 
-final class AIUnknownInformationNotification extends Notification implements ShouldQueue
+final class AIUnknownInformationNotification extends Notification
 {
     use Queueable;
 
     public function __construct(
-        private readonly WhatsAppAccount $account,
-        private readonly WhatsAppMessageRequestDTO $incomingMessage,
-        private readonly string $aiMessage,
-        private $conversationId = null
+        public WhatsAppAccount $account,
+        public WhatsAppMessageRequestDTO $incomingMessage,
+        public string $aiMessage,
+        public ?int $conversationId = null
     ) {}
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
         $channels = ['database'];
@@ -35,39 +31,26 @@ final class AIUnknownInformationNotification extends Notification implements Sho
         /** @var WhatsAppAccountSetting|null $settings */
         $settings = $this->account->settings;
 
-        Log::info('[AI_UNKNOWN_NOTIFICATION] Determining channels', [
-            'account_id' => $this->account->id,
-            'enable_email_notifications' => $settings?->enable_email_notifications,
-            'notification_email' => $settings?->notification_email,
-            'enable_whatsapp_notifications' => $settings?->enable_whatsapp_notifications,
-            'notification_whatsapp_number' => $settings?->notification_whatsapp_number,
-        ]);
-
         if ($settings?->enable_email_notifications && $settings?->notification_email) {
             $channels[] = 'mail';
-            Log::info('[AI_UNKNOWN_NOTIFICATION] Adding mail channel');
         }
 
         if ($settings?->enable_whatsapp_notifications && $settings?->notification_whatsapp_number) {
             $channels[] = WhatsAppChannel::class;
-            Log::info('[AI_UNKNOWN_NOTIFICATION] Adding WhatsApp channel');
         }
-
-        Log::info('[AI_UNKNOWN_NOTIFICATION] Final channels', ['channels' => $channels]);
 
         return $channels;
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): AIUnknownInformationMail
     {
+        $conversationId = $this->getValidConversationId();
+
         $mail = new AIUnknownInformationMail(
             $this->account,
             $this->incomingMessage,
             $this->aiMessage,
-            $this->conversationId ?? null
+            $conversationId
         );
 
         /** @var WhatsAppAccountSetting|null $settings */
@@ -80,60 +63,40 @@ final class AIUnknownInformationNotification extends Notification implements Sho
         return $mail;
     }
 
-    /**
-     * Get the WhatsApp message representation.
-     */
     public function toWhatsApp(object $notifiable): array
     {
         /** @var WhatsAppAccountSetting|null $settings */
         $settings = $this->account->settings;
 
-        $cleanPhoneNumber = $settings?->notification_whatsapp_number;
+        $cleanPhoneNumber = $this->cleanPhoneNumber($settings?->notification_whatsapp_number);
+        $userLocale = $this->account->user->locale ?? config('app.locale', 'fr');
 
-        Log::info('[AI_UNKNOWN_NOTIFICATION] DEBUG Before cleaning', [
-            'raw_phone' => $cleanPhoneNumber,
-            'starts_with_plus' => str_starts_with($cleanPhoneNumber ?? '', '+'),
-        ]);
+        $currentLocale = app()->getLocale();
+        app()->setLocale($userLocale);
 
-        if ($cleanPhoneNumber && str_starts_with($cleanPhoneNumber, '+')) {
-            $cleanPhoneNumber = ltrim($cleanPhoneNumber, '+');
-        }
-
-        Log::info('[AI_UNKNOWN_NOTIFICATION] DEBUG After cleaning', [
-            'clean_phone' => $cleanPhoneNumber,
-        ]);
-
-        $data = [
+        $whatsAppData = [
             'to' => $cleanPhoneNumber,
             'session_id' => $this->account->session_id,
-            'message' => '🤖 *'.__('AI Information Request')."*\n\n".
-                __('Your AI assistant needs help!')." \n\n".
-                '📱 *'.__('Customer').":* {$this->incomingMessage->getContactPhone()}\n".
-                '❓ *'.__('Question').":* {$this->incomingMessage->body}\n\n".
-                __('The AI couldn\'t provide a complete answer. Please review and update your knowledge base.'),
+            'message' => $this->buildWhatsAppMessage(),
         ];
 
-        Log::info('[AI_UNKNOWN_NOTIFICATION] WhatsApp data prepared', [
-            'account_id' => $this->account->id,
-            'raw_phone' => $settings?->notification_whatsapp_number,
-            'clean_phone' => $cleanPhoneNumber,
-            'data' => $data,
-        ]);
+        app()->setLocale($currentLocale);
 
-        return $data;
+        return $whatsAppData;
     }
 
-    /**
-     * Get the array representation for database and push notifications.
-     */
     public function toArray(object $notifiable): array
     {
-        $conversationId = $this->conversationId ?? null;
+        $userLocale = $this->account->user->locale ?? config('app.locale', 'fr');
+        $currentLocale = app()->getLocale();
+        app()->setLocale($userLocale);
+
+        $conversationId = $this->getValidConversationId();
         $conversationUrl = $conversationId
             ? url('/customer/whatsapp/'.$this->account->id.'/conversations/'.$conversationId)
             : url('/customer/whatsapp/'.$this->account->id);
 
-        return [
+        $result = [
             'type' => 'ai_unknown_information',
             'title' => __('AI Information Request'),
             'message' => __('Customer from :phone asked a question your AI couldn\'t answer', [
@@ -151,22 +114,43 @@ final class AIUnknownInformationNotification extends Notification implements Sho
             'action_url' => $conversationUrl,
             'created_at' => now()->toISOString(),
         ];
+
+        app()->setLocale($currentLocale);
+
+        return $result;
     }
 
-    /**
-     * Get the broadcastable representation for push notifications.
-     */
-    public function toBroadcast(object $notifiable): array
+    private function cleanPhoneNumber(?string $phoneNumber): ?string
     {
-        return [
-            'id' => $this->id,
-            'type' => 'ai_unknown_information',
-            'title' => __('AI Information Request'),
-            'message' => __('Customer from :phone asked a question your AI couldn\'t answer', [
-                'phone' => $this->incomingMessage->getContactPhone(),
-            ]),
-            'data' => $this->toArray($notifiable),
-            'timestamp' => now()->toISOString(),
-        ];
+        if (! $phoneNumber) {
+            return null;
+        }
+
+        return str_starts_with($phoneNumber, '+')
+            ? ltrim($phoneNumber, '+')
+            : $phoneNumber;
+    }
+
+    private function buildWhatsAppMessage(): string
+    {
+        return '*'.__('AI Information Request')."*\n\n".
+            __('Your AI assistant needs help!')." \n\n".
+            '📱 *'.__('Customer').":* {$this->incomingMessage->getContactPhone()}\n".
+            '❓ *'.__('Question').":* {$this->incomingMessage->body}\n\n".
+            '🤖 *'.__('AI Response').":* {$this->aiMessage}\n\n".
+            __('The AI couldn\'t provide a complete answer. Please review and update your knowledge base.');
+    }
+
+    private function getValidConversationId(): ?int
+    {
+        if ($this->conversationId) {
+            return $this->conversationId;
+        }
+
+        $conversation = WhatsAppConversation::where('whatsapp_account_id', $this->account->id)
+            ->where('contact_phone', $this->incomingMessage->getContactPhone())
+            ->first();
+
+        return $conversation?->id;
     }
 }
