@@ -44,7 +44,6 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
             'is_simulation' => $isSimulation,
         ]);
 
-        // If agent is disabled, return processed response without AI
         if (! $account->agent_enabled) {
             Log::info('[ORCHESTRATOR] Agent disabled, skipping AI processing', [
                 'session_id' => $account->session_id,
@@ -66,7 +65,6 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
                 return WhatsAppMessageResponseDTO::processedWithoutResponse();
             }
 
-            // Track AI usage if not simulation
             if (! $isSimulation) {
                 $processingTime = (microtime(true) - $startTime) * 1000;
 

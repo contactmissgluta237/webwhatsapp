@@ -11,7 +11,7 @@ abstract class AbstractPackageForm extends Component
     public string $display_name = '';
     public string $description = '';
     public string $price = '';
-    public string $currency = 'XAF';
+    public string $currency = 'USD';
     public string $messages_limit = '';
     public string $context_limit = '1000';
     public string $accounts_limit = '1';
