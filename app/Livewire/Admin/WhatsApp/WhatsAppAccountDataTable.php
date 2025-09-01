@@ -230,7 +230,7 @@ class WhatsAppAccountDataTable extends CustomerAccountDataTable
                     '' => 'Tous les utilisateurs',
                     'orphaned' => 'Comptes orphelins (utilisateur supprimé)',
                     ...\App\Models\User::whereHas('whatsappAccounts')
-                        ->selectRaw("id, CONCAT(first_name, ' ', last_name) as display_name")
+                        ->selectRaw("id, first_name || ' ' || last_name as display_name")
                         ->pluck('display_name', 'id')
                         ->toArray(),
                 ])

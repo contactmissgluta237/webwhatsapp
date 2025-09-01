@@ -26,7 +26,7 @@ final class AIUnknownInformationNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        $channels = ['database'];
+        $channels = ['database', 'broadcast'];
 
         /** @var WhatsAppAccountSetting|null $settings */
         $settings = $this->account->settings;

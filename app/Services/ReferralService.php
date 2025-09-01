@@ -97,41 +97,6 @@ final class ReferralService
     }
 
     /**
-     * Calculate total earnings for a referrer
-     */
-    public function calculateTotalEarnings(User $referrer): float
-    {
-        return (float) ReferralEarning::where('referrer_id', $referrer->id)
-            ->sum('commission_amount') ?: 0.0;
-    }
-
-    /**
-     * Get referral statistics for a user
-     *
-     * @return array{total_referrals: int, active_referrals: int, total_earnings: float, total_transactions: int, average_commission: float, current_commission_rate: float}
-     */
-    public function getReferralStats(User $referrer): array
-    {
-        $earnings = ReferralEarning::where('referrer_id', $referrer->id)->get();
-        $totalReferrals = $referrer->referrals()->count();
-        $activeReferrals = $referrer->referrals()
-            ->whereHas('subscriptions', function ($q) {
-                $q->where('status', 'active')
-                    ->where('ends_at', '>', now());
-            })
-            ->count();
-
-        return [
-            'total_referrals' => $totalReferrals,
-            'active_referrals' => $activeReferrals,
-            'total_earnings' => $earnings->sum('commission_amount'),
-            'total_transactions' => $earnings->count(),
-            'average_commission' => $earnings->avg('commission_amount') ?: 0,
-            'current_commission_rate' => $referrer->referral_commission_percentage,
-        ];
-    }
-
-    /**
      * Update commission rate for a user
      */
     public function updateCommissionRate(User $user, float $percentage): bool
@@ -143,32 +108,6 @@ final class ReferralService
         $user->update(['referral_commission_percentage' => $percentage]);
 
         return true;
-    }
-
-    /**
-     * Get top referrers by earnings
-     *
-     * @return array<int, array{user: User, total_earnings: float, total_referrals: int, commission_rate: float}>
-     */
-    public function getTopReferrers(int $limit = 10): array
-    {
-        return ReferralEarning::select('referrer_id')
-            ->selectRaw('SUM(commission_amount) as total_earnings')
-            ->selectRaw('COUNT(*) as total_referrals')
-            ->with('referrer:id,first_name,last_name,referral_commission_percentage')
-            ->groupBy('referrer_id')
-            ->orderByDesc('total_earnings')
-            ->limit($limit)
-            ->get()
-            ->map(function ($earning) {
-                return [
-                    'user' => $earning->referrer,
-                    'total_earnings' => (float) $earning->getAttributeValue('total_earnings'),
-                    'total_referrals' => (int) $earning->getAttributeValue('total_referrals'),
-                    'commission_rate' => $earning->referrer->referral_commission_percentage,
-                ];
-            })
-            ->toArray();
     }
 
     /**

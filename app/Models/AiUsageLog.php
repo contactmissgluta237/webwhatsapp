@@ -157,22 +157,6 @@ final class AiUsageLog extends Model
         return (float) $query->sum('total_cost_usd');
     }
 
-    public static function getTotalCostForAccount(int $accountId, $startDate = null, $endDate = null): float
-    {
-        $query = self::byAccount($accountId);
-
-        if ($startDate && $endDate) {
-            $query->byDateRange($startDate, $endDate);
-        }
-
-        return (float) $query->sum('total_cost_usd');
-    }
-
-    public static function getTotalCostForConversation(int $conversationId): float
-    {
-        return (float) self::byConversation($conversationId)->sum('total_cost_usd');
-    }
-
     public static function getTopUsers(int $limit = 10, $startDate = null, $endDate = null): \Illuminate\Database\Eloquent\Collection
     {
         $query = self::selectRaw('user_id, SUM(total_cost_usd) as total_cost, COUNT(*) as request_count')

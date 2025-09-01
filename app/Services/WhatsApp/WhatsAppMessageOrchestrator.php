@@ -40,8 +40,18 @@ final readonly class WhatsAppMessageOrchestrator implements WhatsAppMessageOrche
             'message_id' => $messageRequest->id,
             'history_length' => strlen($conversationHistory),
             'ai_model_id' => $account->ai_model_id,
+            'agent_enabled' => $account->agent_enabled,
             'is_simulation' => $isSimulation,
         ]);
+
+        // If agent is disabled, return processed response without AI
+        if (! $account->agent_enabled) {
+            Log::info('[ORCHESTRATOR] Agent disabled, skipping AI processing', [
+                'session_id' => $account->session_id,
+            ]);
+
+            return WhatsAppMessageResponseDTO::processedWithoutResponse();
+        }
 
         $startTime = microtime(true);
 
