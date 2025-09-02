@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Feature\Customer\WhatsApp;
+namespace Tests\Feature\Customer\WhatsApp;
 
 use App\Models\User;
 use App\Models\WhatsAppAccount;
@@ -21,11 +21,26 @@ final class WhatsAppAccountDataTableTest extends TestCase
     {
         parent::setUp();
 
+        // Créer un pays avec l'ID 1 AVANT de créer l'utilisateur
+        \Illuminate\Support\Facades\DB::table('countries')->insert([
+            'id' => 1,
+            'name' => 'Cameroon',
+            'code' => 'CM',
+            'phone_code' => '+237',
+            'flag_emoji' => '🇨🇲',
+            'is_active' => true,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         // Créer les rôles nécessaires
         \Spatie\Permission\Models\Role::create(['name' => 'customer']);
         \Spatie\Permission\Models\Role::create(['name' => 'admin']);
 
-        $this->customer = User::factory()->create();
+        $this->customer = User::factory()->create([
+            'country_id' => 1,
+        ]);
         $this->customer->assignRole('customer');
     }
 
@@ -58,8 +73,8 @@ final class WhatsAppAccountDataTableTest extends TestCase
             ->test('customer.whats-app.whats-app-account-data-table')
             ->assertSee('Test Account')
             ->assertSee('+237123456789')
-            ->assertSee('Connected')
-            ->assertSee('Active');
+            ->assertSee('Connecté')
+            ->assertSee('Actif');
     }
 
     #[Test]
@@ -67,7 +82,7 @@ final class WhatsAppAccountDataTableTest extends TestCase
     {
         Livewire::actingAs($this->customer)
             ->test('customer.whats-app.whats-app-account-data-table')
-            ->assertSee('No WhatsApp session found');
+            ->assertSee('Aucune session WhatsApp trouvée');
     }
 
     #[Test]

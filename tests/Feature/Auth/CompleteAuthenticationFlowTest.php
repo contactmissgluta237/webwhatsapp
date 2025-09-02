@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\E2E\Auth;
+namespace Tests\Feature\Auth;
 
 use App\Livewire\Auth\ActivateAccountForm;
 use App\Livewire\Auth\ForgotPasswordForm;
@@ -18,7 +18,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class CompleteAuthenticationFlowE2ETest extends TestCase
+class CompleteAuthenticationFlowTest extends TestCase
 {
     use RefreshDatabase;
 

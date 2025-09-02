@@ -135,7 +135,7 @@ final class ProductManagerTest extends TestCase
             ->call('delete', $product->id)
             ->assertDispatched('product-deleted');
 
-        $this->assertSoftDeleted('user_products', [
+        $this->assertDatabaseMissing('user_products', [
             'id' => $product->id,
         ]);
     }

@@ -1,4 +1,56 @@
 <div class="row">
+    {{-- Styles pour les messages (inspirés du simulateur) --}}
+    <style>
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-inbound {
+            background-color: #f1f3f4;
+            color: #333;
+        }
+        
+        .message-outbound {
+            background-color: #25d366;
+            color: white;
+        }
+        
+        .message-content {
+            line-height: 1.4;
+        }
+        
+        .message-meta {
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+        
+        .message-outbound .message-meta {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .message-inbound .message-meta {
+            color: #666;
+        }
+        
+        #messages-container {
+            background-color: #e5ddd5;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><g fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></g></svg>');
+        }
+        
+        .message-row.inbound {
+            padding-left: 0;
+            padding-right: 50px;
+        }
+        
+        .message-row.outbound {
+            padding-left: 50px;
+            padding-right: 0;
+        }
+    </style>
+
     {{-- En-tête de la conversation --}}
     <div class="col-12">
         <div class="card">
@@ -96,76 +148,24 @@
             </div>
         </div>
     </div>
-</div>
 
-{{-- Styles pour les messages (inspirés du simulateur) --}}
-<style>
-    .message-bubble {
-        padding: 12px 16px;
-        border-radius: 18px;
-        position: relative;
-        word-wrap: break-word;
-    }
-    
-    .message-inbound {
-        background-color: #f1f3f4;
-        color: #333;
-    }
-    
-    .message-outbound {
-        background-color: #25d366;
-        color: white;
-    }
-    
-    .message-content {
-        line-height: 1.4;
-    }
-    
-    .message-meta {
-        font-size: 0.75rem;
-        margin-top: 4px;
-    }
-    
-    .message-outbound .message-meta {
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .message-inbound .message-meta {
-        color: #666;
-    }
-    
-    #messages-container {
-        background-color: #e5ddd5;
-        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><g fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.05"><circle cx="30" cy="30" r="2"/></g></g></svg>');
-    }
-    
-    .message-row.inbound {
-        padding-left: 0;
-        padding-right: 50px;
-    }
-    
-    .message-row.outbound {
-        padding-left: 50px;
-        padding-right: 0;
-    }
-</style>
-
-{{-- Auto-scroll vers le bas --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const container = document.getElementById('messages-container');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
-    });
-    
-    // Auto-scroll après chaque mise à jour Livewire
-    document.addEventListener('livewire:navigated', function() {
-        const container = document.getElementById('messages-container');
-        if (container) {
-            setTimeout(() => {
+    {{-- Auto-scroll vers le bas --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('messages-container');
+            if (container) {
                 container.scrollTop = container.scrollHeight;
-            }, 100);
-        }
-    });
-</script>
+            }
+        });
+        
+        // Auto-scroll après chaque mise à jour Livewire
+        document.addEventListener('livewire:navigated', function() {
+            const container = document.getElementById('messages-container');
+            if (container) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
+        });
+    </script>
+</div>

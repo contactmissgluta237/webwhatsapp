@@ -111,6 +111,12 @@ class BillingIntegrationTest extends TestCase
                     'total_cost_usd' => 0.001000,
                     'total_cost_xaf' => 0.65,
                 ],
+                'usage' => [
+                    'prompt_tokens' => 50,
+                    'completion_tokens' => 100,
+                    'total_tokens' => 150,
+                    'prompt_cache_hit_tokens' => 0,
+                ],
             ]
         );
 

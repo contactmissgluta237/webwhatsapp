@@ -40,7 +40,7 @@ class CreateCouponForm extends AbstractCouponForm
                 'code' => $this->code,
                 'type' => $this->type,
                 'value' => $this->value,
-                'status' => CouponStatus::ACTIVE()->value,
+                'status' => $this->is_active ? CouponStatus::ACTIVE()->value : CouponStatus::INACTIVE()->value,
                 'is_active' => $this->is_active,
                 'usage_limit' => $this->usage_limit,
                 'per_user_limit' => $this->per_user_limit,

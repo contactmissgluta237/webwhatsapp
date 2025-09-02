@@ -60,6 +60,12 @@ final class AiProductsConfiguration extends Component
         return $this->linkedProducts()->count() < 10;
     }
 
+    #[Computed]
+    public function remainingSlots(): int
+    {
+        return 10 - $this->linkedProducts()->count();
+    }
+
     public function toggleProductSelection(int $productId): void
     {
         if (in_array($productId, $this->selectedToAdd)) {
@@ -103,6 +109,54 @@ final class AiProductsConfiguration extends Component
 
         $this->selectedToAdd = [];
         $this->searchTerm = '';
+        $this->dispatch('products-updated');
+    }
+
+    public function addProduct(int $productId): void
+    {
+        $product = UserProduct::where('user_id', Auth::id())
+            ->where('id', $productId)
+            ->first();
+
+        if (!$product) {
+            $this->dispatch('show-toast', [
+                'type' => 'error',
+                'message' => __('Produit non trouvé'),
+            ]);
+            return;
+        }
+
+        if (!$product->is_active) {
+            $this->dispatch('show-toast', [
+                'type' => 'warning',
+                'message' => __('Impossible d\'ajouter un produit inactif'),
+            ]);
+            return;
+        }
+
+        if ($this->account->userProducts()->where('user_product_id', $productId)->exists()) {
+            $this->dispatch('show-toast', [
+                'type' => 'warning',
+                'message' => __('Ce produit est déjà lié à cet agent'),
+            ]);
+            return;
+        }
+
+        if ($this->linkedProducts()->count() >= 10) {
+            $this->dispatch('show-toast', [
+                'type' => 'warning',
+                'message' => __('Vous ne pouvez pas dépasser 10 produits par agent IA'),
+            ]);
+            return;
+        }
+
+        $this->account->userProducts()->attach($productId);
+
+        $this->dispatch('show-toast', [
+            'type' => 'success',
+            'message' => __('Produit ajouté avec succès'),
+        ]);
+
         $this->dispatch('products-updated');
     }
 

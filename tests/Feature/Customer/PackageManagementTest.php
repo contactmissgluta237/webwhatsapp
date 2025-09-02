@@ -51,7 +51,7 @@ class PackageManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('customer.packages.index');
         $response->assertViewHas('packages');
-        $response->assertSee('Packages disponibles');
+        $response->assertSee('Available Packages');
     }
 
     #[Test]
@@ -266,7 +266,7 @@ class PackageManagementTest extends TestCase
             ->get(route('customer.packages.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Abonnement actuel');
+        $response->assertSee('Current subscription:');
         $response->assertSee($package->display_name);
         $response->assertSee('messages restants');
     }
@@ -304,7 +304,7 @@ class PackageManagementTest extends TestCase
             ->get(route('customer.packages.index'));
 
         // Vérifier d'abord que l'abonnement actuel est bien affiché
-        $response->assertSee('Abonnement actuel:'); // Dans l'alerte en haut de page
+        $response->assertSee('Current subscription:'); // Dans l'alerte en haut de page
 
         // Puis vérifier que le bouton "En cours" est affiché
         // Note: Le texte peut être sensible à la casse

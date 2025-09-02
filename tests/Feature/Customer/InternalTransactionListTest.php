@@ -171,7 +171,7 @@ class InternalTransactionListTest extends TestCase
 
         Livewire::actingAs($this->customer)
             ->test(\App\Livewire\Customer\InternalTransactionDataTable::class)
-            ->assertSee('10 000 FCFA')
+            ->assertSee('10000.00 $')
             ->assertSee('Crédit')
             ->assertSee('Terminé');
     }

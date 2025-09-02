@@ -43,9 +43,23 @@ class PackageManagementTest extends TestCase
 
     private function createSubscriptionsForPackage(Package $package, int $count = 1): void
     {
-        UserSubscription::factory()->count($count)->create([
-            'package_id' => $package->id,
-        ]);
+        // Pour les gros nombres, on crée plusieurs utilisateurs et on leur assigne plusieurs souscriptions
+        if ($count > 50) {
+            $usersCount = min(50, intval($count / 10)); // Maximum 50 utilisateurs
+            $users = User::factory()->count($usersCount)->create();
+            
+            for ($i = 0; $i < $count; $i++) {
+                $user = $users[$i % $usersCount]; // Rotation des utilisateurs
+                UserSubscription::factory()->create([
+                    'package_id' => $package->id,
+                    'user_id' => $user->id,
+                ]);
+            }
+        } else {
+            UserSubscription::factory()->count($count)->create([
+                'package_id' => $package->id,
+            ]);
+        }
     }
 
     #[Test]

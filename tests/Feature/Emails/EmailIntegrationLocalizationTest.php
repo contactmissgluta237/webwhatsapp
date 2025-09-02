@@ -124,7 +124,7 @@ class EmailIntegrationLocalizationTest extends TestCase
             Mail::send('emails.account-activation', [
                 'otp' => '123456',
                 'maskedIdentifier' => $this->maskEmail($user->email),
-                'activationUrl' => route('verify-otp', ['identifier' => $user->email]),
+                'activationUrl' => route('password.verify.otp'),
             ], function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject(__('emails.account_activation.subject'));

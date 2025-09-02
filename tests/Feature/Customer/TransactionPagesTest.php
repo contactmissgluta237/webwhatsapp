@@ -80,7 +80,7 @@ class TransactionPagesTest extends TestCase
         $this->actingAs($customer)
             ->get(route('customer.transactions.recharge'))
             ->assertOk()
-            ->assertSee('1 500 USD'); // Utilise le format de devise USD
+            ->assertSee('1500.00 $'); // Utilise le format de devise USD
     }
 
     #[Test]
@@ -91,7 +91,7 @@ class TransactionPagesTest extends TestCase
         $this->actingAs($customer)
             ->get(route('customer.transactions.withdrawal'))
             ->assertOk()
-            ->assertSee('2 500 USD'); // Utilise le format de devise USD
+            ->assertSee('2500.00 $'); // Utilise le format de devise USD
     }
 
     #[Test]

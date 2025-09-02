@@ -33,7 +33,7 @@ final class AgentActivationHandlerTest extends TestCase
 
         $this->assertFalse($result->canActivate);
         $this->assertEquals(__('Insufficient balance. Minimum required: :amount :currency to activate an agent', [
-            'amount' => 15,
+            'amount' => config('whatsapp.billing.costs.ai_message', 0.002),
             'currency' => 'USD',
         ]), $result->reason);
         $this->assertEquals(0, $result->maxAllowedAgents);
@@ -116,9 +116,10 @@ final class AgentActivationHandlerTest extends TestCase
         $result = $this->handler->handle($this->user);
 
         $this->assertFalse($result->canActivate);
-        $this->assertEquals(__('Your package limit reached: :current/:max active agents', [
+        $this->assertEquals(__('Your package limit reached: :current/:max active agents. You can still activate with sufficient wallet balance (minimum :amount USD required)', [
             'current' => 2,
             'max' => 2,
+            'amount' => config('whatsapp.billing.costs.ai_message', 0.002),
         ]), $result->reason);
         $this->assertEquals(2, $result->currentActiveAgents);
         $this->assertEquals(2, $result->maxAllowedAgents);

@@ -19,6 +19,8 @@ class ConversationDataTable extends BaseDataTable
     protected const DEFAULT_SORT_FIELD = 'last_message_at';
     protected const DEFAULT_SORT_DIRECTION = 'desc';
 
+    public ?WhatsAppAccount $account = null;
+
     public function configure(): void
     {
         $this->setPrimaryKey('id')
@@ -33,10 +35,15 @@ class ConversationDataTable extends BaseDataTable
         return 'conversations';
     }
 
+    public function mount(?WhatsAppAccount $account = null): void
+    {
+        $this->account = $account;
+    }
+
     public function builder(): Builder
     {
-        // Laravel fait du route model binding - on reçoit directement l'objet WhatsAppAccount
-        $account = request()->route('account');
+        // Utiliser l'account fourni en paramètre ou celui de la route
+        $account = $this->account ?? request()->route('account');
 
         // Si c'est pas un objet WhatsAppAccount, on a un problème
         if (! $account instanceof WhatsAppAccount) {

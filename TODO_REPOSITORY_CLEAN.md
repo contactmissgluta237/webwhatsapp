@@ -51,15 +51,12 @@ interface AdminMetricsRepositoryInterface
 
 #### **AiUsageRepository**
 **Fichiers concernés :**
-- `app/Models/AiUsageLog.php:157-180` - **UTILISÉ ACTIVEMENT**
-- `app/Services/AI/AiUsageTracker.php:68-112` - **UTILISÉ ACTIVEMENT** 
-- Livewire DataTables avec agrégations AI - **UTILISÉ ACTIVEMENT**
+- `app/Models/AiUsageLog.php:178-181` - **UTILISÉ ACTIVEMENT** ✅
+- `app/Services/AI/AiUsageTracker.php:68-112` - **UTILISÉ ACTIVEMENT** ✅
 
 **Requêtes complexes RÉELLEMENT UTILISÉES :**
 ```php
-// AiUsageLog.php - MÉTHODES STATIQUES UTILISÉES
-self::byAccount($accountId)->sum('total_cost_usd');                    // Ligne 168
-self::byConversation($conversationId)->sum('total_cost_usd');          // Ligne 173
+// AiUsageLog.php - MÉTHODE STATIQUE UTILISÉE (après suppression des inutiles)
 self::selectRaw('user_id, SUM(total_cost_usd) as total_cost, COUNT(*) as request_count')
     ->whereBetween('created_at', [$startDate, $endDate])
     ->groupBy('user_id')->get();                                       // Ligne 178-181
@@ -72,13 +69,11 @@ AiUsageLog::with('user')->byDateRange($startDate, now())
     ->groupBy('user_id')->orderBy('total_cost', 'desc')->limit($limit)->get();  // Ligne 100-112
 ```
 
-**Repository proposé - SEULEMENT LES MÉTHODES UTILISÉES :**
+**Repository proposé - APRÈS NETTOYAGE :**
 ```php
 interface AiUsageRepositoryInterface  
 {
-    // Méthodes du modèle AiUsageLog utilisées
-    public function getTotalCostForAccount(int $accountId, ?Carbon $startDate = null, ?Carbon $endDate = null): float;
-    public function getTotalCostForConversation(int $conversationId): float;
+    // Méthodes du modèle AiUsageLog encore utilisées
     public function getUsersUsageStats(?Carbon $startDate = null, ?Carbon $endDate = null): Collection;
     
     // Méthodes du AiUsageTracker utilisées
@@ -91,40 +86,14 @@ interface AiUsageRepositoryInterface
 
 ### 2. 🟠 **PRIORITÉ ÉLEVÉE** - Gestion Financière
 
-#### **ReferralRepository**
-**Fichiers concernés :**
-- `app/Services/ReferralService.php:104-159` - **UTILISÉ ACTIVEMENT**
-- DataTables pour les referrals - **UTILISÉ ACTIVEMENT**
+#### **ReferralRepository** - ⚠️ **SUPPRIMÉ** 
+**TOUTES LES MÉTHODES COMPLEXES ÉTAIENT INUTILISÉES !**
 
-**Requêtes complexes RÉELLEMENT UTILISÉES :**
-```php
-// ReferralService.php - MÉTHODES UTILISÉES
-ReferralEarning::where('referrer_id', $referrer->id)->sum('commission_amount');         // Ligne 104-105
-$referrer->referrals()->count();                                                        // Ligne 116  
-$referrer->referrals()->whereHas('subscriptions', ...)->count();                      // Ligne 117-122
-$earnings->sum('commission_amount');                                                    // Ligne 127
-$earnings->count();                                                                     // Ligne 128
-$earnings->avg('commission_amount');                                                    // Ligne 129
+**Seules les requêtes simples restent :**
+- `distributeReferralEarnings()` - utilise `DB::transaction()` (OK, pas besoin de repository)
+- `updateCommissionRate()` - simple update (OK, pas de repository nécessaire)
 
-ReferralEarning::select('referrer_id')
-    ->selectRaw('SUM(commission_amount) as total_earnings')
-    ->selectRaw('COUNT(*) as total_referrals')
-    ->with('referrer:id,first_name,last_name,referral_commission_percentage')
-    ->groupBy('referrer_id')
-    ->orderBy('total_earnings', 'desc')
-    ->limit($limit)->get();                                                             // Ligne 155-159
-```
-
-**Repository proposé - SEULEMENT LES MÉTHODES UTILISÉES :**
-```php
-interface ReferralRepositoryInterface
-{
-    // Méthodes du ReferralService réellement utilisées
-    public function calculateTotalEarnings(int $referrerId): float;
-    public function getReferralStats(int $referrerId): array;
-    public function getTopReferrers(int $limit = 10): Collection;
-}
-```
+**📝 CONCLUSION : PAS DE REPOSITORY NÉCESSAIRE POUR REFERRAL**
 
 ---
 
@@ -299,19 +268,23 @@ public function register(): void
 
 ### Phase 1: Repositories Critiques (Semaine 1-2) ⚡
 1. ✅ **AdminMetricsRepository** - 7 méthodes utilisées réellement
-2. ✅ **AiUsageRepository** - 5 méthodes utilisées réellement  
-3. ✅ **ReferralRepository** - 3 méthodes utilisées réellement
+2. ✅ **AiUsageRepository** - 3 méthodes utilisées réellement (après nettoyage)
 
-### Phase 2: Repositories DataTables (Semaine 3) 📊
-4. ✅ **TransactionRepository** - 2 méthodes pour DataTables
-5. ✅ **DataTableRepository** - 3 méthodes pour filtres avancés
+### Phase 2: Repositories DataTables (Semaine 3) 📊  
+3. ✅ **TransactionRepository** - 2 méthodes pour DataTables
+4. ✅ **DataTableRepository** - 3 méthodes pour filtres avancés
 
 ### Phase 3: Tests & Migration (Semaine 4) 🧪
-6. ✅ Tests unitaires pour chaque repository
-7. ✅ Migration du code existant  
-8. ✅ Documentation
+5. ✅ Tests unitaires pour chaque repository
+6. ✅ Migration du code existant  
+7. ✅ Documentation
 
-**TOTAL: 5 REPOSITORIES avec 20 méthodes réellement utilisées**
+**TOTAL APRÈS NETTOYAGE: 4 REPOSITORIES avec 15 méthodes réellement utilisées**
+
+### 🗑️ **SUPPRIMÉ DÉFINITIVEMENT :**
+- ❌ **ReferralRepository** - toutes les méthodes complexes étaient inutiles
+- ❌ 2 méthodes AiUsageLog inutilisées  
+- ❌ 3 méthodes ReferralService inutilisées
 
 ---
 

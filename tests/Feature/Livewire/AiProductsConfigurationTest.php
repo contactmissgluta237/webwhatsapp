@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Livewire;
 
-use App\Livewire\WhatsApp\Components\AiProductsConfiguration;
+use App\Livewire\Customer\WhatsApp\Components\AiProductsConfiguration;
 use App\Models\User;
 use App\Models\UserProduct;
 use App\Models\WhatsAppAccount;
@@ -43,8 +43,8 @@ final class AiProductsConfigurationTest extends TestCase
 
         Livewire::test(AiProductsConfiguration::class, ['account' => $this->account])
             ->assertSuccessful()
-            ->assertSee('Produits liés à l\'agent')
-            ->assertSee('Ajouter des produits');
+            ->assertSee('Produits liés à cet agent IA')
+            ->assertSee('Aucun produit lié');
     }
 
     public function test_can_add_product_to_ai_agent(): void

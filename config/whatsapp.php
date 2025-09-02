@@ -83,16 +83,16 @@ return [
     */
 
     'billing' => [
-        // Coûts des différents types de messages (en XAF)
+        // Coûts des différents types de messages (en USD)
         'costs' => [
             // Coût d'un message de réponse IA
-            'ai_message' => env('WHATSAPP_COST_AI_MESSAGE', 15),
+            'ai_message' => env('WHATSAPP_COST_AI_MESSAGE', 0.002),
 
             // Coût d'un message texte pour un produit
-            'product_message' => env('WHATSAPP_COST_PRODUCT_MESSAGE', 10),
+            'product_message' => env('WHATSAPP_COST_PRODUCT_MESSAGE', 0.001),
 
             // Coût par média (image, vidéo, etc.)
-            'media' => env('WHATSAPP_COST_MEDIA', 5),
+            'media' => env('WHATSAPP_COST_MEDIA', 0.001),
         ],
 
         // Pourcentage du quota restant pour déclencher une alerte

@@ -103,11 +103,11 @@ final class ProductCreationTest extends TestCase
         $response = $this->get(route('customer.products.create'));
 
         $response->assertSuccessful()
-            ->assertSee('Créer un produit')
-            ->assertSee('Titre')
+            ->assertSee('Create Product')
+            ->assertSee('Titre du produit')
             ->assertSee('Description')
             ->assertSee('Prix')
-            ->assertSee('Médias');
+            ->assertSee('Médias du produit');
     }
 
     public function test_customer_can_create_product_with_single_image(): void

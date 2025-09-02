@@ -266,7 +266,7 @@ class IncomingMessageWebhookTest extends TestCase
         // Wallet avec balance insuffisante
         Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 10.00, // Moins que le coût minimum de 15 USD
+            'balance' => 0.001, // Moins que le coût minimum de 0.002 USD
         ]);
 
         $payload = $this->getValidPayload();
@@ -297,7 +297,7 @@ class IncomingMessageWebhookTest extends TestCase
         // Wallet insuffisant
         Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 5.00, // Moins que 15 USD
+            'balance' => 0.001, // Moins que 0.002 USD
         ]);
 
         $payload = $this->getValidPayload();

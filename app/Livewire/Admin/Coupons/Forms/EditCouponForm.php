@@ -50,6 +50,7 @@ class EditCouponForm extends AbstractCouponForm
                 'code' => $this->code,
                 'type' => $this->type,
                 'value' => $this->value,
+                'status' => $this->is_active ? \App\Enums\CouponStatus::ACTIVE()->value : \App\Enums\CouponStatus::INACTIVE()->value,
                 'usage_limit' => $this->usage_limit,
                 'per_user_limit' => $this->per_user_limit,
                 'is_active' => $this->is_active,

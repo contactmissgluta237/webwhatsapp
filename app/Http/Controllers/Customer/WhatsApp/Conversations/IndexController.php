@@ -20,6 +20,10 @@ final class IndexController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account): View
     {
+        if ($account->user_id !== auth()->id()) {
+            abort(403, 'Accès non autorisé à ce compte WhatsApp.');
+        }
+
         // Log for debugging
         Log::info('IndexController called', [
             'account_id' => $account->id,

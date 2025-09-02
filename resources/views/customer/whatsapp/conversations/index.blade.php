@@ -73,7 +73,7 @@
                 <div class="col-12">
                     <div class="card shadow-none border-gray-light">
                         <div class="card-body">
-                            @livewire('customer.whats-app.conversation-data-table')
+                            @livewire('customer.whats-app.conversation-data-table', ['account' => $account])
                         </div>
                     </div>
                 </div>

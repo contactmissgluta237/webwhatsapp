@@ -100,7 +100,7 @@ final class AIUnknownInformationE2ETest extends TestCase
 
                 // Vérifications supplémentaires
                 $this->assertEquals($account->session_id, $whatsappData['session_id']);
-                $this->assertStringContainsString('AI Information Request', $whatsappData['message']);
+                $this->assertStringContainsString('Demande d\'Information IA', $whatsappData['message']);
                 $this->assertStringContainsString('23755332183', $whatsappData['message']); // Le numéro du client
 
                 // Log pour debug

@@ -43,8 +43,8 @@ final class ToggleAiControllerTest extends TestCase
 
         $response->assertRedirect(route('whatsapp.index'));
         $response->assertSessionHas('error', __('Insufficient balance. Minimum required: :amount :currency to activate an agent', [
-            'amount' => config('whatsapp.billing.costs.ai_message', 15),
-            'currency' => config('app.currency', 'USD'),
+            'amount' => config('whatsapp.billing.costs.ai_message', 0.002),
+            'currency' => 'USD',
         ]));
 
         $this->assertFalse($this->account->fresh()->agent_enabled);
@@ -54,7 +54,7 @@ final class ToggleAiControllerTest extends TestCase
     {
         Wallet::factory()->create([
             'user_id' => $this->user->id,
-            'balance' => 10, // Less than required 15 USD
+            'balance' => 0.001, // Less than required 0.002 USD
         ]);
 
         $response = $this->post(route('whatsapp.toggle-ai', $this->account), [
@@ -63,7 +63,7 @@ final class ToggleAiControllerTest extends TestCase
 
         $response->assertRedirect(route('whatsapp.index'));
         $response->assertSessionHas('error', __('Insufficient balance. Minimum required: :amount :currency to activate an agent', [
-            'amount' => 15,
+            'amount' => config('whatsapp.billing.costs.ai_message', 0.002),
             'currency' => 'USD',
         ]));
 

@@ -24,6 +24,7 @@
       "mcp__laravel-boost__search-docs",
       "Bash(git rm:*)",
       "Bash(./vendor/bin/pint:*)",
+      "Bash(find:*)",
       "Bash(find:*)"
     ]
   },

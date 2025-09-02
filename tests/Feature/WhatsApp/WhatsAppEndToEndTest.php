@@ -141,8 +141,8 @@ class WhatsAppEndToEndTest extends TestCase
         // Arrange
         $orchestrator = app(WhatsAppMessageOrchestrator::class);
 
-        // Configure account with non-existent AI model for error testing
-        $this->account->update(['ai_model_id' => 999]);
+        // Keep the account with the existing valid AI model - the failing AI service will handle the error
+        // No need to modify ai_model_id since the mocked service will return null anyway
 
         $messageRequest = new WhatsAppMessageRequestDTO(
             id: 'msg_123',

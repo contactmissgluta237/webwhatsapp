@@ -40,12 +40,18 @@ final class AgentActivationHandler
     private function handleSubscriptionCase(object $subscription, int $activeAgents, float $walletBalance): AgentActivationResultDTO
     {
         $limit = $subscription->accounts_limit;
+        $minimumCost = config('whatsapp.billing.costs.ai_message', 0.002);
 
         if ($activeAgents >= $limit) {
+            if ($walletBalance >= $minimumCost) {
+                return AgentActivationResultDTO::allow($activeAgents, $limit, true, $walletBalance);
+            }
+
             return AgentActivationResultDTO::deny(
-                __('Your package limit reached: :current/:max active agents', [
+                __('Your package limit reached: :current/:max active agents. You can still activate with sufficient wallet balance (minimum :amount USD required)', [
                     'current' => $activeAgents,
                     'max' => $limit,
+                    'amount' => $minimumCost,
                 ]),
                 $activeAgents,
                 $limit,
@@ -59,8 +65,8 @@ final class AgentActivationHandler
 
     private function handleNoSubscriptionCase(int $activeAgents, float $walletBalance): AgentActivationResultDTO
     {
-        $minimumCost = config('whatsapp.billing.costs.ai_message', 15);
-        $currency = config('app.currency', 'XAF');
+        $minimumCost = config('whatsapp.billing.costs.ai_message', 0.002);
+        $currency = 'USD';
 
         if ($walletBalance < $minimumCost) {
             return AgentActivationResultDTO::deny(

@@ -32,11 +32,14 @@ final class AiConfigurationRequest extends FormRequest
         $user = Auth::user();
         $contextLimit = $user?->getPromptLimit() ?? config('whatsapp.ai.limits.context_default_max_length', 3000);
 
+        // Agent prompt has a fixed limit, while contextual_information uses dynamic limit
+        $agentPromptLimit = config('whatsapp.ai.limits.agent_prompt_max_length', 3000);
+
         return [
             'agent_name' => 'required|string|max:'.ValidationLimits::AGENT_NAME_MAX_LENGTH,
             'agent_enabled' => 'boolean',
             'ai_model_id' => $this->agentEnabled ? 'required|exists:ai_models,id' : 'nullable|exists:ai_models,id',
-            'agent_prompt' => $this->agentEnabled ? ['required', 'string', new PromptLengthRule($contextLimit)] : ['nullable', 'string', new PromptLengthRule($contextLimit)],
+            'agent_prompt' => $this->agentEnabled ? ['required', 'string', new PromptLengthRule($agentPromptLimit)] : ['nullable', 'string', new PromptLengthRule($agentPromptLimit)],
             'trigger_words' => 'nullable|string|max:'.ValidationLimits::TRIGGER_WORDS_MAX_LENGTH,
             'contextual_information' => ['nullable', 'string', new PromptLengthRule($contextLimit)],
             'ignore_words' => 'nullable|string|max:'.ValidationLimits::IGNORE_WORDS_MAX_LENGTH,

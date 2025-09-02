@@ -200,7 +200,7 @@ class ExternalTransactionListTest extends TestCase
 
         Livewire::actingAs($this->customer)
             ->test(\App\Livewire\Customer\ExternalTransactionDataTable::class)
-            ->assertSee('50 000 FCFA')
+            ->assertSee('50000.00 $')
             ->assertSee('Recharge')
             ->assertSee('Terminé')
             ->assertSee('Mobile Money');

@@ -34,6 +34,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'is_active' => true,
             'affiliation_code' => null, // Will be generated automatically by User model boot method
+            'locale' => 'fr', // Set default locale to match database default
         ];
     }
 

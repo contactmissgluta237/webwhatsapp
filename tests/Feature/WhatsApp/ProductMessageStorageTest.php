@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Models\WhatsAppAccount;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
-use App\Repositories\WhatsAppMessageRepositoryInterface;
+use App\Repositories\WhatsApp\Contracts\WhatsAppMessageRepositoryInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -70,17 +70,15 @@ final class ProductMessageStorageTest extends TestCase
         );
 
         // Assert
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('conversation', $result);
-        $this->assertArrayHasKey('incoming_message', $result);
-        $this->assertArrayHasKey('outgoing_message', $result);
-        $this->assertArrayHasKey('product_messages', $result);
+        $this->assertInstanceOf(\App\DTOs\WhatsApp\MessageExchangeResult::class, $result);
+        $this->assertInstanceOf(WhatsAppConversation::class, $result->conversation);
+        $this->assertInstanceOf(WhatsAppMessage::class, $result->incomingMessage);
+        $this->assertInstanceOf(WhatsAppMessage::class, $result->outgoingMessage);
 
-        $this->assertInstanceOf(WhatsAppConversation::class, $result['conversation']);
-        $this->assertInstanceOf(WhatsAppMessage::class, $result['incoming_message']);
-        $this->assertInstanceOf(WhatsAppMessage::class, $result['outgoing_message']);
-        $this->assertIsArray($result['product_messages']);
-        $this->assertEmpty($result['product_messages']);
+        // Verify the content
+        $this->assertEquals('Hello, do you have products?', $result->incomingMessage->content);
+        $this->assertEquals('Hello! Yes, we have products available.', $result->outgoingMessage->content);
+        $this->assertTrue($result->outgoingMessage->is_ai_generated);
     }
 
     public function test_can_store_message_exchange_with_products(): void
@@ -133,10 +131,24 @@ final class ProductMessageStorageTest extends TestCase
         );
 
         // Assert
-        $this->assertCount(2, $result['product_messages']);
+        $this->assertInstanceOf(\App\DTOs\WhatsApp\MessageExchangeResult::class, $result);
+        $this->assertInstanceOf(WhatsAppConversation::class, $result->conversation);
+        $this->assertInstanceOf(WhatsAppMessage::class, $result->incomingMessage);
+        $this->assertInstanceOf(WhatsAppMessage::class, $result->outgoingMessage);
 
-        foreach ($result['product_messages'] as $productMessage) {
-            $this->assertInstanceOf(WhatsAppMessage::class, $productMessage);
+        // Verify the content
+        $this->assertEquals('Show me your products', $result->incomingMessage->content);
+        $this->assertEquals('Here are our available products:', $result->outgoingMessage->content);
+        $this->assertTrue($result->outgoingMessage->is_ai_generated);
+
+        // Verify product messages were stored (check the conversation for product messages)
+        $productMessages = $result->conversation->messages()
+            ->where('message_subtype', MessageSubtype::PRODUCT())
+            ->get();
+
+        $this->assertCount(2, $productMessages);
+
+        foreach ($productMessages as $productMessage) {
             $this->assertTrue($productMessage->direction->equals(MessageDirection::OUTBOUND()));
             $this->assertTrue($productMessage->message_type->equals(MessageType::TEXT()));
             $this->assertTrue($productMessage->message_subtype->equals(MessageSubtype::PRODUCT()));
@@ -146,13 +158,13 @@ final class ProductMessageStorageTest extends TestCase
         }
 
         // Verify first product message
-        $firstProduct = $result['product_messages'][0];
+        $firstProduct = $productMessages->first();
         $this->assertStringContainsString('iPhone 15', $firstProduct->content);
         $this->assertCount(2, $firstProduct->media_urls);
         $this->assertEquals('https://example.com/iphone1.jpg', $firstProduct->media_urls[0]);
 
         // Verify second product message
-        $secondProduct = $result['product_messages'][1];
+        $secondProduct = $productMessages->last();
         $this->assertStringContainsString('MacBook Air', $secondProduct->content);
         $this->assertCount(2, $secondProduct->media_urls);
         $this->assertEquals('https://example.com/macbook.mp4', $secondProduct->media_urls[0]);

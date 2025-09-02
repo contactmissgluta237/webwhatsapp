@@ -26,22 +26,23 @@ class CustomerService extends BaseService
             $referralCode = $userData['referral_code'] ?? null;
             unset($userData['referral_code'], $userData['terms']);
 
+            $referrerId = null;
+            if ($referralCode) {
+                $referrerUser = User::findByAffiliationCode($referralCode);
+                if ($referrerUser && $referrerUser->customer) {
+                    $referrerId = $referrerUser->id;
+                }
+            }
+
+            $userData['referrer_id'] = $referrerId;
+
             $user = User::create($userData);
             $user->assignRole(UserRole::CUSTOMER()->value);
 
             $this->currencyService->setCurrencyForNewUser($user, $userData['country_id'] ?? null);
 
-            $referrerId = null;
-            if ($referralCode) {
-                $referrerUser = User::findByAffiliationCode($referralCode);
-                if ($referrerUser && $referrerUser->customer) {
-                    $referrerId = $referrerUser->customer->id;
-                }
-            }
-
             $customer = Customer::create([
                 'user_id' => $user->id,
-                'referrer_id' => $referrerId,
             ]);
 
             $this->activationService->sendActivationCode($user->email);

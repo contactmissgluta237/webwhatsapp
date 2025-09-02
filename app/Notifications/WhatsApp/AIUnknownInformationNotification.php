@@ -98,8 +98,8 @@ final class AIUnknownInformationNotification extends Notification
 
         $result = [
             'type' => 'ai_unknown_information',
-            'title' => __('AI Information Request'),
-            'message' => __('Customer from :phone asked a question your AI couldn\'t answer', [
+            'title' => __('app.AI Information Request'),
+            'message' => __('app.Customer from :phone asked a question your AI couldn\'t answer', [
                 'phone' => $this->incomingMessage->getContactPhone(),
             ]),
             'account_id' => $this->account->id,
@@ -110,7 +110,7 @@ final class AIUnknownInformationNotification extends Notification
             'session_id' => $this->account->session_id,
             'conversation_id' => $conversationId,
             'conversation_url' => $conversationUrl,
-            'action_text' => __('View Conversation'),
+            'action_text' => __('app.View Conversation'),
             'action_url' => $conversationUrl,
             'created_at' => now()->toISOString(),
         ];
@@ -133,12 +133,12 @@ final class AIUnknownInformationNotification extends Notification
 
     private function buildWhatsAppMessage(): string
     {
-        return '*'.__('AI Information Request')."*\n\n".
-            __('Your AI assistant needs help!')." \n\n".
-            '📱 *'.__('Customer').":* {$this->incomingMessage->getContactPhone()}\n".
-            '❓ *'.__('Question').":* {$this->incomingMessage->body}\n\n".
-            '🤖 *'.__('AI Response').":* {$this->aiMessage}\n\n".
-            __('The AI couldn\'t provide a complete answer. Please review and update your knowledge base.');
+        return '*'.__('app.AI Information Request')."*\n\n".
+            __('app.Your AI assistant needs help!')." \n\n".
+            '📱 *'.__('app.Customer').":* {$this->incomingMessage->getContactPhone()}\n".
+            '❓ *'.__('app.Question').":* {$this->incomingMessage->body}\n\n".
+            '🤖 *'.__('app.AI Response').":* {$this->aiMessage}\n\n".
+            __('app.The AI couldn\'t provide a complete answer. Please review and update your knowledge base.');
     }
 
     private function getValidConversationId(): ?int

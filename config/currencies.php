@@ -152,7 +152,73 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'default_currency' => 'USD',
+    'default_currency' => env('APP_DEFAULT_CURRENCY', 'USD'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configuration centralisée pour l'élimination des hardcoded currencies
+    |--------------------------------------------------------------------------
+    */
+
+    // Devise par défaut de l'application
+    'default' => env('APP_DEFAULT_CURRENCY', 'USD'),
+
+    // Symboles de devises optimisés
+    'symbols' => [
+        'USD' => '$',
+        'XAF' => 'FCFA',
+        'EUR' => '€',
+        'XOF' => 'F CFA',
+        'GBP' => '£',
+        'CAD' => 'C$',
+        'CHF' => 'CHF',
+        'NGN' => '₦',
+        'GHS' => '₵',
+        'ZAR' => 'R',
+        'MAD' => 'DH',
+        'DZD' => 'DA',
+        'TND' => 'TND',
+        'EGP' => 'LE',
+        'KES' => 'KSh',
+    ],
+
+    // Configuration de formatage par devise
+    'formatting' => [
+        'USD' => [
+            'decimals' => 2,
+            'decimal_separator' => '.',
+            'thousands_separator' => '',
+            'position' => 'after', // $ après le montant
+        ],
+        'XAF' => [
+            'decimals' => 0,
+            'decimal_separator' => ',',
+            'thousands_separator' => ' ',
+            'position' => 'after', // FCFA après le montant
+        ],
+        'EUR' => [
+            'decimals' => 2,
+            'decimal_separator' => '.',
+            'thousands_separator' => ' ',
+            'position' => 'after', // € après le montant
+        ],
+        'XOF' => [
+            'decimals' => 0,
+            'decimal_separator' => ',',
+            'thousands_separator' => ' ',
+            'position' => 'after',
+        ],
+    ],
+
+    // Taux de conversion (à déplacer vers une source dynamique plus tard)
+    'exchange_rates' => [
+        'USD_TO_XAF' => env('EXCHANGE_RATE_USD_TO_XAF', 650),
+        'USD_TO_EUR' => env('EXCHANGE_RATE_USD_TO_EUR', 0.92),
+        'USD_TO_XOF' => env('EXCHANGE_RATE_USD_TO_XOF', 650),
+    ],
+
+    // Devises autorisées dans l'application
+    'allowed' => ['USD', 'XAF', 'EUR', 'XOF'],
 
     /*
     |--------------------------------------------------------------------------

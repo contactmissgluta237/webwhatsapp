@@ -6,6 +6,7 @@ use Spatie\Enum\Laravel\Enum;
 
 /**
  * @method static self ACTIVE()
+ * @method static self INACTIVE()
  * @method static self USED()
  * @method static self EXPIRED()
  */
@@ -15,6 +16,7 @@ class CouponStatus extends Enum
     {
         return [
             'ACTIVE' => 'active',
+            'INACTIVE' => 'inactive',
             'USED' => 'used',
             'EXPIRED' => 'expired',
         ];
@@ -24,6 +26,7 @@ class CouponStatus extends Enum
     {
         return [
             'ACTIVE' => 'Actif',
+            'INACTIVE' => 'Inactif',
             'USED' => 'Utilisé',
             'EXPIRED' => 'Expiré',
         ];
@@ -33,6 +36,7 @@ class CouponStatus extends Enum
     {
         return match ($this->value) {
             'active' => 'Actif',
+            'inactive' => 'Inactif',
             'expired' => 'Expiré',
             'used' => 'Utilisé',
             default => 'Inconnu',
@@ -43,8 +47,9 @@ class CouponStatus extends Enum
     {
         return match ($this->value) {
             'active' => 'bg-success',
-            'used' => 'bg-secondary',
-            'expired' => 'bg-warning',
+            'inactive' => 'bg-secondary',
+            'used' => 'bg-warning',
+            'expired' => 'bg-danger',
             default => 'bg-secondary',
         };
     }

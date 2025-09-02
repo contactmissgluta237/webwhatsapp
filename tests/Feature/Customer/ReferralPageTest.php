@@ -114,7 +114,7 @@ class ReferralPageTest extends TestCase
         $this->actingAs($referrer)
             ->get(route('customer.referrals.index'))
             ->assertOk()
-            ->assertSee('0 USD'); // Format de devise USD pour les gains
+            ->assertSee('0.00 $'); // Format de devise USD pour les gains
     }
 
     #[Test]

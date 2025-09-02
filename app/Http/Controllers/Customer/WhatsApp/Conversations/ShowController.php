@@ -21,7 +21,14 @@ final class ShowController extends Controller
      */
     public function __invoke(Request $request, WhatsAppAccount $account, WhatsAppConversation $conversation): View
     {
-        // Load conversation messages
+        if ($account->user_id !== auth()->id()) {
+            abort(403, 'Accès non autorisé à ce compte WhatsApp.');
+        }
+
+        if ($conversation->whatsapp_account_id !== $account->id) {
+            abort(404, 'Conversation non trouvée pour ce compte.');
+        }
+
         $conversation->load(['messages' => fn (HasMany $query) => $query->orderBy('created_at', 'asc')]);
 
         return view('customer.whatsapp.conversations.show', compact('account', 'conversation'));

@@ -82,7 +82,7 @@ final class AiConfigurationRequestTest extends BaseRequestTestCase
                 'agent_name' => str_repeat('a', ValidationLimits::AGENT_NAME_MAX_LENGTH),
                 'agent_enabled' => false,
                 'trigger_words' => str_repeat('a', ValidationLimits::TRIGGER_WORDS_MAX_LENGTH),
-                'contextual_information' => str_repeat('a', ValidationLimits::CONTEXTUAL_INFO_MAX_LENGTH),
+                'contextual_information' => str_repeat('a', 3000), // PromptLengthRule limit, not ValidationLimits
                 'ignore_words' => str_repeat('a', ValidationLimits::IGNORE_WORDS_MAX_LENGTH),
                 'response_time' => 'slow',
                 'stop_on_human_reply' => false,

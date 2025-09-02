@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('code', 50)->unique();
             $table->enum('type', ['percentage', 'fixed_amount']);
             $table->decimal('value', 10, 2);
-            $table->enum('status', ['active', 'used', 'expired'])->default('active');
+            $table->enum('status', ['active', 'inactive', 'used', 'expired'])->default('active');
             $table->boolean('is_active')->default(true);
             $table->integer('usage_limit')->default(1);
             $table->integer('per_user_limit')->default(1);
